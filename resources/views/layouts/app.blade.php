@@ -184,10 +184,10 @@
                             Dashboard
                         </a>
 
-                        <div x-data="{ open: {{ request()->routeIs('department.*', 'document_types.*') ? 'true' : 'false' }} }" class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
+                        <div x-data="{ open: {{ request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*') ? 'true' : 'false' }} }" class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                             <button @click="open = !open" aria-controls="menu-master" :aria-expanded="open.toString()"
-                                class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ request()->routeIs('department.*', 'document_types.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                @if (request()->routeIs('department.*', 'document_types.*'))
+                                class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                @if (request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*'))
                                     <span
                                         class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
                                 @endif

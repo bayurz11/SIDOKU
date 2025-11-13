@@ -98,16 +98,66 @@
                                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                        focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-xs"
                                 placeholder="@{{ COMP }}/@{{ MAIN }}/@{{ DEPT }}/@{{ SEQ }}"></textarea>
-                            <p class="mt-1 text-xs text-gray-500">
-                                Placeholder yang tersedia:
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;COMP&#125;</span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;MAIN&#125;</span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;DEPT&#125;</span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;SEQ&#125;</span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;SUBSEQ&#125;</span>,
-                                <span
-                                    class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;PARENT_REF&#125;</span>.
+                            <p class="mt-1 text-xs text-gray-500 space-y-1">
+                                <span class="block mb-1">
+                                    Placeholder yang tersedia:
+                                    <span
+                                        class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;COMP&#125;</span>,
+                                    <span
+                                        class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;MAIN&#125;</span>,
+                                    <span
+                                        class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;DEPT&#125;</span>,
+                                    <span
+                                        class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;SEQ&#125;</span>,
+                                    <span
+                                        class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;SUBSEQ&#125;</span>,
+                                    <span
+                                        class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;PARENT_REF&#125;</span>.
+                                </span>
+
+                                <span class="block">
+                                    <span class="font-mono">&#123;COMP&#125;</span> = Company prefix, misalnya <span
+                                        class="font-mono">PRP</span>.
+                                    Diambil dari field <span class="font-mono">Company Prefix</span>.
+                                </span>
+
+                                <span class="block">
+                                    <span class="font-mono">&#123;MAIN&#125;</span> = Kode jenis dokumen utama,
+                                    misalnya <span class="font-mono">DOC.QMS</span>, <span class="font-mono">SOP</span>,
+                                    <span class="font-mono">WI</span>,
+                                    <span class="font-mono">FORM</span>. Biasanya berasal dari pengaturan di
+                                    <em>Document Type</em>.
+                                </span>
+
+                                <span class="block">
+                                    <span class="font-mono">&#123;DEPT&#125;</span> = Kode departemen pemilik dokumen,
+                                    misalnya <span class="font-mono">QS</span>, <span class="font-mono">QC</span>, <span
+                                        class="font-mono">PRD</span>, <span class="font-mono">HR</span>.
+                                    Diambil dari relasi <em>Department</em>.
+                                </span>
+
+                                <span class="block">
+                                    <span class="font-mono">&#123;SEQ&#125;</span> = Nomor urut dokumen (sequence utama)
+                                    yang akan bertambah otomatis (<span class="font-mono">001</span>, <span
+                                        class="font-mono">002</span>, dst).
+                                </span>
+
+                                <span class="block">
+                                    <span class="font-mono">&#123;SUBSEQ&#125;</span> = Nomor urut turunan
+                                    (sub-sequence),
+                                    dipakai untuk dokumen yang punya sub level, misalnya <span
+                                        class="font-mono">SOP001.002</span>.
+                                </span>
+
+                                <span class="block">
+                                    <span class="font-mono">&#123;PARENT_REF&#125;</span> = Kode referensi dokumen
+                                    induk,
+                                    misalnya <span class="font-mono">SOP001</span> untuk WI yang turunan SOP, atau
+                                    <span class="font-mono">WI.SOP001.002</span> untuk FORM turunan WI.
+                                    Nilai ini akan dihasilkan oleh service penomoran berdasarkan dokumen parent.
+                                </span>
                             </p>
+
                             @error('format_nomor')
                                 <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                             @enderror
