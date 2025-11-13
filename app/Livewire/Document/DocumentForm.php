@@ -11,6 +11,7 @@ use App\Domains\Department\Models\Department;
 use App\Domains\Document\Services\DocumentNumberService;
 use App\Shared\Services\LoggerService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str; // <- TAMBAHAN
 use Illuminate\Validation\Rule;
 
 class DocumentForm extends Component
@@ -31,7 +32,8 @@ class DocumentForm extends Component
     public ?string $effective_date = null;
     public ?string $expired_date = null;
 
-    public int $level = 1;            // 1=DOC, 2=SOP, 3=WI, 4=FORM (opsional)
+    // 1 = Manual / DOC level 1, 2 = SOP, 3 = WI, 4 = FORM, dll
+    public int $level = 1;
     public string $status = 'draft';  // draft, in_review, approved, obsolete
     public bool $is_active = true;
 
@@ -180,6 +182,40 @@ class DocumentForm extends Component
     }
 
     /**
+     * Helper upload file ke disk 'public_path' (public/storage)
+     * dan hapus file lama kalau ada.
+     */
+    protected function handleFileUpload(?string $oldPath = null): ?string
+    {
+        // kalau tidak ada file baru, kembalikan path lama
+        if (!$this->uploaded_file) {
+            return $oldPath;
+        }
+
+        // pastikan folder "documents" ada
+        Storage::disk('public_path')->makeDirectory('documents');
+
+        // ambil ekstensi (default pdf kalau tidak ada)
+        $ext = strtolower($this->uploaded_file->getClientOriginalExtension() ?: 'pdf');
+
+        // nama file random
+        $fileName = Str::random(24) . '.' . $ext;
+
+        // simpan ke public/storage/documents/xxx.ext → path relatif: "documents/xxx.ext"
+        $relativePath = $this->uploaded_file->storeAs('documents', $fileName, 'public_path');
+
+        // hapus file lama kalau ada
+        if ($oldPath) {
+            $old = ltrim($oldPath, '/');
+            if (Storage::disk('public_path')->exists($old)) {
+                Storage::disk('public_path')->delete($old);
+            }
+        }
+
+        return $relativePath;
+    }
+
+    /**
      * Simpan dokumen (create / update)
      */
     public function save(): void
@@ -194,14 +230,8 @@ class DocumentForm extends Component
             // UPDATE existing document
             $document = Document::findOrFail($this->documentId);
 
-            $filePath = $document->file_path;
-            if ($this->uploaded_file) {
-                // optional: hapus file lama
-                if ($filePath && Storage::disk('public')->exists($filePath)) {
-                    Storage::disk('public')->delete($filePath);
-                }
-                $filePath = $this->uploaded_file->store('documents', 'public');
-            }
+            // upload file baru + hapus lama (kalau ada)
+            $filePath = $this->handleFileUpload($document->file_path);
 
             $document->update([
                 'document_type_id'   => $this->document_type_id,
@@ -232,10 +262,8 @@ class DocumentForm extends Component
                 $parent
             );
 
-            $filePath = null;
-            if ($this->uploaded_file) {
-                $filePath = $this->uploaded_file->store('documents', 'public');
-            }
+            // upload file baru (tidak ada file lama)
+            $filePath = $this->handleFileUpload(null);
 
             $document = Document::create([
                 'document_type_id'            => $this->document_type_id,
