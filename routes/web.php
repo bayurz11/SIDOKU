@@ -3,12 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-// Route::get('/', function () {
-//     if (auth()->check()) {
-//         return redirect()->route('dashboard');
-//     }
-//     return redirect()->route('login');
-// });
 
 // Dashboard Route (redirect /home to /dashboard)
 Route::get('/dashboard', function () {
