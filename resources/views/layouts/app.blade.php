@@ -218,13 +218,13 @@
                                 @permission('document_categories.view')
                                     <a href="#"
                                         class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_categories.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                        Kategori Dokumen
+                                        Document Categories
                                     </a>
                                 @endpermission
                                 @permission('document_types.view')
                                     <a href="{{ route('document_types.index') }}"
                                         class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_types.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                        Jenis Dokumen
+                                        Document Type
                                     </a>
                                 @endpermission
                                 @permission('document_prefix_settings.view')
