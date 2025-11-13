@@ -45,17 +45,18 @@ class DocumentList extends Component
     protected array $allowedPerPage = [10, 25, 50];
 
     protected $queryString = [
-        'search'            => ['except' => ''],
+        'search'             => ['except' => ''],
         'filterDocumentType' => ['except' => null],
-        'filterDepartment'  => ['except' => null],
-        'filterStatus'      => ['except' => null],
-        'perPage'           => ['except' => 10],
-        'sortField'         => ['except' => 'created_at'],
-        'sortDirection'     => ['except' => 'desc'],
+        'filterDepartment'   => ['except' => null],
+        'filterStatus'       => ['except' => null],
+        'perPage'            => ['except' => 10],
+        'sortField'          => ['except' => 'created_at'],
+        'sortDirection'      => ['except' => 'desc'],
     ];
 
     protected $listeners = [
-        'document:saved' => 'refreshList',
+        'document:saved'    => 'refreshList',   // dari DocumentForm
+        'document:imported' => 'refreshList',   // <-- dari fitur Import Daftar Induk Dokumen (Excel)
     ];
 
     public function mount(): void
