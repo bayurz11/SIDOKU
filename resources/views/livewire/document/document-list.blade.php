@@ -24,26 +24,20 @@
             </div>
 
             <div class="flex items-center gap-2">
-                @permission('documents.import')
-                    <button wire:click="$dispatch('openDocumentImportForm')"
-                        class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold
-               border border-emerald-600 text-emerald-700 bg-white
-               hover:bg-gradient-to-r hover:from-emerald-50 hover:via-green-50 hover:to-lime-50
-               hover:border-emerald-700 hover:text-emerald-800
-               active:scale-[0.97]
-               transition-all duration-300">
 
-                        {{-- ICON OUTLINE --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
+
+                {{-- Import Document --}}
+                @permission('documents.import')
+                    <button wire:click="$dispatch('openDocumentForm')"
+                        class="group bg-gradient-to-r from-green-600 to-purple-600 hover:from-green-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                         </svg>
-
                         Import Daftar Induk Dokumen
                     </button>
                 @endpermission
-
 
                 {{-- Add Document --}}
                 @permission('documents.create')
@@ -262,7 +256,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                             </path>
                                         </svg>
                                         Edit
@@ -292,7 +286,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         Delete
                                     </button>
