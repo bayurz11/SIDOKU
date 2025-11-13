@@ -70,49 +70,43 @@ class DocumentPrefixForm extends Component
             ->get();
     }
 
+
     /**
      * Buka modal form
      *
      * Bisa dipanggil:
      *  - $dispatch('openDocumentPrefixForm')
      *  - $dispatch('openDocumentPrefixForm', 1)
-     *  - $dispatch('openDocumentPrefixForm', { id: 1 })
      */
-    public function openForm($payload = null): void
+    public function openForm(?int $id = null): void
     {
         $this->resetErrorBag();
         $this->resetValidation();
         $this->editorId = 'editor-' . uniqid();
         $this->loadLookups();
 
+        // default: mode create
         $this->showModal = true;
         $this->isEditing = false;
         $this->is_active = true;
 
-        // Normalisasi ID
-        $id = null;
-        if (is_array($payload)) {
-            $id = $payload['id'] ?? null;
-        } elseif (is_numeric($payload)) {
-            $id = (int) $payload;
-        }
-
         if ($id) {
+            // MODE EDIT
             $prefix = DocumentPrefixSetting::findOrFail($id);
 
-            $this->prefixId            = $prefix->id;
-            $this->company_prefix      = $prefix->company_prefix ?? 'PRP';
-            $this->document_type_id    = $prefix->document_type_id;
-            $this->department_id       = $prefix->department_id;
+            $this->prefixId             = $prefix->id;
+            $this->company_prefix       = $prefix->company_prefix ?? 'PRP';
+            $this->document_type_id     = $prefix->document_type_id;
+            $this->department_id        = $prefix->department_id;
             $this->sub_reference_format = $prefix->sub_reference_format;
-            $this->format_nomor        = $prefix->format_nomor;
-            $this->reset_interval      = (int) $prefix->reset_interval;
-            $this->example_output      = $prefix->example_output;
-            $this->is_active           = (bool) $prefix->is_active;
+            $this->format_nomor         = $prefix->format_nomor;
+            $this->reset_interval       = (int) $prefix->reset_interval;
+            $this->example_output       = $prefix->example_output;
+            $this->is_active            = (bool) $prefix->is_active;
 
             $this->isEditing = true;
         } else {
-            // mode create
+            // MODE CREATE → reset field tertentu
             $this->reset([
                 'prefixId',
                 'document_type_id',
@@ -123,7 +117,7 @@ class DocumentPrefixForm extends Component
             ]);
 
             $this->company_prefix = 'PRP';
-            $this->format_nomor   = '{{COMP}}/{{MAIN}}/{{DEPT}}/{{SEQ}}';
+            $this->format_nomor   = '{COMP}/{MAIN}/{DEPT}/{SEQ}';
             $this->reset_interval = 1;
             $this->is_active      = true;
         }
