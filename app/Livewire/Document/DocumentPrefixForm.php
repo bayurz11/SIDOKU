@@ -14,7 +14,7 @@ class DocumentPrefixForm extends Component
 {
     use WithAlerts;
 
-    // ID prefix setting
+    // ID prefix setting (primary key)
     public ?int $prefixId = null;
 
     // Form fields
@@ -34,7 +34,7 @@ class DocumentPrefixForm extends Component
 
     // Lookup data
     public $documentTypes = [];
-    public $departments = [];
+    public $departments   = [];
 
     protected $listeners = [
         'openDocumentPrefixForm' => 'openForm',
@@ -72,10 +72,11 @@ class DocumentPrefixForm extends Component
 
     /**
      * Buka modal form
+     *
      * Bisa dipanggil:
      *  - $dispatch('openDocumentPrefixForm')
-     *  - $dispatch('openDocumentPrefixForm', { id: 1 })
      *  - $dispatch('openDocumentPrefixForm', 1)
+     *  - $dispatch('openDocumentPrefixForm', { id: 1 })
      */
     public function openForm($payload = null): void
     {
@@ -84,11 +85,11 @@ class DocumentPrefixForm extends Component
         $this->editorId = 'editor-' . uniqid();
         $this->loadLookups();
 
-        $this->showModal  = true;
-        $this->isEditing  = false;
-        $this->is_active  = true;
+        $this->showModal = true;
+        $this->isEditing = false;
+        $this->is_active = true;
 
-        // Normalisasi ID dari payload (bisa int atau array ['id' => x])
+        // Normalisasi ID
         $id = null;
         if (is_array($payload)) {
             $id = $payload['id'] ?? null;
@@ -111,7 +112,7 @@ class DocumentPrefixForm extends Component
 
             $this->isEditing = true;
         } else {
-            // mode create: reset field data, biarkan default yang aman tetap
+            // mode create
             $this->reset([
                 'prefixId',
                 'document_type_id',
@@ -121,10 +122,10 @@ class DocumentPrefixForm extends Component
                 'isEditing',
             ]);
 
-            $this->company_prefix  = 'PRP';
-            $this->format_nomor    = '{{COMP}}/{{MAIN}}/{{DEPT}}/{{SEQ}}';
-            $this->reset_interval  = 1;
-            $this->is_active       = true;
+            $this->company_prefix = 'PRP';
+            $this->format_nomor   = '{{COMP}}/{{MAIN}}/{{DEPT}}/{{SEQ}}';
+            $this->reset_interval = 1;
+            $this->is_active      = true;
         }
     }
 
@@ -164,7 +165,6 @@ class DocumentPrefixForm extends Component
             ]);
         }
 
-        // Kalau dipakai di dashboard, bisa clear cache
         if (class_exists(CacheService::class)) {
             CacheService::clearDashboardCache();
         }

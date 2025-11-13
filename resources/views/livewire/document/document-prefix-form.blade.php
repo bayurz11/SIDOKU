@@ -4,7 +4,7 @@
             wire:click.self="closeModal">
             <div class="relative top-8 mx-auto p-6 border w-full max-w-3xl shadow-lg rounded-md bg-white">
                 <div class="mt-3">
-                    <!-- HEADER -->
+                    {{-- HEADER --}}
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-semibold text-gray-900">
                             {{ $isEditing ? 'Edit Document Prefix Setting' : 'Add Document Prefix Setting' }}
@@ -17,10 +17,10 @@
                         </button>
                     </div>
 
-                    <!-- FORM -->
+                    {{-- FORM --}}
                     <form wire:submit.prevent="save" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Company Prefix -->
+                            {{-- Company Prefix --}}
                             <div>
                                 <label for="company_prefix" class="block text-sm font-medium text-gray-700 mb-2">
                                     Company Prefix
@@ -34,7 +34,7 @@
                                 @enderror
                             </div>
 
-                            <!-- Reset Interval -->
+                            {{-- Reset Interval --}}
                             <div>
                                 <label for="reset_interval" class="block text-sm font-medium text-gray-700 mb-2">
                                     Reset Interval
@@ -52,7 +52,7 @@
                             </div>
                         </div>
 
-                        <!-- Document Type & Department -->
+                        {{-- Document Type & Department --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="document_type_id" class="block text-sm font-medium text-gray-700 mb-2">
@@ -89,7 +89,7 @@
                             </div>
                         </div>
 
-                        <!-- Format Nomor -->
+                        {{-- Format Nomor --}}
                         <div>
                             <label for="format_nomor" class="block text-sm font-medium text-gray-700 mb-2">
                                 Format Nomor
@@ -97,28 +97,23 @@
                             <textarea wire:model.defer="format_nomor" id="format_nomor" rows="3"
                                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                        focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-xs"
-                                placeholder="{{ '{{COMP ?>' }}/{{ MAIN }}/{{ DEPT }}/{{ SEQ }}' }}"></textarea>
+                                placeholder="@{{ COMP }}/@{{ MAIN }}/@{{ DEPT }}/@{{ SEQ }}"></textarea>
                             <p class="mt-1 text-xs text-gray-500">
                                 Placeholder yang tersedia:
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border"> {{ '{COMP}' }}
-                                </span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border"> {{ '{MAIN}' }}
-                                </span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border"> {{ '{DEPT}' }}
-                                </span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border"> {{ '{SEQ}' }}
-                                </span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border"> {{ '{SUBSEQ}' }}
-                                </span>,
-                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border"> {{ '{PARENT_REF}' }}
-                                </span>.
+                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;COMP&#125;</span>,
+                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;MAIN&#125;</span>,
+                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;DEPT&#125;</span>,
+                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;SEQ&#125;</span>,
+                                <span class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;SUBSEQ&#125;</span>,
+                                <span
+                                    class="font-mono bg-gray-50 px-1 py-0.5 rounded border">&#123;PARENT_REF&#125;</span>.
                             </p>
                             @error('format_nomor')
                                 <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                             @enderror
                         </div>
 
-                        <!-- Sub reference format -->
+                        {{-- Sub reference format --}}
                         <div>
                             <label for="sub_reference_format" class="block text-sm font-medium text-gray-700 mb-2">
                                 Sub Reference Format (opsional)
@@ -126,13 +121,13 @@
                             <input wire:model.defer="sub_reference_format" type="text" id="sub_reference_format"
                                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                        focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-xs"
-                                placeholder="Contoh: SOP{{ '{SEQ}' }} atau WI.SOP{{ '{SEQ}' }}.{{ '{SUBSEQ}' }}">
+                                placeholder="Contoh: SOP@{{ SEQ }} atau WI.SOP@{{ SEQ }}.@{{ SUBSEQ }}">
                             @error('sub_reference_format')
                                 <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                             @enderror
                         </div>
 
-                        <!-- Example Output -->
+                        {{-- Example Output --}}
                         <div>
                             <label for="example_output" class="block text-sm font-medium text-gray-700 mb-2">
                                 Contoh Output (opsional)
@@ -146,7 +141,7 @@
                             @enderror
                         </div>
 
-                        <!-- Status aktif -->
+                        {{-- Status aktif --}}
                         <div>
                             <label class="flex items-center">
                                 <input wire:model="is_active" type="checkbox"
@@ -157,7 +152,7 @@
                             </label>
                         </div>
 
-                        <!-- FOOTER BUTTONS -->
+                        {{-- FOOTER BUTTONS --}}
                         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                             <button type="button" wire:click="closeModal"
                                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md
