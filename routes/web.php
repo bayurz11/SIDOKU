@@ -22,11 +22,19 @@ Route::middleware(['auth', 'permission:document_types.view'])->group(function ()
         return view('document_types.index');
     })->name('document_types.index');
 });
+
 //  Management Document Prefix Settings
 Route::middleware(['auth', 'permission:document_prefix_settings.view'])->group(function () {
     Route::get('/document_prefix_settings', function () {
         return view('document_prefix.index');
     })->name('document_prefix_settings.index');
+});
+
+//  Management Document 
+Route::middleware(['auth', 'permission:documents.view'])->group(function () {
+    Route::get('/documents', function () {
+        return view('documents.index');
+    })->name('documents.index');
 });
 
 // User Management Routes

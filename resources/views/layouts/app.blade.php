@@ -215,12 +215,7 @@
                                     </a>
                                 @endpermission
 
-                                {{-- @permission('document_categories.view')
-                                    <a href="#"
-                                        class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_categories.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                        Document Categories
-                                    </a>
-                                @endpermission --}}
+
                                 @permission('document_types.view')
                                     <a href="{{ route('document_types.index') }}"
                                         class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_types.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
@@ -233,6 +228,68 @@
                                         Dokumen Prefix
                                     </a>
                                 @endpermission
+                            </div>
+                        </div>
+
+                        {{-- MENU: DOKUMEN SAJA --}}
+                        <div x-data="{
+                            open: {{ request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') ? 'true' : 'false' }}
+                        }" class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
+
+                            <button @click="open = !open" aria-controls="menu-document" :aria-expanded="open.toString()"
+                                class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+
+                                {{-- ACTIVE BAR --}}
+                                @if (request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*'))
+                                    <span
+                                        class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
+                                @endif
+
+                                {{-- ICON --}}
+                                <svg class="mr-3 h-5 w-5 text-current" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 7.5A2.25 2.25 0 015.25 5.25h13.5A2.25 2.25 0 0121 7.5v9a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 16.5v-9zM7.5 9h9m-9 3.75h6" />
+                                </svg>
+
+                                <span>Dokumen</span>
+
+                                {{-- COLLAPSE ICON --}}
+                                <svg :class="{ 'rotate-180': open }"
+                                    class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {{-- SUBMENU --}}
+                            <div id="menu-document" x-show="open" x-collapse class="mt-1 pl-10 space-y-1 overflow-hidden">
+
+                                {{-- DOCUMENT LIST --}}
+                                @permission('documents.view')
+                                    <a href="{{ route('documents.index') }}"
+                                        class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('documents.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                        Document List
+                                    </a>
+                                @endpermission
+
+                                {{-- APPROVAL (Optional) --}}
+                                @permission('documents.approve')
+                                    <a href="#"
+                                        class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_approvals.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                        Approval Queue
+                                    </a>
+                                @endpermission
+
+                                {{-- REVISIONS (Optional) --}}
+                                @permission('documents.revision')
+                                    <a href="#"
+                                        class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_revisions.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                        Document Revisions
+                                    </a>
+                                @endpermission
+
                             </div>
                         </div>
 

@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Domains\Document\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Document extends Model
+{
+    protected $fillable = [
+        'document_type_id',
+        'department_id',
+        'document_prefix_setting_id',
+        'parent_document_id',
+        'document_code',
+        'title',
+        'level',
+        'revision_no',
+        'status',
+        'effective_date',
+        'expired_date',
+        'file_path',
+        'summary',
+        'is_active',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected $casts = [
+        'effective_date' => 'date',
+        'expired_date'   => 'date',
+        'is_active'      => 'boolean',
+    ];
+
+    // Status constants (optional, biar rapi)
+    public const STATUS_DRAFT     = 'draft';
+    public const STATUS_IN_REVIEW = 'in_review';
+    public const STATUS_APPROVED  = 'approved';
+    public const STATUS_OBSOLETE  = 'obsolete';
+
+    public function documentType(): BelongsTo
+    {
+        return $this->belongsTo(DocumentType::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(\App\Domains\Department\Models\Department::class);
+    }
+
+    public function prefixSetting(): BelongsTo
+    {
+        return $this->belongsTo(DocumentPrefixSetting::class, 'document_prefix_setting_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_document_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_document_id');
+    }
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(DocumentRevision::class);
+    }
+}

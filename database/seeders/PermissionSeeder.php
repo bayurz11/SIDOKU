@@ -40,11 +40,77 @@ class PermissionSeeder extends Seeder
             ['name' => 'departments.edit', 'display_name' => 'Edit Departments', 'description' => 'Can edit existing departments', 'group' => 'departments'],
             ['name' => 'departments.delete', 'display_name' => 'Delete Departments', 'description' => 'Can delete departments', 'group' => 'departments'],
 
-            // Document Categories permissions
-            ['name' => 'document_categories.view', 'display_name' => 'View Document Categories', 'description' => 'Can view document category list and details', 'group' => 'document_categories'],
-            ['name' => 'document_categories.create', 'display_name' => 'Create Document Categories', 'description' => 'Can create new document categories', 'group' => 'document_categories'],
-            ['name' => 'document_categories.edit', 'display_name' => 'Edit Document Categories', 'description' => 'Can edit existing document categories', 'group' => 'document_categories'],
-            ['name' => 'document_categories.delete', 'display_name' => 'Delete Document Categories', 'description' => 'Can delete document categories', 'group' => 'document_categories'],
+            // VIEW
+            [
+                'name' => 'documents.view',
+                'display_name' => 'View Documents',
+                'description' => 'Can view document list and details',
+                'group' => 'documents',
+            ],
+
+            // CREATE
+            [
+                'name' => 'documents.create',
+                'display_name' => 'Create Documents',
+                'description' => 'Can create new documents',
+                'group' => 'documents',
+            ],
+
+            // EDIT
+            [
+                'name' => 'documents.edit',
+                'display_name' => 'Edit Documents',
+                'description' => 'Can edit existing documents',
+                'group' => 'documents',
+            ],
+
+            // DELETE
+            [
+                'name' => 'documents.delete',
+                'display_name' => 'Delete Documents',
+                'description' => 'Can delete documents',
+                'group' => 'documents',
+            ],
+
+            // DOWNLOAD
+            [
+                'name' => 'documents.download',
+                'display_name' => 'Download Documents',
+                'description' => 'Can download attached document files',
+                'group' => 'documents',
+            ],
+
+            // APPROVE (Dokumen Resmi)
+            [
+                'name' => 'documents.approve',
+                'display_name' => 'Approve Documents',
+                'description' => 'Can approve document for official release',
+                'group' => 'documents',
+            ],
+
+            // REJECT / REVIEW
+            [
+                'name' => 'documents.review',
+                'display_name' => 'Review Documents',
+                'description' => 'Can review documents during approval workflow',
+                'group' => 'documents',
+            ],
+
+            // CHANGE STATUS (Draft → Approved → Obsolete)
+            [
+                'name' => 'documents.change_status',
+                'display_name' => 'Change Document Status',
+                'description' => 'Can update document status (draft, in-review, approved, obsolete)',
+                'group' => 'documents',
+            ],
+
+            // REVISION
+            [
+                'name' => 'documents.revision',
+                'display_name' => 'Create Document Revision',
+                'description' => 'Can create revisions of existing documents',
+                'group' => 'documents',
+            ],
 
             // Document Types permissions
             ['name' => 'document_types.view', 'display_name' => 'View Document Types', 'description' => 'Can view document type list and details', 'group' => 'document_types'],
