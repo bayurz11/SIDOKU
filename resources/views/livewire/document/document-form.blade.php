@@ -82,13 +82,23 @@
                                     Level Dokumen
                                 </label>
                                 <select wire:model.defer="level" id="level"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                    <option value="1">Level 1 - DOC</option>
-                                    <option value="2">Level 2 - SOP</option>
-                                    <option value="3">Level 3 - WI</option>
-                                    <option value="4">Level 4 - FORM</option>
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm  focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+
+                                    {{-- LEVEL 1 (Paling tinggi) --}}
+                                    <option value="1">Level 1 — Manual Keamanan Pangan / Food Safety Manual
+                                    </option>
+
+                                    {{-- LEVEL 2 --}}
+                                    <option value="2">Level 2 — SOP (Standard Operating Procedure)</option>
+
+                                    {{-- LEVEL 3 --}}
+                                    <option value="3">Level 3 — WI (Work Instruction)</option>
+
+                                    {{-- LEVEL 4 --}}
+                                    <option value="4">Level 4 — FORM & DOC (Dokumen Turunan)</option>
+
                                 </select>
+
                                 @error('level')
                                     <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                 @enderror
