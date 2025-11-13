@@ -114,24 +114,23 @@ class DocumentForm extends Component
      *  - $dispatch('openDocumentForm', 1)
      *  - $dispatch('openDocumentForm', { id: 1 })
      */
-    public function openForm($payload = null): void
+    public function openForm(?int $id = null): void
     {
         $this->resetErrorBag();
         $this->resetValidation();
         $this->loadLookups();
 
-        $this->showModal = true;
-        $this->isEditing = false;
-        $this->uploaded_file = null;
-        $this->document_code = null;
+        // default mode: create
+        $this->showModal         = true;
+        $this->isEditing         = false;
+        $this->uploaded_file     = null;
+        $this->document_code     = null;
         $this->existing_file_path = null;
 
-        $id = null;
-        if (is_array($payload)) {
-            $id = $payload['id'] ?? null;
-        } elseif (is_numeric($payload)) {
-            $id = (int) $payload;
-        }
+        // default field
+        $this->status    = 'draft';
+        $this->level     = 1;
+        $this->is_active = true;
 
         if ($id) {
             // MODE EDIT
@@ -155,9 +154,9 @@ class DocumentForm extends Component
             $this->document_code       = $doc->document_code;
             $this->existing_file_path  = $doc->file_path;
 
-            $this->isEditing = true;
+            $this->isEditing           = true;
         } else {
-            // MODE CREATE
+            // MODE CREATE → reset field, biarkan default di atas
             $this->reset([
                 'documentId',
                 'document_type_id',
@@ -167,19 +166,13 @@ class DocumentForm extends Component
                 'summary',
                 'effective_date',
                 'expired_date',
-                'level',
-                'status',
-                'is_active',
                 'document_code',
                 'existing_file_path',
                 'uploaded_file',
             ]);
-
-            $this->level     = 1;
-            $this->status    = 'draft';
-            $this->is_active = true;
         }
     }
+
 
     /**
      * Helper upload file ke disk 'public_path' (public/storage)
