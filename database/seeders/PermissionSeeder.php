@@ -111,6 +111,13 @@ class PermissionSeeder extends Seeder
                 'description' => 'Can create revisions of existing documents',
                 'group' => 'documents',
             ],
+            // IMPORT
+            [
+                'name' => 'documents.import',
+                'display_name' => 'Import Documents',
+                'description' => 'Can import documents from Excel files',
+                'group' => 'documents',
+            ],
 
             // Document Types permissions
             ['name' => 'document_types.view', 'display_name' => 'View Document Types', 'description' => 'Can view document type list and details', 'group' => 'document_types'],

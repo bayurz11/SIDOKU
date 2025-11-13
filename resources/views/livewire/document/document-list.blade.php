@@ -27,17 +27,19 @@
                 {{-- Import Daftar Induk Dokumen (Excel) --}}
                 @permission('documents.import')
                     <button wire:click="$dispatch('openDocumentImportForm')"
-                        class="inline-flex items-center px-4 py-2.5 text-xs font-semibold rounded-xl
-                               border border-emerald-500 text-emerald-700 bg-white
-                               hover:bg-emerald-50 hover:text-emerald-800 hover:shadow-sm
-                               transition-all duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4h16v4H4zM4 12h4v8H4zM10 12h10v8H10z" />
+                        class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semiboldbg-white border border-emerald-500 text-emerald-700hover:bg-emerald-50 hover:border-emerald-600 hover:text-emerald-800 hover:shadow-md active:scale-[0.98] transition-all duration-200">
+
+                        {{-- ICON BARU --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                         </svg>
+
                         Import Daftar Induk Dokumen
                     </button>
                 @endpermission
+
 
                 {{-- Add Document --}}
                 @permission('documents.create')
@@ -254,8 +256,9 @@
                                         class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200">
                                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
+                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                             </path>
                                         </svg>
                                         Edit
@@ -284,7 +287,7 @@
                                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         Delete
                                     </button>
