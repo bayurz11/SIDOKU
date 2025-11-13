@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - {{ config('app.name', 'SatuDesa') }}</title>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('public/css/app.css') }}" rel="stylesheet">
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('doc.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('public/doc.png') }}" type="image/png">
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #ffffff 100%);

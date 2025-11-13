@@ -7,11 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('doc.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('public/doc.png') }}" type="image/png">
 
     <title>{{ config('app.name', 'SIDOKU') }}</title>
 
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('public/css/app.css') }}" rel="stylesheet">
     @livewireScripts
     <script>
         document.addEventListener('livewire:navigated', () => {
