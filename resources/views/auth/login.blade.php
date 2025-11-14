@@ -217,24 +217,7 @@
                     </div>
                 </form>
 
-                <!-- Demo Accounts -->
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                    <div class="text-center">
-                        <p class="text-xs text-gray-500 mb-3">Demo Accounts</p>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-blue-50 p-3 rounded-lg text-center">
-                                <p class="text-xs font-semibold text-blue-900">Super Admin</p>
-                                <p class="text-xs text-blue-700">admin@example.com</p>
-                                <p class="text-xs text-blue-600">password</p>
-                            </div>
-                            <div class="bg-gray-50 p-3 rounded-lg text-center">
-                                <p class="text-xs font-semibold text-gray-900">Regular User</p>
-                                <p class="text-xs text-gray-700">user@example.com</p>
-                                <p class="text-xs text-gray-600">password</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Footer -->
