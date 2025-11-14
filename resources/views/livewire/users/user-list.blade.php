@@ -190,7 +190,7 @@
                         <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 @permission('users.edit')
-                                    <button wire:click="$dispatch('openUserForm', { userId: {{ $user->id }} })"
+                                    <button wire:click="$dispatch('openUserCreateForm', { userId: {{ $user->id }} })"
                                         class="group/btn inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 transform hover:scale-105">
                                         <svg class="w-4 h-4 mr-1.5 group-hover/btn:rotate-12 transition-transform duration-200"
                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
