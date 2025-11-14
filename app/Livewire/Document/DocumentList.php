@@ -56,12 +56,18 @@ class DocumentList extends Component
 
     protected $listeners = [
         'document:saved'    => 'refreshList',   // dari DocumentForm
-        'document:imported' => 'refreshList',   // <-- dari fitur Import Daftar Induk Dokumen (Excel)
+        'document:imported' => 'refreshList',   // dari fitur Import Daftar Induk Dokumen (Excel)
     ];
 
     public function mount(): void
     {
         $this->loadLookups();
+
+        // 🔒 Kalau user biasa (role "user"), kunci filterDepartment ke department dia
+        $user = auth()->user();
+        if ($user && $this->userHasBasicRole($user) && $user->department_id) {
+            $this->filterDepartment = $user->department_id;
+        }
     }
 
     protected function loadLookups(): void
@@ -118,7 +124,7 @@ class DocumentList extends Component
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField = $field;
+            $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
     }
@@ -151,6 +157,46 @@ class DocumentList extends Component
         $this->resetPage();
     }
 
+    /**
+     * Cek apakah user adalah role "user" (basic user)
+     */
+    protected function userHasBasicRole($user): bool
+    {
+        // Kalau pakai Spatie / Laratrust yang punya hasRole()
+        if (method_exists($user, 'hasRole') && $user->hasRole('user')) {
+            return true;
+        }
+
+        // Fallback: cek via relasi roles
+        if (method_exists($user, 'roles')) {
+            return $user->roles()
+                ->where('name', 'user')
+                ->exists();
+        }
+
+        return false;
+    }
+
+    /**
+     * Terapkan pembatasan department untuk role "user"
+     */
+    protected function applyDepartmentScope($query)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$this->userHasBasicRole($user)) {
+            // Bukan user biasa, biarkan lihat semua dokumen (tetap bisa difilter manual)
+            return $query;
+        }
+
+        // Kalau user tidak punya department_id, jangan batasi (atau bisa juga return whereNull kalau mau)
+        if (!$user->department_id) {
+            return $query;
+        }
+
+        return $query->where('department_id', $user->department_id);
+    }
+
     public function render()
     {
         $query = Document::query()
@@ -167,6 +213,9 @@ class DocumentList extends Component
             ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
             ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
             ->orderBy($this->sortField, $this->sortDirection);
+
+        // 🔒 Terapkan pembatasan department untuk role "user"
+        $query = $this->applyDepartmentScope($query);
 
         $data = $query->paginate($this->perPage);
 
