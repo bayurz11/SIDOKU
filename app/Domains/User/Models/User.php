@@ -4,9 +4,10 @@ namespace App\Domains\User\Models;
 
 use App\Shared\Traits\HasRoles;
 use App\Shared\Traits\HasPermissions;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -36,5 +37,9 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(\App\Domains\Department\Models\Department::class);
     }
 }
