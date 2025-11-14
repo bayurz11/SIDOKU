@@ -4,7 +4,7 @@
 
 <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
     {{-- HEADER --}}
-    <div class="bg-gradient-to-r from-blue-50 via-emerald-50 to-lime-50 px-6 py-6 border-b border-gray-200">
+    <div class="bg-gradient-to-r from-blue-50 via-green-50 to-lime-50 px-6 py-6 border-b border-gray-200">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <div
@@ -161,8 +161,7 @@
 
             <tbody class="bg-white divide-y divide-gray-100">
                 @forelse($data as $doc)
-                    <tr
-                        class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-emerald-50 transition-all duration-300">
+                    <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-green-50 transition-all duration-300">
                         {{-- No Dokumen --}}
                         <td class="px-6 py-5 whitespace-nowrap font-mono text-sm text-gray-900">
                             {{ $doc->document_code }}
@@ -240,7 +239,7 @@
                                     @if ($doc->file_path)
                                         <a href="{{ asset('public/storage/' . ltrim($doc->file_path, '/')) }}"
                                             target="_blank"
-                                            class="inline-flex items-center px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 hover:text-emerald-800 transition-all duration-200">
+                                            class="inline-flex items-center px-3 py-2 text-xs font-semibold text-green-700 bg-green-50 rounded-lg hover:bg-green-100 hover:text-green-800 transition-all duration-200">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -259,7 +258,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                             </path>
                                         </svg>
                                         Edit
@@ -289,7 +288,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         Delete
                                     </button>
