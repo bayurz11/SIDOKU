@@ -30,7 +30,7 @@ class DocumentImportForm extends Component
     public array $errors      = [];
 
     protected $listeners = [
-        'openDocumentImportForm' => 'openModal',
+        'openDocumentImportForm' => 'openModalinput',
     ];
 
     protected function rules(): array
@@ -43,7 +43,7 @@ class DocumentImportForm extends Component
     /**
      * Buka modal import
      */
-    public function openModal(): void
+    public function openModalinput(): void
     {
         $this->resetErrorBag();
         $this->resetValidation();
