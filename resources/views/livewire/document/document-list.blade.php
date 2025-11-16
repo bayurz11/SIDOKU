@@ -28,8 +28,7 @@
 
                 @permission('documents.import')
                     <button wire:click="$dispatch('openDocumentImportForm')"
-                        class="group inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 border-green-600 text-green-700 bg-whitehover:text-white hover:border-transparent hover:bg-gradient-to-r hover:from-emerald-500 hover:via-green-500 hover:to-lime-500 transition-all duration-300 hover:shadow-lg active:scale-[0.97]">
-
+                        class="group inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 border-green-600 text-green-700 bg-white hover:text-white hover:border-transparent hover:bg-gradient-to-r hover:from-emerald-500 hover:via-green-500 hover:to-lime-500 transition-all duration-300 hover:shadow-lg active:scale-[0.97]">
                         {{-- ICON Import (Outline, tidak berubah) --}}
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor"
@@ -258,7 +257,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                             </path>
                                         </svg>
                                         Edit
@@ -288,7 +287,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         Delete
                                     </button>
