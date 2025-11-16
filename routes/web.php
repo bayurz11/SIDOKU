@@ -14,21 +14,18 @@ Route::get('/', function () {
 
 // Dashboard Route (redirect /home to /dashboard)
 Route::get('/dashboard', function () {
-
     $recentDocuments = Document::query()
         ->with(['documentType', 'department', 'updatedBy', 'createdBy'])
         ->orderByDesc('updated_at')
-        ->limit(2)
+        ->limit(5)
         ->get();
 
     return view('dashboard', [
         'stats' => [
-            'recent_documents' => $recentDocuments
-        ]
+            'recent_documents' => $recentDocuments,
+        ],
     ]);
-})
-    ->middleware(['auth'])
-    ->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 //  Management Department
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
