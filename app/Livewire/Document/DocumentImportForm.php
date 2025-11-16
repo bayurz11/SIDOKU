@@ -11,8 +11,7 @@ use App\Domains\Department\Models\Department;
 use App\Domains\Document\Services\DocumentNumberService;
 use App\Shared\Services\LoggerService;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel; // pastikan package maatwebsite/excel sudah terinstall
+use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 
 class DocumentImportForm extends Component
@@ -27,10 +26,12 @@ class DocumentImportForm extends Component
     // statistik sederhana
     public int $importedCount = 0;
     public int $skippedCount  = 0;
-    public array $errors      = [];
+
+    // ⛔ JANGAN pakai nama $errors (tabrakan dengan Laravel)
+    public array $importErrors = [];
 
     protected $listeners = [
-        'openDocumentImportForm' => 'openModalinput',
+        'openDocumentImportForm' => 'openModal',
     ];
 
     protected function rules(): array
@@ -43,7 +44,7 @@ class DocumentImportForm extends Component
     /**
      * Buka modal import
      */
-    public function openModalinput(): void
+    public function openModal(): void
     {
         $this->resetErrorBag();
         $this->resetValidation();
@@ -52,7 +53,7 @@ class DocumentImportForm extends Component
         $this->excel_file     = null;
         $this->importedCount  = 0;
         $this->skippedCount   = 0;
-        $this->errors         = [];
+        $this->importErrors   = [];
     }
 
     public function closeModal(): void
@@ -64,7 +65,7 @@ class DocumentImportForm extends Component
             'excel_file',
             'importedCount',
             'skippedCount',
-            'errors',
+            'importErrors',
             'showModal',
         ]);
 
@@ -74,14 +75,14 @@ class DocumentImportForm extends Component
     /**
      * Import data dari Excel
      *
-     * Asumsi header kolom di sheet pertama:
-     *  - document_code      (optional, kalau kosong akan digenerate otomatis)
+     * Header kolom di sheet pertama:
+     *  - document_code      (optional)
      *  - title              (wajib)
-     *  - document_type      (nama DocumentType, misal: "SOP", "WI", "Manual Keamanan Pangan")
-     *  - department         (nama Department, misal: "Quality System", "QC", "HR")
-     *  - level              (angka: 1,2,3,4...)
-     *  - status             (draft, in_review, approved, obsolete)
-     *  - effective_date     (format: Y-m-d atau Excel date)
+     *  - document_type      (nama DocumentType)
+     *  - department         (nama Department)
+     *  - level              (1,2,3,...)
+     *  - status             (draft/in_review/approved/obsolete)
+     *  - effective_date     (Y-m-d atau Excel date)
      *  - expired_date       (optional)
      *  - summary            (optional)
      */
@@ -95,7 +96,7 @@ class DocumentImportForm extends Component
 
         $this->importedCount = 0;
         $this->skippedCount  = 0;
-        $this->errors        = [];
+        $this->importErrors  = [];
 
         // baca excel menggunakan maatwebsite/excel
         $sheets = Excel::toArray([], $fullPath);
@@ -106,7 +107,7 @@ class DocumentImportForm extends Component
             return;
         }
 
-        // anggap baris pertama adalah header
+        // baris pertama = header
         $headerRow = array_map(function ($v) {
             return strtolower(trim((string) $v));
         }, $rows[0]);
@@ -127,7 +128,6 @@ class DocumentImportForm extends Component
         $idxExpDate      = $col('expired_date');
         $idxSummary      = $col('summary');
 
-        // minimal: harus ada title dan document_type
         if (is_null($idxTitle) || is_null($idxDocType)) {
             $this->addError('excel_file', 'Kolom minimal "title" dan "document_type" harus ada di header.');
             return;
@@ -139,7 +139,7 @@ class DocumentImportForm extends Component
                 continue;
             }
 
-            // jika baris kosong, skip
+            // skip baris kosong
             if (!array_filter($row, fn($v) => trim((string) $v) !== '')) {
                 continue;
             }
@@ -149,7 +149,7 @@ class DocumentImportForm extends Component
 
                 if ($title === '') {
                     $this->skippedCount++;
-                    $this->errors[] = "Baris " . ($i + 1) . ": title kosong, di-skip.";
+                    $this->importErrors[] = "Baris " . ($i + 1) . ": title kosong, di-skip.";
                     continue;
                 }
 
@@ -159,7 +159,7 @@ class DocumentImportForm extends Component
                 $documentType = DocumentType::where('name', $docTypeName)->first();
                 if (!$documentType) {
                     $this->skippedCount++;
-                    $this->errors[] = "Baris " . ($i + 1) . ": Document type '{$docTypeName}' tidak ditemukan.";
+                    $this->importErrors[] = "Baris " . ($i + 1) . ": Document type '{$docTypeName}' tidak ditemukan.";
                     continue;
                 }
 
@@ -168,7 +168,7 @@ class DocumentImportForm extends Component
                     $department = Department::where('name', $deptName)->first();
                     if (!$department) {
                         $this->skippedCount++;
-                        $this->errors[] = "Baris " . ($i + 1) . ": Department '{$deptName}' tidak ditemukan.";
+                        $this->importErrors[] = "Baris " . ($i + 1) . ": Department '{$deptName}' tidak ditemukan.";
                         continue;
                     }
                 }
@@ -201,11 +201,10 @@ class DocumentImportForm extends Component
 
                 $summary = $idxSummary !== null ? (string) ($row[$idxSummary] ?? null) : null;
 
-                // Document code: kalau kolom document_code kosong → generate
+                // Document code: kalau manual kosong → generate
                 $manualCode = $idxDocumentCode !== null ? trim((string) ($row[$idxDocumentCode] ?? '')) : '';
 
                 if ($manualCode === '') {
-                    // generate nomor berdasarkan prefix setting
                     $generated = DocumentNumberService::generate(
                         $documentType->id,
                         $department?->id,
@@ -215,7 +214,7 @@ class DocumentImportForm extends Component
                     $prefixId     = $generated['prefix_setting_id'] ?? null;
                 } else {
                     $documentCode = $manualCode;
-                    $prefixId     = null; // atau bisa dicari kalau mau strict
+                    $prefixId     = null;
                 }
 
                 Document::create([
@@ -239,11 +238,11 @@ class DocumentImportForm extends Component
                 $this->importedCount++;
             } catch (\Throwable $e) {
                 $this->skippedCount++;
-                $this->errors[] = "Baris " . ($i + 1) . ": " . $e->getMessage();
+                $this->importErrors[] = "Baris " . ($i + 1) . ": " . $e->getMessage();
             }
         }
 
-        // optional: hapus file temp
+        // hapus file temp
         Storage::disk('local')->delete($path);
 
         LoggerService::logUserAction('import', 'Document', null, [
@@ -252,7 +251,7 @@ class DocumentImportForm extends Component
         ]);
 
         $this->showSuccessToast("Import selesai. Berhasil: {$this->importedCount}, dilewati: {$this->skippedCount}.");
-        $this->dispatch('document:saved'); // supaya list refresh
+        $this->dispatch('document:saved'); // supaya DocumentList refresh
     }
 
     /**
@@ -264,7 +263,7 @@ class DocumentImportForm extends Component
             return null;
         }
 
-        // kalau numeric (excel serialized date)
+        // numeric (excel serialized date)
         if (is_numeric($value)) {
             try {
                 return Carbon::instance(
@@ -275,7 +274,7 @@ class DocumentImportForm extends Component
             }
         }
 
-        // kalau string normal
+        // string normal
         try {
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Throwable $e) {
