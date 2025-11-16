@@ -316,8 +316,8 @@
                         </div>
                     </div>
                     <div class="p-6 space-y-3">
-                        @permission('users.create')
-                            <a href="{{ route('users.index') }}"
+                        @permission('documents.create')
+                            <a href="{{ route('documents.index') }}"
                                 class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
                                 <div
                                     class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-4 group-hover:shadow-lg transition-shadow duration-300">
@@ -328,8 +328,8 @@
                                     </svg>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="font-semibold text-gray-900 group-hover:text-blue-800">Add New User</p>
-                                    <p class="text-xs text-gray-500 group-hover:text-blue-600">Create and manage users</p>
+                                    <p class="font-semibold text-gray-900 group-hover:text-blue-800">Add New Document</p>
+                                    <p class="text-xs text-gray-500 group-hover:text-blue-600">Create and manage documents</p>
                                 </div>
                                 <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all duration-300"
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
