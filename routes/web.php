@@ -18,7 +18,7 @@ Route::get('/dashboard', function () {
     $recentDocuments = Document::query()
         ->with(['documentType', 'department', 'updatedBy', 'createdBy'])
         ->orderByDesc('updated_at')
-        ->limit(5)
+        ->limit(2)
         ->get();
 
     return view('dashboard', [
@@ -29,6 +29,7 @@ Route::get('/dashboard', function () {
 })
     ->middleware(['auth'])
     ->name('dashboard');
+
 //  Management Department
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/department', function () {

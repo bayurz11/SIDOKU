@@ -546,8 +546,13 @@
                             </div>
                         </div>
                     </div>
+                    @php
+                        /** @var \Illuminate\Support\Collection|\App\Domains\Document\Models\Document[] $recentDocuments */
+                        $recentDocuments = $stats['recent_documents'] ?? collect();
+                    @endphp
+
                     <div class="divide-y divide-gray-100">
-                        @foreach ($stats['recent_documents'] as $doc)
+                        @forelse ($recentDocuments as $doc)
                             @php
                                 $editor = $doc->updatedBy ?? $doc->createdBy;
                                 $editorName = $editor?->name ?? 'System';
@@ -583,7 +588,7 @@
                                                 {{ $doc->document_code }}
                                             </p>
 
-                                            {{-- Type + Dept --}}
+                                            {{-- Type + Dept + Status --}}
                                             <div class="flex flex-wrap items-center gap-2 mt-1">
                                                 @if ($doc->documentType)
                                                     <span
@@ -599,7 +604,6 @@
                                                     </span>
                                                 @endif
 
-                                                {{-- Status pill kecil --}}
                                                 @php
                                                     $status = $doc->status;
                                                     $map = [
@@ -630,15 +634,20 @@
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at->diffForHumans() }}
+                                            {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at?->diffForHumans() }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="px-6 py-6 text-center text-sm text-gray-500">
+                                Belum ada dokumen yang diperbarui.
+                            </div>
+                        @endforelse
                     </div>
+
 
                     @permission('documents.view')
                         <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
