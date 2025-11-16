@@ -1,61 +1,81 @@
 <div>
     @if ($showModal)
-        <div class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden">
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center"
+            wire:click.self="closeModal">
 
+            {{-- WRAPPER KOTAK (mirip DocumentForm) --}}
+            <div class="relative top-8 mx-auto p-6 border w-full max-w-xl shadow-lg rounded-md bg-white">
                 {{-- HEADER --}}
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-5 h-5 text-white">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 16.5V9.75m0 6.75 2.25-2.25M12 16.5l-2.25-2.25M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-6.63a2.25 2.25 0 0 0-.659-1.591l-6.87-6.87A2.25 2.25 0 0 0 12.63 1.5H6.75A2.25 2.25 0 0 0 4.5 3.75v13.5z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">
+                                Import Daftar Induk Dokumen
+                            </h2>
+                            <p class="text-xs text-gray-600 mt-1">
+                                Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak dokumen
+                                sekaligus.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="button" wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- INFO TEMPLATE + DOWNLOAD --}}
                 <div
-                    class="px-6 py-4 bg-gradient-to-r from-emerald-50 via-green-50 to-lime-50 border-b border-emerald-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md">
+                    class="rounded-xl border border-dashed border-emerald-200 bg-emerald-50/60 px-4 py-3 text-xs text-emerald-900 mb-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="font-semibold mb-1">Format kolom yang didukung:</p>
+                            <ul class="list-disc list-inside space-y-0.5">
+                                <li><code class="font-mono text-[11px]">document_code</code> (opsional)</li>
+                                <li><code class="font-mono text-[11px]">title</code> (wajib)</li>
+                                <li><code class="font-mono text-[11px]">document_type</code> (nama di Master Document
+                                    Type)</li>
+                                <li><code class="font-mono text-[11px]">department</code> (nama di Master Department)
+                                </li>
+                                <li><code class="font-mono text-[11px]">level</code>, <code
+                                        class="font-mono text-[11px]">status</code></li>
+                                <li><code class="font-mono text-[11px]">effective_date</code>, <code
+                                        class="font-mono text-[11px]">expired_date</code></li>
+                                <li><code class="font-mono text-[11px]">summary</code> (opsional)</li>
+                            </ul>
+                        </div>
+
+                        {{-- Tombol download template --}}
+                        <div class="shrink-0">
+                            <a href="#"
+                                class="inline-flex items-center px-3 py-2 rounded-lg text-[11px] font-semibold
+                                       text-emerald-700 bg-white border border-emerald-200
+                                       hover:bg-emerald-600 hover:text-white hover:border-emerald-600
+                                       transition-all duration-200 shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
+                                    stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 16.5V9.75m0 6.75 2.25-2.25M12 16.5l-2.25-2.25M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-6.63a2.25 2.25 0 0 0-.659-1.591l-6.87-6.87A2.25 2.25 0 0 0 12.63 1.5H6.75A2.25 2.25 0 0 0 4.5 3.75v13.5z" />
                                 </svg>
-                            </div>
-                            <div>
-                                <h2 class="text-lg font-bold text-gray-900">
-                                    Import Daftar Induk Dokumen
-                                </h2>
-                                <p class="text-xs text-gray-600 mt-0.5">
-                                    Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak dokumen
-                                    sekaligus.
-                                </p>
-                            </div>
+                                Download Template
+                            </a>
                         </div>
-
-                        <button wire:click="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                            <span class="sr-only">Close</span>
-                            ✕
-                        </button>
                     </div>
                 </div>
 
-                {{-- BODY --}}
-                <div class="px-6 py-5 space-y-4">
-
-                    {{-- Info template --}}
-                    <div
-                        class="rounded-xl border border-dashed border-emerald-200 bg-emerald-50/60 px-4 py-3 text-xs text-emerald-900">
-                        <p class="font-semibold mb-1">Format kolom yang didukung:</p>
-                        <ul class="list-disc list-inside space-y-0.5">
-                            <li><code class="font-mono text-[11px]">document_code</code> (opsional)</li>
-                            <li><code class="font-mono text-[11px]">title</code> (wajib)</li>
-                            <li><code class="font-mono text-[11px]">document_type</code> (nama di Master Document Type)
-                            </li>
-                            <li><code class="font-mono text-[11px]">department</code> (nama di Master Department)</li>
-                            <li><code class="font-mono text-[11px]">level</code>, <code
-                                    class="font-mono text-[11px]">status</code></li>
-                            <li><code class="font-mono text-[11px]">effective_date</code>, <code
-                                    class="font-mono text-[11px]">expired_date</code></li>
-                            <li><code class="font-mono text-[11px]">summary</code> (opsional)</li>
-                        </ul>
-                    </div>
-
-                    {{-- Input file --}}
+                {{-- INPUT FILE --}}
+                <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">
                             File Excel <span class="text-red-500">*</span>
@@ -82,7 +102,7 @@
                         @endif
                     </div>
 
-                    {{-- Hasil / error --}}
+                    {{-- HASIL / ERROR --}}
                     @if ($importedCount || $skippedCount || $importErrors)
                         <div class="mt-2 space-y-2">
                             <div class="flex items-center justify-between text-xs">
@@ -107,21 +127,20 @@
                             @endif
                         </div>
                     @endif
-
                 </div>
 
-                {{-- FOOTER --}}
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                {{-- FOOTER BUTTONS --}}
+                <div class="flex justify-end space-x-3 pt-6 mt-4 border-t border-gray-200">
                     <button wire:click="closeModal" type="button"
-                        class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 transition-colors">
+                        class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-colors">
                         Batal
                     </button>
 
                     <button wire:click="import" wire:loading.attr="disabled" wire:target="import,excel_file"
                         class="inline-flex items-center px-5 py-2.5 rounded-xl text-xs font-semibold text-white
-                                   bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500
-                                   hover:from-emerald-600 hover:via-green-600 hover:to-lime-600
-                                   shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+                               bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500
+                               hover:from-emerald-600 hover:via-green-600 hover:to-lime-600
+                               shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
                         <svg wire:loading wire:target="import" class="animate-spin w-4 h-4 mr-2" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                 stroke-width="4"></circle>
