@@ -76,8 +76,7 @@
              <div x-data="{ open: {{ request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') ? 'true' : 'false' }} }" class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
 
                  <button @click="open = !open" aria-controls="menu-document" :aria-expanded="open.toString()"
-                     class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200
-        {{ request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                     class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
 
                      @if (request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*'))
                          <span class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
@@ -85,7 +84,7 @@
 
                      <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path stroke-linecap="round" stroke-linejoin="round"
-                             d="M3 7.5A2.25 2.25 0 015.25 5.25h13.5A2.25 2.25 0 0121 7.5v9a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 16.5v-9zM7.5 9h9m-9 3.75h6" />
+                             d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                      </svg>
 
                      <span>Dokumen</span>
@@ -100,24 +99,21 @@
                  <div id="menu-document" x-show="open" x-collapse class="mt-1 pl-10 space-y-1 overflow-hidden">
                      @permission('documents.view')
                          <a href="{{ route('documents.index') }}"
-                             class="block rounded-md px-4 py-2 text-sm
-                {{ request()->routeIs('documents.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                             class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('documents.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                              Document List
                          </a>
                      @endpermission
 
                      @permission('documents.approve')
                          <a href="#"
-                             class="block rounded-md px-4 py-2 text-sm
-                {{ request()->routeIs('document_approvals.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                             class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_approvals.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                              Approval Queue
                          </a>
                      @endpermission
 
                      @permission('documents.revision')
                          <a href="#"
-                             class="block rounded-md px-4 py-2 text-sm
-                {{ request()->routeIs('document_revisions.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                             class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_revisions.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                              Document Revisions
                          </a>
                      @endpermission
