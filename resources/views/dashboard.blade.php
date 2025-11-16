@@ -524,7 +524,7 @@
                 </div>
             </div>
 
-            <!-- Modern Recent Users -->
+            <!-- Modern Recent Documents -->
             <div class="lg:col-span-2">
                 <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
                     <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
@@ -538,7 +538,7 @@
                                             d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-semibold text-gray-900">Recent Users</h3>
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Documents</h3>
                             </div>
                             <div class="flex items-center space-x-2 text-sm text-gray-500">
                                 <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
@@ -547,64 +547,104 @@
                         </div>
                     </div>
                     <div class="divide-y divide-gray-100">
-                        @foreach ($stats['recent_users'] as $user)
+                        @foreach ($stats['recent_documents'] as $doc)
+                            @php
+                                $editor = $doc->updatedBy ?? $doc->createdBy;
+                                $editorName = $editor?->name ?? 'System';
+                                $editorEmail = $editor?->email ?? '-';
+                                $initial = strtoupper(substr($editorName, 0, 2));
+                            @endphp
+
                             <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
                                 <div class="flex items-center justify-between">
+                                    {{-- Kiri: info dokumen --}}
                                     <div class="flex items-center space-x-4">
+                                        {{-- Avatar editor --}}
                                         <div class="relative">
                                             <div
                                                 class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-                                                <span
-                                                    class="text-sm font-bold text-white">{{ substr($user->name, 0, 2) }}</span>
+                                                <span class="text-sm font-bold text-white">{{ $initial }}</span>
                                             </div>
-                                            @if ($user->is_active)
+                                            @if ($doc->is_active)
                                                 <div
                                                     class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
                                                 </div>
                                             @endif
                                         </div>
+
                                         <div class="flex-1">
-                                            <p class="text-sm font-semibold text-gray-900">{{ $user->name }}</p>
-                                            <p class="text-sm text-gray-500">{{ $user->email }}</p>
-                                            <div class="flex items-center space-x-2 mt-1">
-                                                @foreach ($user->roles->take(2) as $role)
+                                            {{-- Judul dokumen --}}
+                                            <p class="text-sm font-semibold text-gray-900">
+                                                {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
+                                            </p>
+
+                                            {{-- Nomor dokumen --}}
+                                            <p class="text-xs font-mono text-gray-600 mt-0.5">
+                                                {{ $doc->document_code }}
+                                            </p>
+
+                                            {{-- Type + Dept --}}
+                                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                                                @if ($doc->documentType)
                                                     <span
-                                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                                                        {{ $role->display_name }}
-                                                    </span>
-                                                @endforeach
-                                                @if ($user->roles->count() > 2)
-                                                    <span
-                                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                                                        +{{ $user->roles->count() - 2 }} more
+                                                        class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-blue-100 text-blue-800">
+                                                        {{ $doc->documentType->name }}
                                                     </span>
                                                 @endif
+
+                                                @if ($doc->department)
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-emerald-100 text-emerald-800">
+                                                        {{ $doc->department->name }}
+                                                    </span>
+                                                @endif
+
+                                                {{-- Status pill kecil --}}
+                                                @php
+                                                    $status = $doc->status;
+                                                    $map = [
+                                                        'draft' => 'bg-gray-100 text-gray-700',
+                                                        'in_review' => 'bg-yellow-100 text-yellow-800',
+                                                        'approved' => 'bg-green-100 text-green-800',
+                                                        'obsolete' => 'bg-red-100 text-red-800',
+                                                    ];
+                                                    $cls = $map[$status] ?? 'bg-gray-100 text-gray-700';
+                                                @endphp
+                                                <span
+                                                    class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold {{ $cls }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
+
+                                    {{-- Kanan: info editor + waktu update --}}
                                     <div class="flex flex-col items-end space-y-1">
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $user->is_active ? 'bg-green-100 text-green-800 shadow-green-100' : 'bg-red-100 text-red-800 shadow-red-100' }} shadow-sm">
-                                            {{ $user->is_active ? 'Active' : 'Inactive' }}
+                                        <span class="text-xs font-semibold text-gray-800">
+                                            {{ $editorName }}
                                         </span>
-                                        <span class="text-xs text-gray-500 flex items-center">
+                                        <span class="text-[11px] text-gray-500">
+                                            {{ $editorEmail }}
+                                        </span>
+                                        <span class="text-[11px] text-gray-500 flex items-center mt-1">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
-                                            {{ $user->created_at->diffForHumans() }}
+                                            {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at->diffForHumans() }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
-                    @permission('users.view')
+
+                    @permission('documents.view')
                         <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
-                            <a href="{{ route('users.index') }}"
+                            <a href="{{ route('documents.index') }}"
                                 class="group flex items-center justify-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                                <span>View all users</span>
+                                <span>View all documents</span>
                                 <svg class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

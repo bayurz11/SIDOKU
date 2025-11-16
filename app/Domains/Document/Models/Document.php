@@ -2,9 +2,10 @@
 
 namespace App\Domains\Document\Models;
 
+use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Document extends Model
 {
@@ -67,5 +68,15 @@ class Document extends Model
     public function revisions(): HasMany
     {
         return $this->hasMany(DocumentRevision::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

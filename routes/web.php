@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use App\Domains\Document\Models\Document;
 
 
 Route::get('/', function () {
@@ -13,9 +14,21 @@ Route::get('/', function () {
 
 // Dashboard Route (redirect /home to /dashboard)
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
 
+    $recentDocuments = Document::query()
+        ->with(['documentType', 'department', 'updatedBy', 'createdBy'])
+        ->orderByDesc('updated_at')
+        ->limit(5)
+        ->get();
+
+    return view('dashboard', [
+        'stats' => [
+            'recent_documents' => $recentDocuments
+        ]
+    ]);
+})
+    ->middleware(['auth'])
+    ->name('dashboard');
 //  Management Department
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/department', function () {
