@@ -371,11 +371,6 @@
                     sidebarOverlay.addEventListener('click', toggleSidebar);
                 }
             });
-            document.addEventListener('alpine:init', () => {
-                Alpine.store('sidebarMenu', {
-                    open: "{{ $activeMenu }}"
-                });
-            });
         </script>
     @else
         <!-- Not authenticated content -->

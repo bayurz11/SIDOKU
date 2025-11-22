@@ -1,4 +1,19 @@
-<div id="sidebar" x-data
+@php
+    // Tentukan menu yang aktif untuk dibuka awal
+    $activeMenu = null;
+    if (request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*')) {
+        $activeMenu = 'master';
+    } elseif (request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*')) {
+        $activeMenu = 'document';
+    }
+@endphp
+
+<div id="sidebar" x-data="{
+    open: @json($activeMenu),
+    toggle(menu) {
+        this.open = (this.open === menu) ? null : menu;
+    }
+}"
     class="sidebar-toggle fixed inset-y-0 left-0 z-50 w-64 sidebar-gradient shadow-xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
 
     <!-- Sidebar Header -->
@@ -30,8 +45,8 @@
 
             {{-- MENU: MASTER DATA --}}
             <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
-                <button @click="$store.sidebarMenu.open = $store.sidebarMenu.open === 'master' ? null : 'master'"
-                    aria-controls="menu-master" :aria-expanded="($store.sidebarMenu.open === 'master').toString()"
+                <button @click="toggle('master')" aria-controls="menu-master"
+                    :aria-expanded="(open === 'master').toString()"
                     class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
 
                     @if (request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*'))
@@ -45,14 +60,14 @@
 
                     <span>Master Data</span>
 
-                    <svg :class="{ 'rotate-180': $store.sidebarMenu.open === 'master' }"
+                    <svg :class="{ 'rotate-180': open === 'master' }"
                         class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
 
-                <div id="menu-master" x-show="$store.sidebarMenu.open === 'master'" x-collapse
+                <div id="menu-master" x-show="open === 'master'" x-collapse
                     class="mt-1 pl-10 space-y-1 overflow-hidden">
                     @permission('departments.view')
                         <a href="{{ route('department.index') }}"
@@ -79,8 +94,8 @@
 
             {{-- MENU: DOKUMEN --}}
             <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
-                <button @click="$store.sidebarMenu.open = $store.sidebarMenu.open === 'document' ? null : 'document'"
-                    aria-controls="menu-document" :aria-expanded="($store.sidebarMenu.open === 'document').toString()"
+                <button @click="toggle('document')" aria-controls="menu-document"
+                    :aria-expanded="(open === 'document').toString()"
                     class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
 
                     @if (request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*'))
@@ -94,14 +109,14 @@
 
                     <span>Dokumen</span>
 
-                    <svg :class="{ 'rotate-180': $store.sidebarMenu.open === 'document' }"
+                    <svg :class="{ 'rotate-180': open === 'document' }"
                         class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
 
-                <div id="menu-document" x-show="$store.sidebarMenu.open === 'document'" x-collapse
+                <div id="menu-document" x-show="open === 'document'" x-collapse
                     class="mt-1 pl-10 space-y-1 overflow-hidden">
                     @permission('documents.view')
                         <a href="{{ route('documents.index') }}"
