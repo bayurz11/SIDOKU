@@ -4,36 +4,40 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4"
             wire:click.self="closeModal">
 
-            {{-- WRAPPER KOTAK --}}
+            {{-- KARTU MODAL --}}
             <div
-                class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-emerald-100
-                       transform transition-all duration-200 ease-out
-                       max-h-[90vh] overflow-y-auto">
+                class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-gray-100
+                       max-h-[90vh] overflow-y-auto transform transition-all duration-200 ease-out">
 
                 {{-- HEADER --}}
-                <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-emerald-50">
+                <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100">
                     <div class="flex items-start justify-between gap-3">
+                        {{-- KIRI: ICON + TEKS --}}
                         <div class="flex items-start gap-3">
+                            {{-- ICON BULAT LEMBUT --}}
                             <div
-                                class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600
-                                       flex items-center justify-center shadow-md flex-shrink-0">
+                                class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100
+                                       flex items-center justify-center shadow-sm border border-emerald-100 flex-shrink-0">
+                                {{-- ICON IMPORT (VERSI BARU) --}}
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
+                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-emerald-600">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 16.5V9.75m0 6.75 2.25-2.25M12 16.5l-2.25-2.25M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-6.63a2.25 2.25 0 0 0-.659-1.591l-6.87-6.87A2.25 2.25 0 0 0 12.63 1.5H6.75A2.25 2.25 0 0 0 4.5 3.75v13.5z" />
+                                        d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
-                            <div class="space-y-1">
-                                <h2 class="text-base sm:text-lg font-bold text-gray-900">
+
+                            <div class="space-y-0.5">
+                                <h2 class="text-lg font-bold text-gray-900 leading-tight">
                                     Import Daftar Induk Dokumen
                                 </h2>
-                                <p class="text-[11px] sm:text-xs text-gray-600 leading-relaxed">
+                                <p class="text-xs text-gray-600">
                                     Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak dokumen
                                     sekaligus.
                                 </p>
                             </div>
                         </div>
 
+                        {{-- TOMBOL CLOSE --}}
                         <button type="button" wire:click="closeModal"
                             class="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +76,7 @@
                                 </ul>
                             </div>
 
-                            {{-- Tombol download template --}}
+                            {{-- TOMBOL DOWNLOAD TEMPLATE --}}
                             <div class="shrink-0">
                                 <a href="{{ route('documents.import-template') }}"
                                     class="inline-flex items-center px-3 py-2 rounded-lg text-[11px] font-semibold
@@ -145,8 +149,8 @@
                     @endif
                 </div>
 
-                {{-- FOOTER BUTTONS --}}
-                <div class="px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 bg-gray-50/60">
+                {{-- FOOTER --}}
+                <div class="px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 bg-gray-50/70">
                     <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2">
                         <button wire:click="closeModal" type="button"
                             class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-medium
@@ -155,10 +159,10 @@
                             Batal
                         </button>
 
+                        {{-- TOMBOL IMPORT HIJAU SOLID --}}
                         <button wire:click="import" wire:loading.attr="disabled" wire:target="import,excel_file"
                             class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-xs font-semibold text-white
-                                   bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500
-                                   hover:from-emerald-600 hover:via-green-600 hover:to-lime-600
+                                   bg-emerald-600 hover:bg-emerald-700
                                    shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300
                                    disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg wire:loading wire:target="import" class="animate-spin w-4 h-4 mr-2"
