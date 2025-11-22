@@ -216,6 +216,8 @@
                                                             Document Category Management
                                                         @elseif(request()->routeIs('document_prefix_settings.*'))
                                                             Document Prefix Settings
+                                                        @elseif(request()->routeIs('documents.*'))
+                                                            Document
                                                         @else
                                                             {{ ucwords(str_replace(['-', '_'], ' ', request()->route()->getName())) }}
                                                         @endif
