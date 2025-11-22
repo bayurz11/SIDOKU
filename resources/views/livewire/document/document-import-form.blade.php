@@ -100,27 +100,42 @@
                             File Excel <span class="text-red-500">*</span>
                         </label>
 
-                        <input type="file" wire:model="excel_file" accept=".xlsx,.xls"
-                            class="block w-full text-sm text-gray-700
-                                   file:mr-4 file:py-2.5 file:px-4
-                                   file:rounded-lg file:border-0
-                                   file:text-xs file:font-semibold
-                                   file:bg-emerald-50 file:text-emerald-700
-                                   hover:file:bg-emerald-100
-                                   border border-gray-300 rounded-xl
-                                   focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        {{-- DROPZONE AREA --}}
+                        <label
+                            class="flex flex-col items-center justify-center w-full bg-white border-2 border-dashed border-emerald-300 rounded-xl p-5 cursor-pointer transition hover:bg-emerald-50 hover:border-emerald-400">
 
+                            {{-- ICON --}}
+                            <div class="flex flex-col items-center text-emerald-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 16.5v-9m-3 3 3-3 3 3M6.75 19.5h10.5a2.25 2.25 0 0 0 2.25-2.25V9A2.25 2.25 0 0 0 17.25 6.75h-10.5A2.25 2.25 0 0 0 4.5 9v8.25A2.25 2.25 0 0 0 6.75 19.5Z" />
+                                </svg>
+                                <p class="text-sm font-medium">Klik untuk memilih file Excel</p>
+                                <p class="text-[11px] text-gray-500 mt-1">Format yang didukung: .xlsx, .xls (maks 10 MB)
+                                </p>
+                            </div>
+
+                            {{-- INPUT FILE ASLI (DISAMARKAN) --}}
+                            <input type="file" wire:model="excel_file" accept=".xlsx,.xls" class="hidden" />
+                        </label>
+
+                        {{-- TAMPILKAN PESAN ERROR --}}
                         @error('excel_file')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
 
+                        {{-- TAMPILKAN NAMA FILE --}}
                         @if ($excel_file)
-                            <p class="mt-1 text-[11px] text-gray-500">
+                            <p class="mt-2 text-[12px] text-gray-700 bg-gray-50 border rounded-lg px-3 py-2">
                                 File terpilih:
-                                <span class="font-medium break-all">{{ $excel_file->getClientOriginalName() }}</span>
+                                <span class="font-medium break-all text-emerald-600">
+                                    {{ $excel_file->getClientOriginalName() }}
+                                </span>
                             </p>
                         @endif
                     </div>
+
 
                     {{-- HASIL / ERROR --}}
                     @if ($importedCount || $skippedCount || $importErrors)
