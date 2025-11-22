@@ -90,9 +90,20 @@ class DocumentImportForm extends Component
     {
         $this->validate();
 
-        // simpan file sementara
-        $path = $this->excel_file->store('temp/imports', 'local');
-        $fullPath = storage_path('app/' . $path);
+        // ✅ Pastikan folder imports ada (dibuat jika belum ada)
+        Storage::disk('local')->makeDirectory('imports');
+
+        // ✅ Simpan file ke storage/app/imports (bukan temp/imports lagi)
+        $path = $this->excel_file->store('imports', 'local');
+
+        // ✅ Ambil full path yang benar di disk "local"
+        $fullPath = Storage::disk('local')->path($path);
+
+        // Safety check kalau file benar-benar ada
+        if (!Storage::disk('local')->exists($path)) {
+            $this->addError('excel_file', 'File upload tidak ditemukan di server. Coba upload ulang.');
+            return;
+        }
 
         $this->importedCount = 0;
         $this->skippedCount  = 0;
@@ -104,6 +115,8 @@ class DocumentImportForm extends Component
 
         if (count($rows) <= 1) {
             $this->addError('excel_file', 'File Excel kosong atau tidak memiliki data.');
+            // hapus file temp
+            Storage::disk('local')->delete($path);
             return;
         }
 
@@ -130,6 +143,8 @@ class DocumentImportForm extends Component
 
         if (is_null($idxTitle) || is_null($idxDocType)) {
             $this->addError('excel_file', 'Kolom minimal "title" dan "document_type" harus ada di header.');
+            // hapus file temp
+            Storage::disk('local')->delete($path);
             return;
         }
 
@@ -242,7 +257,7 @@ class DocumentImportForm extends Component
             }
         }
 
-        // hapus file temp
+        // ✅ hapus file setelah dipakai
         Storage::disk('local')->delete($path);
 
         LoggerService::logUserAction('import', 'Document', null, [
