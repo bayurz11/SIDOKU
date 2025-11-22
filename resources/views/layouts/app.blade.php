@@ -373,7 +373,7 @@
             });
             document.addEventListener('alpine:init', () => {
                 Alpine.store('sidebarMenu', {
-                    open: @json($activeMenu)
+                    open: "{{ $activeMenu }}"
                 });
             });
         </script>
