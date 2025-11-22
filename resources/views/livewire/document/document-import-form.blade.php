@@ -1,9 +1,8 @@
 <div>
     @if ($showModal)
         {{-- OVERLAY --}}
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4"
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center"
             wire:click.self="closeModal">
-
             {{-- WRAPPER KOTAK --}}
             <div
                 class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-gray-100
