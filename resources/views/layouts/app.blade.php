@@ -371,8 +371,6 @@
                     sidebarOverlay.addEventListener('click', toggleSidebar);
                 }
             });
-        </script>
-        <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.store('sidebarMenu', {
                     // Set awal berdasarkan route aktif
