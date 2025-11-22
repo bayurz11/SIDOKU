@@ -109,8 +109,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 16.5v-9m-3 3 3-3 3 3M6.75 19.5h10.5a2.25 2.25 0 0 0 2.25-2.25V9A2.25 2.25 0 0 0 17.25 6.75h-10.5A2.25 2.25 0 0 0 4.5 9v8.25A2.25 2.25 0 0 0 6.75 19.5Z" />
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
                                 </svg>
+
                                 <p class="text-sm font-medium">Klik untuk memilih file Excel</p>
                                 <p class="text-[11px] text-gray-500 mt-1">Format yang didukung: .xlsx, .xls (maks 10 MB)
                                 </p>
@@ -176,8 +177,8 @@
 
                         <button wire:click="import" wire:loading.attr="disabled" wire:target="import,excel_file"
                             class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-xs font-semibold text-white
-                                   bg-gradient-to-r from-green-500 via-green-500 to-lime-500
-                                   hover:from-green-600 hover:via-green-600 hover:to-lime-600
+                                   bg-gradient-to-r from-green-500 via-green-500 to-green-500
+                                   hover:from-green-600 hover:via-green-600 hover:to-green-600
                                    shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300
                                    disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg wire:loading wire:target="import" class="animate-spin w-4 h-4 mr-2"
