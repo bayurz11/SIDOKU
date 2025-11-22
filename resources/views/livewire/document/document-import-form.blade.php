@@ -6,27 +6,45 @@
 
             {{-- WRAPPER KOTAK --}}
             <div
-                class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-emerald-100 transform transition-all duration-200 ease-outmax-h-[90vh] overflow-y-auto">
+                class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-gray-100
+                       max-h-[90vh] overflow-y-auto transform transition-all duration-200 ease-out">
 
                 {{-- HEADER --}}
-                <div class="flex items-start gap-3">
-                    <div
-                        class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center shadow-sm border border-emerald-200">
-                        {{-- ICON BARU --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-6 h-6 text-emerald-600">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                    </div>
+                <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100">
+                    <div class="flex items-start justify-between gap-3">
+                        {{-- KIRI: ICON + TEKS --}}
+                        <div class="flex items-start gap-3">
+                            {{-- ICON BULAT LEMBUT --}}
+                            <div
+                                class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100
+                                       flex items-center justify-center shadow-sm border border-emerald-100 flex-shrink-0">
+                                {{-- ICON IMPORT (VERSI BARU) --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-emerald-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </div>
 
-                    <div class="space-y-0.5">
-                        <h2 class="text-lg font-bold text-gray-900 leading-tight">
-                            Import Daftar Induk Dokumen
-                        </h2>
-                        <p class="text-xs text-gray-600">
-                            Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak dokumen sekaligus.
-                        </p>
+                            <div class="space-y-0.5">
+                                <h2 class="text-lg font-bold text-gray-900 leading-tight">
+                                    Import Daftar Induk Dokumen
+                                </h2>
+                                <p class="text-xs text-gray-600">
+                                    Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak dokumen
+                                    sekaligus.
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- TOMBOL CLOSE --}}
+                        <button type="button" wire:click="closeModal"
+                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
