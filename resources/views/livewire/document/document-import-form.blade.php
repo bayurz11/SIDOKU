@@ -105,10 +105,10 @@
                                    file:mr-4 file:py-2.5 file:px-4
                                    file:rounded-lg file:border-0
                                    file:text-xs file:font-semibold
-                                   file:bg-emerald-50 file:text-emerald-700
-                                   hover:file:bg-emerald-100
+                                   file:bg-green-50 file:text-green-700
+                                   hover:file:bg-green-100
                                    border border-gray-300 rounded-xl
-                                   focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                                   focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
 
                         @error('excel_file')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
