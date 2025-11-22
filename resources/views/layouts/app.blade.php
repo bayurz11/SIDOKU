@@ -372,6 +372,18 @@
                 }
             });
         </script>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('sidebarMenu', {
+                    // Set awal berdasarkan route aktif
+                    open: @json(request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*')
+                            ? 'master'
+                            : (request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*')
+                                ? 'document'
+                                : null))
+                });
+            });
+        </script>
     @else
         <!-- Not authenticated content -->
         <div class="min-h-screen flex items-center justify-center">
