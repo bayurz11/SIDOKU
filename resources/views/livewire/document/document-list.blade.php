@@ -25,22 +25,23 @@
 
             <div class="flex items-center gap-2">
                 @permission('documents.import')
-                    <button wire:click="$dispatch('openDocumentImportForm')" type="button"
-                        class="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold
-               border-2 border-green-600 text-green-700 bg-transparent
-               hover:text-white hover:border-transparent
-               hover:bg-gradient-to-r hover:from-emerald-500 hover:via-green-500 hover:to-lime-500
-               transition-all duration-300 hover:shadow-lg active:scale-[0.97]">
-                        {{-- ICON Import --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300">
+                    <button wire:click="$dispatch('openDocumentImportForm')"
+                        class="group bg-gradient-to-r from-blue-600 to-purple-600
+               hover:from-blue-700 hover:to-purple-700
+               text-white px-6 py-3 rounded-xl text-sm font-semibold
+               inline-flex items-center shadow-lg hover:shadow-xl
+               transition-all duration-300 transform hover:scale-105">
+                        <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 16.5V9.75m0 6.75 2.25-2.25M12 16.5l-2.25-2.25M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-6.63a2.25 2.25 0 0 0-.659-1.591l-6.87-6.87A2.25 2.25 0 0 0 12.63 1.5H6.75A2.25 2.25 0 0 0 4.5 3.75v13.5z" />
                         </svg>
 
-                        <span>Import Daftar Induk Dokumen</span>
+                        Import Daftar Induk Dokumen
                     </button>
                 @endpermission
+
 
                 {{-- Add Document --}}
                 @permission('documents.create')
@@ -258,7 +259,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                             </path>
                                         </svg>
                                         Edit
@@ -288,7 +289,7 @@
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         Delete
                                     </button>
