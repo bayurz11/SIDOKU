@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Domains\Document\Models\Document;
-use App\Exports\DocumentImportTemplateExport;
+use App\Livewire\Document\DocumentImportTemplateExport;
 
 
 Route::get('/', function () {
