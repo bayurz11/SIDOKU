@@ -26,29 +26,19 @@
             <div class="flex items-center gap-2">
                 @permission('documents.import')
                     <button wire:click="$dispatch('openDocumentImportForm')" type="button"
-                        class="group relative inline-flex items-center gap-2.5
-               rounded-xl border border-emerald-500 bg-white px-4 py-2.5
-               text-sm font-semibold text-emerald-700 shadow-sm
-               transition-all duration-300
-               hover:border-transparent hover:bg-gradient-to-r hover:from-emerald-500 hover:via-green-500 hover:to-lime-500 hover:text-white
-               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-50
-               active:scale-[0.97]">
+                        class="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold
+               border-2 border-green-600 text-green-700 bg-transparent
+               hover:text-white hover:border-transparent
+               hover:bg-gradient-to-r hover:from-emerald-500 hover:via-green-500 hover:to-lime-500
+               transition-all duration-300 hover:shadow-lg active:scale-[0.97]">
                         {{-- ICON Import --}}
-                        <span
-                            class="flex h-8 w-8 items-center justify-center rounded-lg
-                   bg-emerald-50 text-emerald-600
-                   transition-all duration-300
-                   group-hover:bg-white/15 group-hover:text-white group-hover:scale-110">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="h-4 w-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 16.5V9.75m0 6.75 2.25-2.25M12 16.5l-2.25-2.25M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-6.63a2.25 2.25 0 0 0-.659-1.591l-6.87-6.87A2.25 2.25 0 0 0 12.63 1.5H6.75A2.25 2.25 0 0 0 4.5 3.75v13.5z" />
-                            </svg>
-                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 16.5V9.75m0 6.75 2.25-2.25M12 16.5l-2.25-2.25M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-6.63a2.25 2.25 0 0 0-.659-1.591l-6.87-6.87A2.25 2.25 0 0 0 12.63 1.5H6.75A2.25 2.25 0 0 0 4.5 3.75v13.5z" />
+                        </svg>
 
-                        <span class="whitespace-nowrap">
-                            Import Daftar Induk Dokumen
-                        </span>
+                        <span>Import Daftar Induk Dokumen</span>
                     </button>
                 @endpermission
 
