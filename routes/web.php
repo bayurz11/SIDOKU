@@ -1,8 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Domains\Document\Models\Document;
+use App\Exports\DocumentImportTemplateExport;
 
 
 Route::get('/', function () {
@@ -54,6 +56,13 @@ Route::middleware(['auth', 'permission:documents.view'])->group(function () {
         return view('documents.index');
     })->name('documents.index');
 });
+
+Route::get('/documents/import/template', function () {
+    return Excel::download(
+        new DocumentImportTemplateExport(),
+        'template-import-dokumen.xlsx'
+    );
+})->name('documents.import-template');
 
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {

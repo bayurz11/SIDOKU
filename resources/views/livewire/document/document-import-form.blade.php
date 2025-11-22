@@ -58,11 +58,8 @@
 
                         {{-- Tombol download template --}}
                         <div class="shrink-0">
-                            <a href="#"
-                                class="inline-flex items-center px-3 py-2 rounded-lg text-[11px] font-semibold
-                                       text-emerald-700 bg-white border border-emerald-200
-                                       hover:bg-emerald-600 hover:text-white hover:border-emerald-600
-                                       transition-all duration-200 shadow-sm">
+                            <a href="{{ route('documents.import-template') }}"
+                                class="inline-flex items-center px-3 py-2 rounded-lg text-[11px] font-semibold text-emerald-700 bg-white border border-emerald-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-200 shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -71,6 +68,7 @@
                                 Download Template
                             </a>
                         </div>
+
                     </div>
                 </div>
 
