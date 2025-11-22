@@ -80,8 +80,8 @@
                             <div class="shrink-0">
                                 <a href="{{ route('documents.import-template') }}"
                                     class="inline-flex items-center px-3 py-2 rounded-lg text-[11px] font-semibold
-                                           text-emerald-700 bg-white border border-emerald-200
-                                           hover:bg-emerald-600 hover:text-white hover:border-emerald-600
+                                           text-green-700 bg-white border border-green-200
+                                           hover:bg-green-600 hover:text-white hover:border-green-600
                                            transition-all duration-200 shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
@@ -161,8 +161,8 @@
 
                         <button wire:click="import" wire:loading.attr="disabled" wire:target="import,excel_file"
                             class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-xs font-semibold text-white
-                                   bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500
-                                   hover:from-emerald-600 hover:via-green-600 hover:to-lime-600
+                                   bg-gradient-to-r from-green-500 via-green-500 to-lime-500
+                                   hover:from-green-600 hover:via-green-600 hover:to-lime-600
                                    shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300
                                    disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg wire:loading wire:target="import" class="animate-spin w-4 h-4 mr-2"
