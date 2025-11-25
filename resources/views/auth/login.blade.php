@@ -81,7 +81,7 @@
                     Welcome Back
                 </h2>
                 <p class="text-blue-100">
-                    Sign in to {{ config('app.name', 'SIDOKU') }}
+                    Sign in to {{ config('app.name', 'SIDOKU ') }}
                 </p>
             </div>
 
