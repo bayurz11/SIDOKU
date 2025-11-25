@@ -281,6 +281,7 @@ class DocumentForm extends Component
                 'title'         => $document->title,
             ]);
 
+
             $this->showSuccessToast('Document created successfully!');
         }
 
