@@ -15,18 +15,28 @@ class DocumentDetailForm extends Component
         'openDocumentDetail' => 'open',   // nama event bebas, penting konsisten di Blade
     ];
 
-    public function open(int $documentId): void
+    public function open($payload): void
     {
+        // Bisa array (dari { id: ... }) atau scalar
+        $documentId = is_array($payload)
+            ? ($payload['id'] ?? null)
+            : $payload;
+
+        if (!$documentId) {
+            return;
+        }
+
         $this->document = Document::query()
             ->with([
                 'documentType',
                 'department',
-                'revisions.changedBy',   // pastikan relasi changedBy ada di DocumentRevision
+                'revisions.changedBy',
             ])
             ->findOrFail($documentId);
 
         $this->showModal = true;
     }
+
 
     public function closeModal(): void
     {
