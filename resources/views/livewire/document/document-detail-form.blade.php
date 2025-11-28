@@ -57,7 +57,7 @@
                             {{-- No dokumen --}}
                             <span
                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
-                                       bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                       bg-green-50 text-green-700 border border-green-100">
                                 {{ $document->document_code ?? 'No. dokumen belum diatur' }}
                             </span>
 
@@ -203,7 +203,7 @@
 
                                             @if ($rev->file_path)
                                                 <a href="{{ asset('public/storage/' . ltrim($rev->file_path, '/')) }}"
-                                                    class="inline-flex items-center mt-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900">
+                                                    class="inline-flex items-center mt-1 text-[11px] font-semibold text-green-700 hover:text-green-900">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                                         class="w-3.5 h-3.5 mr-1">
@@ -233,19 +233,22 @@
                 {{-- FOOTER BUTTONS --}}
                 <div class="px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 bg-gray-50/60">
                     <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2">
+
+                        {{-- BUTTON TUTUP --}}
                         <button wire:click="closeModal" type="button"
                             class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-medium
-                                       text-gray-700 bg-gray-100 border border-gray-300
-                                       hover:bg-gray-200 transition-colors">
+                   text-gray-700 bg-gray-100 border border-gray-300
+                   hover:bg-gray-200 transition-colors">
                             Tutup
                         </button>
 
+                        {{-- BUTTON BUKA FILE --}}
                         @if ($document->file_path)
                             <a href="{{ asset('public/storage/' . ltrim($document->file_path, '/')) }}"
                                 class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
-                                      bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-500
-                                      hover:from-emerald-600 hover:via-emerald-600 hover:to-emerald-600
-                                      shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+                      bg-gradient-to-r from-green-500 via-green-500 to-green-500
+                      hover:from-green-600 hover:via-green-600 hover:to-green-600
+                      shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
                                 <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -254,8 +257,28 @@
                                 Buka Dokumen
                             </a>
                         @endif
+
+                        {{-- BUTTON AJUKAN APPROVAL — HANYA MUNCUL JIKA STATUS DRAFT --}}
+                        @if ($document->status === 'draft')
+                            <button wire:click="requestApproval({{ $document->id }})"
+                                class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
+                       bg-gradient-to-r from-indigo-500 via-indigo-500 to-indigo-600
+                       hover:from-indigo-600 hover:via-indigo-600 hover:to-indigo-700
+                       shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+
+                                <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+
+                                Ajukan Approval
+                            </button>
+                        @endif
+
                     </div>
                 </div>
+
             </div>
         </div>
     @endif

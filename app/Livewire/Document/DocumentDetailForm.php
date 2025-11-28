@@ -26,6 +26,24 @@ class DocumentDetailForm extends Component
 
         $this->showModal = true;
     }
+    public function requestApproval(int $id)
+    {
+        $doc = Document::findOrFail($id);
+
+        // Ubah status menjadi 'in_review'
+        $doc->update([
+            'status' => 'in_review'
+        ]);
+
+        // Bisa kirim notifikasi ke Manager QC/QS (opsional)
+        // Notification::send($doc->approvers, new DocumentApprovalRequest($doc));
+
+        // Refresh data
+        $this->document = $doc->fresh();
+
+        // Kirim notifikasi UI
+        $this->dispatch('toast:success', message: 'Dokumen telah diajukan ke Approval Queue.');
+    }
 
     public function closeModal(): void
     {
