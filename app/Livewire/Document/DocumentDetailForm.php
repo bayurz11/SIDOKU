@@ -21,6 +21,7 @@ class DocumentDetailForm extends Component
                 'documentType',
                 'department',
                 'revisions.changedBy',
+                'parent',
             ])
             ->findOrFail($id);
 

@@ -121,9 +121,15 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Parent Document</dt>
                                     <dd class="text-gray-900 font-medium">
-                                        {{ $document->parentDocument->name ?? '-' }}
+                                        @if ($document->parentDocument)
+                                            {{ $document->parentDocument->document_code }}
+                                            — {{ $document->parentDocument->title }}
+                                        @else
+                                            -
+                                        @endif
                                     </dd>
                                 </div>
+
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Department</dt>
                                     <dd class="text-gray-900 font-medium">
