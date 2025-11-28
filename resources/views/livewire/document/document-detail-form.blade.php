@@ -119,6 +119,12 @@
                                     </dd>
                                 </div>
                                 <div class="flex justify-between">
+                                    <dt class="text-gray-500">Parent Document</dt>
+                                    <dd class="text-gray-900 font-medium">
+                                        {{ $document->parentDocument->name ?? '-' }}
+                                    </dd>
+                                </div>
+                                <div class="flex justify-between">
                                     <dt class="text-gray-500">Department</dt>
                                     <dd class="text-gray-900 font-medium">
                                         {{ $document->department->name ?? '-' }}
