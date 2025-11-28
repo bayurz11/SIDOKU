@@ -141,8 +141,8 @@
                             </div>
                             <div class="mt-4 flex items-center justify-between">
                                 <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                    <span class="text-sm text-yellow-600 font-semibold">Obsolate</span>
+                                    <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                    <span class="text-sm text-red-600 font-semibold">Obsolete</span>
                                 </div>
                                 <div class="flex items-center text-xs text-gray-500">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
