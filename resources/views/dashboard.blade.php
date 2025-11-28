@@ -559,30 +559,23 @@
                                 $editorName = $editor?->name ?? 'System';
                                 $editorEmail = $editor?->email ?? '-';
 
-                                // Prefix dokumen, misal: SOP/PRP/EN/001 -> SOP
-                                $prefix = \Illuminate\Support\Str::upper(
-                                    \Illuminate\Support\Str::before($doc->document_code, '/'),
-                                );
+                                // document_code: "PRP/SOP/EN/001"
+                                $parts = explode('/', $doc->document_code);
 
-                                // Initial avatar diambil dari documentType / prefix
-                                // Urutan prioritas:
-                                // 1. $prefix dari document_code (SOP / WI / FORM)
-                                // 2. code di documentType
-                                // 3. name di documentType (diambil 2 huruf pertama)
-                                $typeCode = $prefix ?: $doc->documentType->code ?? ($doc->documentType->name ?? 'DC');
+                                // Bagian setelah PRP → SOP
+                                $prefix = strtoupper($parts[1] ?? 'DC');
 
-                                $initial = \Illuminate\Support\Str::upper(
-                                    \Illuminate\Support\Str::substr($typeCode, 0, 3), // SOP / WI / FOR
-                                );
+                                // Initial avatar = SOP
+                                $initial = $prefix;
 
-                                // Warna avatar berdasarkan tipe dokumen
+                                // Warna avatar berdasarkan prefix
                                 $avatarGradientMap = [
                                     'SOP' => 'from-blue-500 to-blue-600',
                                     'WI' => 'from-purple-500 to-purple-600',
                                     'FORM' => 'from-green-500 to-green-600',
                                 ];
 
-                                $avatarGradient = $avatarGradientMap[$prefix] ?? 'from-blue-400 to-purple-500';
+                                $avatarGradient = $avatarGradientMap[$prefix] ?? 'from-gray-400 to-gray-600';
                             @endphp
 
                             <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
