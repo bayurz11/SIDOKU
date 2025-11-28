@@ -42,7 +42,7 @@ class DocumentDetailForm extends Component
         $this->document = $doc->fresh();
 
         // Kirim notifikasi UI
-        $this->dispatch('toast:success', message: 'Dokumen telah diajukan ke Approval Queue.');
+        $this->dispatch('toast:success', message: 'Dokumen telah diajukan ke Department terkait.');
     }
 
     public function closeModal(): void

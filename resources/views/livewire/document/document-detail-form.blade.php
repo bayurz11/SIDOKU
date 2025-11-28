@@ -245,15 +245,13 @@
                         {{-- BUTTON BUKA FILE --}}
                         @if ($document->file_path)
                             <a href="{{ asset('public/storage/' . ltrim($document->file_path, '/')) }}"
-                                class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
-                      bg-gradient-to-r from-green-500 via-green-500 to-green-500
-                      hover:from-green-600 hover:via-green-600 hover:to-green-600
-                      shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+                                class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-green-500 via-green-500 to-green-500 hover:from-green-600 hover:via-green-600 hover:to-green-600 shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
                                 <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M4.5 12a7.5 7.5 0 0 1 15 0m-15 0a7.5 7.5 0 0 0 15 0M4.5 12H9m6 0h4.5" />
+                                        d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
+
                                 Buka Dokumen
                             </a>
                         @endif
@@ -272,7 +270,7 @@
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
 
-                                Ajukan Approval
+                                Ajukan Dokumen
                             </button>
                         @endif
 
