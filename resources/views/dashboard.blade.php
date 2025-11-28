@@ -559,6 +559,20 @@
                                 $editorName = $editor?->name ?? 'System';
                                 $editorEmail = $editor?->email ?? '-';
                                 $initial = strtoupper(substr($editorName, 0, 2));
+
+                                // --- Mapping warna nomor dokumen berdasarkan jenis ---
+                                // Ambil prefix sebelum "/" → SOP / WI / FORM
+                                $prefix = \Illuminate\Support\Str::upper(
+                                    \Illuminate\Support\Str::before($doc->document_code, '/'),
+                                );
+
+                                $codeColor = [
+                                    'SOP' => 'bg-blue-50 text-blue-700 border-blue-200', // SOP = biru
+                                    'WI' => 'bg-purple-50 text-purple-700 border-purple-200', // WI = ungu
+                                    'FORM' => 'bg-green-50 text-green-700 border-green-200', // Form = hijau
+                                ];
+
+                                $codeTagClass = $codeColor[$prefix] ?? 'bg-gray-50 text-gray-700 border-gray-200';
                             @endphp
 
                             <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
@@ -584,13 +598,16 @@
                                                 {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
                                             </p>
 
-                                            {{-- Nomor dokumen --}}
-                                            <p class="text-xs font-mono text-gray-600 mt-0.5">
-                                                {{ $doc->document_code }}
-                                            </p>
+                                            {{-- Nomor dokumen sebagai tag kecil --}}
+                                            <div class="mt-1">
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $codeTagClass }}">
+                                                    {{ $doc->document_code }}
+                                                </span>
+                                            </div>
 
                                             {{-- Type + Dept + Status --}}
-                                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                                            <div class="flex flex-wrap items-center gap-2 mt-2">
                                                 @if ($doc->documentType)
                                                     <span
                                                         class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-blue-100 text-blue-800">
@@ -607,16 +624,16 @@
 
                                                 @php
                                                     $status = $doc->status;
-                                                    $map = [
+                                                    $statusMap = [
                                                         'draft' => 'bg-gray-100 text-gray-700',
                                                         'in_review' => 'bg-yellow-100 text-yellow-800',
                                                         'approved' => 'bg-green-100 text-green-800',
                                                         'obsolete' => 'bg-red-100 text-red-800',
                                                     ];
-                                                    $cls = $map[$status] ?? 'bg-gray-100 text-gray-700';
+                                                    $statusClass = $statusMap[$status] ?? 'bg-gray-100 text-gray-700';
                                                 @endphp
                                                 <span
-                                                    class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold {{ $cls }}">
+                                                    class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold {{ $statusClass }}">
                                                     {{ ucfirst(str_replace('_', ' ', $status)) }}
                                                 </span>
                                             </div>
