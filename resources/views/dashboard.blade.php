@@ -553,122 +553,116 @@
                     @endphp
 
                     <div class="divide-y divide-gray-100">
-                        @forelse ($recentDocuments as $doc)
-                            @php
-                                $editor = $doc->updatedBy ?? $doc->createdBy;
-                                $editorName = $editor?->name ?? 'System';
-                                $editorEmail = $editor?->email ?? '-';
-                                $initial = strtoupper(substr($editorName, 0, 2));
-                            @endphp
+                        <div class="divide-y divide-gray-100">
+                            @forelse ($recentDocuments as $doc)
+                                @php
+                                    // Editor (kanan)
+                                    $editor = $doc->updatedBy ?? $doc->createdBy;
+                                    $editorName = $editor?->name ?? 'System';
+                                    $editorEmail = $editor?->email ?? '-';
 
-                            <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
-                                <div class="flex items-center justify-between">
-                                    {{-- Kiri: info dokumen --}}
-                                    <div class="flex items-center space-x-4">
-                                        {{-- Avatar editor --}}
-                                        <div class="relative">
-                                            <div
-                                                class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-                                                <span class="text-sm font-bold text-white">{{ $initial }}</span>
-                                            </div>
-                                            @if ($doc->is_active)
+                                    // Prefix dokumen, misal: SOP/PRP/EN/001 -> SOP
+                                    $prefix = \Illuminate\Support\Str::upper(
+                                        \Illuminate\Support\Str::before($doc->document_code, '/'),
+                                    );
+
+                                    // Initial avatar diambil dari documentType / prefix
+                                    // Urutan prioritas:
+                                    // 1. $prefix dari document_code (SOP / WI / FORM)
+                                    // 2. code di documentType
+                                    // 3. name di documentType (diambil 2 huruf pertama)
+                                    $typeCode =
+                                        $prefix ?: $doc->documentType->code ?? ($doc->documentType->name ?? 'DC');
+
+                                    $initial = \Illuminate\Support\Str::upper(
+                                        \Illuminate\Support\Str::substr($typeCode, 0, 3), // SOP / WI / FOR
+                                    );
+
+                                    // Warna avatar berdasarkan tipe dokumen
+                                    $avatarGradientMap = [
+                                        'SOP' => 'from-blue-500 to-blue-600',
+                                        'WI' => 'from-purple-500 to-purple-600',
+                                        'FORM' => 'from-green-500 to-green-600',
+                                    ];
+
+                                    $avatarGradient = $avatarGradientMap[$prefix] ?? 'from-blue-400 to-purple-500';
+                                @endphp
+
+                                <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
+                                    <div class="flex items-center justify-between">
+                                        {{-- Kiri: info dokumen --}}
+                                        <div class="flex items-center space-x-4">
+                                            {{-- Avatar: initial dari document type --}}
+                                            <div class="relative">
                                                 <div
-                                                    class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
+                                                    class="w-12 h-12 bg-gradient-to-br {{ $avatarGradient }} rounded-xl flex items-center justify-center shadow-lg">
+                                                    <span class="text-xs font-bold text-white tracking-wide">
+                                                        {{ $initial }}
+                                                    </span>
                                                 </div>
-                                            @endif
-                                        </div>
-
-                                        <div class="flex-1">
-                                            {{-- Judul dokumen --}}
-                                            <p class="text-sm font-semibold text-gray-900">
-                                                {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
-                                            </p>
-
-                                            {{-- Nomor dokumen --}}
-                                            <p class="text-xs font-mono text-gray-600 mt-0.5">
-                                                {{ $doc->document_code }}
-                                            </p>
-                                            {{-- Type + Dept + Status --}}
-                                            {{-- <div class="flex flex-wrap items-center gap-1.5 mt-2">
-
-                                                @if ($doc->documentType)
-                                                    <span
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-                                                        {{ $doc->documentType->name }}
-                                                    </span>
+                                                @if ($doc->is_active)
+                                                    <div
+                                                        class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
+                                                    </div>
                                                 @endif
+                                            </div>
 
-                                                @if ($doc->department)
-                                                    <span
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                        {{ $doc->department->name }}
-                                                    </span>
-                                                @endif
+                                            <div class="flex-1">
+                                                {{-- Judul dokumen --}}
+                                                <p class="text-sm font-semibold text-gray-900">
+                                                    {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
+                                                </p>
 
-                                                @php
-                                                    $statusMap = [
-                                                        'draft' => 'bg-gray-50 text-gray-700 border-gray-200',
-                                                        'in_review' => 'bg-yellow-50 text-yellow-700 border-yellow-200',
-                                                        'approved' => 'bg-green-50 text-green-700 border-green-200',
-                                                        'obsolete' => 'bg-red-50 text-red-700 border-red-200',
-                                                    ];
-                                                    $statusClass =
-                                                        $statusMap[$doc->status] ??
-                                                        'bg-gray-50 text-gray-700 border-gray-200';
-                                                @endphp
+                                                {{-- Nomor dokumen --}}
+                                                <p class="text-xs font-mono text-gray-600 mt-0.5">
+                                                    {{ $doc->document_code }}
+                                                </p>
+                                            </div>
 
-                                                <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $statusClass }}">
-                                                    {{ ucfirst(str_replace('_', ' ', $doc->status)) }}
+                                            {{-- Kanan: info editor + waktu update --}}
+                                            <div class="flex flex-col items-end space-y-1">
+                                                <span class="text-xs font-semibold text-gray-800">
+                                                    {{ $editorName }}
                                                 </span>
-
-                                            </div> --}}
-
+                                                <span class="text-[11px] text-gray-500">
+                                                    {{ $editorEmail }}
+                                                </span>
+                                                <span class="text-[11px] text-gray-500 flex items-center mt-1">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at?->diffForHumans() }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {{-- Kanan: info editor + waktu update --}}
-                                    <div class="flex flex-col items-end space-y-1">
-                                        <span class="text-xs font-semibold text-gray-800">
-                                            {{ $editorName }}
-                                        </span>
-                                        <span class="text-[11px] text-gray-500">
-                                            {{ $editorEmail }}
-                                        </span>
-                                        <span class="text-[11px] text-gray-500 flex items-center mt-1">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at?->diffForHumans() }}
-                                        </span>
+                                @empty
+                                    <div class="px-6 py-6 text-center text-sm text-gray-500">
+                                        Belum ada dokumen yang diperbarui.
                                     </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="px-6 py-6 text-center text-sm text-gray-500">
-                                Belum ada dokumen yang diperbarui.
-                            </div>
-                        @endforelse
-                    </div>
-
-
-                    @permission('documents.view')
-                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
-                            <a href="{{ route('documents.index') }}"
-                                class="group flex items-center justify-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                                <span>View all documents</span>
-                                <svg class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                                </svg>
-                            </a>
+                            @endforelse
                         </div>
-                    @endpermission
+
+
+
+                        @permission('documents.view')
+                            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+                                <a href="{{ route('documents.index') }}"
+                                    class="group flex items-center justify-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                    <span>View all documents</span>
+                                    <svg class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        @endpermission
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
