@@ -12,7 +12,7 @@ class DocumentDetailForm extends Component
 
     // Event dari component lain (misal DocumentList)
     protected $listeners = [
-        'document:showDetail' => 'open',   // nama event bebas, penting konsisten di Blade
+        'openDocumentDetail' => 'open',   // nama event bebas, penting konsisten di Blade
     ];
 
     public function open(int $documentId): void
