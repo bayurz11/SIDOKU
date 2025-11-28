@@ -128,22 +128,47 @@ class CacheService
     public static function getDashboardStats($ttl = self::SHORT_TTL)
     {
         return Cache::remember('dashboard.stats', $ttl, function () {
+
+            // Ambil total & aktif department
             $totalDepartments = \App\Domains\Department\Models\Department::count();
             $activeDepartments = \App\Domains\Department\Models\Department::where('is_active', true)->count();
 
+            // Ambil total dokumen
+            $totalDocuments = \App\Domains\Document\Models\Document::count();
+            $activeDocuments = \App\Domains\Document\Models\Document::where('is_active', true)->count();
+
             return [
-                'total_departments' => $totalDepartments,
-                'active_departments' => $activeDepartments,
-                'inactive_departments' => $totalDepartments - $activeDepartments, // <--- ini tambahan
-                'total_users' => \App\Domains\User\Models\User::count(),
+                // ==== DEPARTMENT ====
+                'total_departments'   => $totalDepartments,
+                'active_departments'  => $activeDepartments,
+                'inactive_departments' => $totalDepartments - $activeDepartments,
+
+                // ==== USERS ====
+                'total_users'  => \App\Domains\User\Models\User::count(),
                 'active_users' => \App\Domains\User\Models\User::where('is_active', true)->count(),
-                'total_roles' => \App\Domains\Role\Models\Role::count(),
-                'active_roles' => \App\Domains\Role\Models\Role::where('is_active', true)->count(),
-                'total_permissions' => \App\Domains\Permission\Models\Permission::count(),
+
+                // ==== ROLES & PERMISSIONS ====
+                'total_roles'        => \App\Domains\Role\Models\Role::count(),
+                'active_roles'       => \App\Domains\Role\Models\Role::where('is_active', true)->count(),
+                'total_permissions'  => \App\Domains\Permission\Models\Permission::count(),
+
+                // ==== DOCUMENTS ====
+                'total_documents'   => $totalDocuments,
+                'active_documents'  => $activeDocuments,
+                'inactive_documents' => $totalDocuments - $activeDocuments,
+
+                // Berdasarkan status dokumen
+                'documents_draft'    => \App\Domains\Document\Models\Document::where('status', \App\Domains\Document\Models\Document::STATUS_DRAFT)->count(),
+                'documents_in_review' => \App\Domains\Document\Models\Document::where('status', \App\Domains\Document\Models\Document::STATUS_IN_REVIEW)->count(),
+                'documents_approved' => \App\Domains\Document\Models\Document::where('status', \App\Domains\Document\Models\Document::STATUS_APPROVED)->count(),
+                'documents_obsolete' => \App\Domains\Document\Models\Document::where('status', \App\Domains\Document\Models\Document::STATUS_OBSOLETE)->count(),
+
+                // ==== RECENT USERS ====
                 'recent_users' => \App\Domains\User\Models\User::latest()->take(5)->get(),
             ];
         });
     }
+
 
 
     public static function clearDashboardCache()

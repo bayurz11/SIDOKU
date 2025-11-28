@@ -135,7 +135,8 @@
                                 </div>
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-gray-600 mb-1">Documents</p>
-                                    <p class="text-2xl font-bold text-gray-900">#</p>
+                                    <p class="text-2xl font-bold text-gray-900">
+                                        {{ number_format($stats['total_documents']) }}</p>
                                 </div>
                             </div>
                             <div class="mt-4 flex items-center justify-between">
@@ -149,7 +150,7 @@
                                             d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                     </svg>
                                     </svg>
-                                    #
+                                    {{ number_format($stats['inactive_documents']) }}
                                 </div>
                             </div>
                         </div>
