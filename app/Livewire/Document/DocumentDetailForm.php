@@ -10,14 +10,17 @@ class DocumentDetailForm extends Component
     public bool $showModal = false;
     public ?Document $document = null;
 
-    // Sama seperti openDocumentForm: dengarkan event-nya
     protected $listeners = [
         'openDocumentDetail' => 'open',
     ];
 
-    // TERIMA ID SAJA, OPTIONAL
-    public function open(?int $documentId = null): void
+    public function open($documentId = null): void
     {
+        // Kalau front-end kirim { id: 5 } (object), handle juga
+        if (is_array($documentId)) {
+            $documentId = $documentId['id'] ?? null;
+        }
+
         if (!$documentId) {
             return;
         }
