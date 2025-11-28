@@ -176,6 +176,11 @@ class DocumentList extends Component
 
         return false;
     }
+    public function showDetail(int $id): void
+    {
+        // Dispatch event Livewire ke component lain (DocumentDetailForm)
+        $this->dispatch('openDocumentDetail', id: $id);
+    }
 
     /**
      * Terapkan pembatasan department untuk role "user"

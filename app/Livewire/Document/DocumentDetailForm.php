@@ -14,24 +14,15 @@ class DocumentDetailForm extends Component
         'openDocumentDetail' => 'open',
     ];
 
-    public function open($documentId = null): void
+    public function open(int $id): void
     {
-        // Kalau front-end kirim { id: 5 } (object), handle juga
-        if (is_array($documentId)) {
-            $documentId = $documentId['id'] ?? null;
-        }
-
-        if (!$documentId) {
-            return;
-        }
-
         $this->document = Document::query()
             ->with([
                 'documentType',
                 'department',
                 'revisions.changedBy',
             ])
-            ->findOrFail($documentId);
+            ->findOrFail($id);
 
         $this->showModal = true;
     }
