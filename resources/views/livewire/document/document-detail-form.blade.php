@@ -118,12 +118,17 @@
                                         {{ $document->documentType->name ?? '-' }}
                                     </dd>
                                 </div>
-                                <div class="flex justify-between">
+                                <div class="flex justify-between items-center">
                                     <dt class="text-gray-500">Parent Document</dt>
                                     <dd class="text-gray-900 font-medium">
-                                        @if ($document->parentDocument)
-                                            {{ $document->parentDocument->document_code }}
-                                            — {{ $document->parentDocument->title }}
+                                        @if ($document->parent)
+                                            {{ $document->parent->document_code }} — {{ $document->parent->title }}
+
+                                            <button
+                                                wire:click="$dispatch('openDocumentDetail', {{ $document->parent->id }})"
+                                                class="ml-2 text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold underline">
+                                                Lihat Parent
+                                            </button>
                                         @else
                                             -
                                         @endif
