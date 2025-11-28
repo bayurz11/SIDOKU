@@ -12,16 +12,21 @@ class DocumentDetailForm extends Component
 
     // Event dari component lain (misal DocumentList)
     protected $listeners = [
-        'openDocumentDetail' => 'open',   // nama event bebas, penting konsisten di Blade
+        'openDocumentDetail' => 'open',   // nama event harus sama dengan yang di-dispatch
     ];
 
-    public function open($payload): void
+    public function open($payload = null): void
     {
-        // Bisa array (dari { id: ... }) atau scalar
-        $documentId = is_array($payload)
-            ? ($payload['id'] ?? null)
-            : $payload;
+        // Bisa array (dari { id: ... }) atau scalar (angka langsung)
+        $documentId = null;
 
+        if (is_array($payload)) {
+            $documentId = $payload['id'] ?? null;
+        } elseif (is_numeric($payload)) {
+            $documentId = $payload;
+        }
+
+        // Kalau tidak ada id yang valid, cukup keluar tanpa error
         if (!$documentId) {
             return;
         }
@@ -36,7 +41,6 @@ class DocumentDetailForm extends Component
 
         $this->showModal = true;
     }
-
 
     public function closeModal(): void
     {
