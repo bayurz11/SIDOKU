@@ -167,7 +167,7 @@ class CacheService
                     'updatedBy',
                 ])
                     ->orderByDesc('updated_at') // atau 'created_at' kalau mau
-                    ->take(5)
+                    ->take(3)
                     ->get(),
 
                 // ===== RECENT USERS (SUDAH ADA) =====
