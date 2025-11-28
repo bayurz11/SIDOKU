@@ -559,11 +559,14 @@
                                 $editorName = $editor?->name ?? 'System';
                                 $editorEmail = $editor?->email ?? '-';
 
-                                // document_code: "PRP/SOP/EN/001"
+                                // Pisahkan dengan "/"
                                 $parts = explode('/', $doc->document_code);
 
-                                // Bagian setelah PRP → SOP
-                                $prefix = strtoupper($parts[1] ?? 'DC');
+                                // Ambil segmen setelah PRP/
+                                $segment = $parts[1] ?? '';
+
+                                // Jika ada titik, ambil kata pertama sebelum titik
+                                $prefix = strtoupper(explode('.', $segment)[0] ?? 'DC');
 
                                 // Initial avatar = SOP
                                 $initial = $prefix;
