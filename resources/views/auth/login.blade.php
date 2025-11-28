@@ -109,8 +109,8 @@
 
                     <!-- Email Field -->
                     <div>
-                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                            Email Address
+                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Username
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -121,9 +121,9 @@
                                     </path>
                                 </svg>
                             </div>
-                            <input id="email" name="email" type="email" autocomplete="email" required
+                            <input id="name" name="name" type="text" autocomplete="name" required
                                 class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-                                placeholder="Enter your email" value="{{ old('email') }}">
+                                placeholder="Enter your name" value="{{ old('name') }}">
                         </div>
                     </div>
 
