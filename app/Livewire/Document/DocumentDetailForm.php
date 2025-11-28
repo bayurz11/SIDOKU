@@ -10,23 +10,14 @@ class DocumentDetailForm extends Component
     public bool $showModal = false;
     public ?Document $document = null;
 
-    // Event dari component lain (misal DocumentList)
+    // Sama seperti openDocumentForm: dengarkan event-nya
     protected $listeners = [
-        'openDocumentDetail' => 'open',   // nama event harus sama dengan yang di-dispatch
+        'openDocumentDetail' => 'open',
     ];
 
-    public function open($payload = null): void
+    // TERIMA ID SAJA, OPTIONAL
+    public function open(?int $documentId = null): void
     {
-        // Bisa array (dari { id: ... }) atau scalar (angka langsung)
-        $documentId = null;
-
-        if (is_array($payload)) {
-            $documentId = $payload['id'] ?? null;
-        } elseif (is_numeric($payload)) {
-            $documentId = $payload;
-        }
-
-        // Kalau tidak ada id yang valid, cukup keluar tanpa error
         if (!$documentId) {
             return;
         }
