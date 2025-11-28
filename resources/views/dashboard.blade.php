@@ -589,7 +589,7 @@
                                                 {{ $doc->document_code }}
                                             </p>
                                             {{-- Type + Dept + Status --}}
-                                            <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                            {{-- <div class="flex flex-wrap items-center gap-1.5 mt-2">
 
                                                 @if ($doc->documentType)
                                                     <span
@@ -622,7 +622,7 @@
                                                     {{ ucfirst(str_replace('_', ' ', $doc->status)) }}
                                                 </span>
 
-                                            </div>
+                                            </div> --}}
 
                                         </div>
                                     </div>
