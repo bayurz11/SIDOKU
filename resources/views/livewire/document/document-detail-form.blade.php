@@ -58,16 +58,14 @@
 
                             {{-- No dokumen --}}
                             <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
-               bg-green-50 text-green-700 border border-green-100">
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700 border border-green-100">
                                 {{ $document->document_code ?? 'No. dokumen belum diatur' }}
                             </span>
 
                             {{-- Type --}}
                             @if ($document->documentType)
                                 <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
-                   bg-blue-50 text-blue-700 border border-blue-100">
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                                     {{ $document->documentType->name }}
                                 </span>
                             @endif
@@ -75,8 +73,7 @@
                             {{-- Dept --}}
                             @if ($document->department)
                                 <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
-                   bg-purple-50 text-purple-700 border border-purple-100">
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-100">
                                     {{ $document->department->name }}
                                 </span>
                             @endif
@@ -84,8 +81,7 @@
                             {{-- Level --}}
                             @if ($document->level)
                                 <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold
-                   bg-gray-50 text-gray-700 border border-gray-200">
+                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-50 text-gray-700 border border-gray-200">
                                     Level {{ $document->level }}
                                 </span>
                             @endif
@@ -114,11 +110,6 @@
                             <dd class="text-gray-900 font-medium">
                                 @if ($document->parent)
                                     {{ $document->parent->document_code }} — {{ $document->parent->title }}
-
-                                    <button wire:click="$dispatch('openDocumentDetail', {{ $document->parent->id }})"
-                                        class="ml-2 text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold underline">
-                                        Lihat Parent
-                                    </button>
                                 @else
                                     -
                                 @endif
