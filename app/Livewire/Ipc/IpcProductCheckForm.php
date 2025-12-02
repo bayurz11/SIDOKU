@@ -165,24 +165,25 @@ class IpcProductCheckForm extends Component
             // MODE EDIT
             $record = IpcProductCheck::findOrFail($id);
 
-            $this->ipcId                = $record->id;
-            $this->line_group           = $record->line_group;
-            $this->sub_line             = $record->sub_line;
-            $this->test_date            = optional($record->test_date)?->format('Y-m-d');
-            $this->product_name         = $record->product_name;
-            $this->shift                = $record->shift;
+            $this->ipcId        = $record->id;
+            $this->line_group   = $record->line_group;
+            $this->sub_line     = $record->sub_line;
+            $this->test_date    = optional($record->test_date)?->format('Y-m-d');
+            $this->product_name = $record->product_name;
+            $this->shift        = $record->shift;
 
+            // Ringkasan
             $this->avg_moisture_percent = $record->avg_moisture_percent;
             $this->avg_weight_g         = $record->avg_weight_g;
 
-            $this->notes                = $record->notes;
+            $this->notes = $record->notes;
 
-            // Field kalkulasi tidak di-load karena belum ada di DB (optional)
-            $this->cup_weight             = null;
-            $this->product_weight         = $this->avg_weight_g;
-            $this->total_cup_plus_product = null;
-            $this->weighing_1             = null;
-            $this->weighing_2             = null;
+            // Field kalkulasi (SEKARANG SUDAH DI-LOAD DARI DB)
+            $this->cup_weight             = $record->cup_weight;
+            $this->product_weight         = $record->product_weight ?? $record->avg_weight_g;
+            $this->total_cup_plus_product = $record->total_cup_plus_product;
+            $this->weighing_1             = $record->weighing_1;
+            $this->weighing_2             = $record->weighing_2;
 
             $this->isEditing = true;
         } else {
@@ -203,8 +204,11 @@ class IpcProductCheckForm extends Component
                 'weighing_2',
                 'notes',
             ]);
+
+            $this->isEditing = false;
         }
     }
+
 
     public function save(): void
     {
