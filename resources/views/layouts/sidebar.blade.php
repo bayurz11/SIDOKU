@@ -139,13 +139,20 @@
 
                  {{-- ============== IPC ============== --}}
                  <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
+
+                     @php
+                         $isIpcActive = request()->routeIs('ipc.product-checks.*');
+                     @endphp
+
                      <button @click="activeMenu = (activeMenu === 'ipc' ? '' : 'ipc')" aria-controls="menu-ipc"
                          :aria-expanded="(activeMenu === 'ipc').toString()"
-                         class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $ipcActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                         class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 
+            {{ $isIpcActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
                          type="button">
-                         @if ($ipcActive)
-                             <span class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400">
-                             </span>
+
+                         @if ($isIpcActive)
+                             <span
+                                 class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
                          @endif
 
                          <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,29 +172,17 @@
 
                      <div id="menu-ipc" x-show="activeMenu === 'ipc'" x-collapse
                          class="mt-1 pl-10 space-y-1 overflow-hidden">
+
                          @permission('ipc_product_checks.view')
-                             <a href="{{ route('ipc.product_checks.index') }}"
-                                 class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.product-checks.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                             <a href="{{ route('ipc.product-checks.index') }}"
+                                 class="block rounded-md px-4 py-2 text-sm
+                {{ request()->routeIs('ipc.product-checks.*')
+                    ? 'bg-white bg-opacity-20 text-white'
+                    : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                  IPC Product Checks
                              </a>
                          @endpermission
 
-                         {{-- Kalau nanti ada menu lain, tinggal aktifkan ini dan permission/route-nya --}}
-                         {{--
-        @permission('ipc_bottle_blow_checks.view')
-            <a href="{{ route('ipc.bottle-blow-checks.index') }}"
-               class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.bottle-blow-checks.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                IPC Tiup Botol
-            </a>
-        @endpermission
-
-        @permission('ipc_moisture_checks.view')
-            <a href="{{ route('ipc.moisture-checks.index') }}"
-               class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.moisture-checks.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                IPC Kadar Air
-            </a>
-        @endpermission
-        --}}
                      </div>
                  </div>
 

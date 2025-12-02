@@ -73,6 +73,8 @@ Route::middleware(['auth', 'permission:ipc_product_checks.view'])
             return view('product_checks.index');
         })->name('index');
     });
+
+
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/users', function () {
