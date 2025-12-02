@@ -109,7 +109,7 @@
                                 <input wire:model.defer="product_name" type="text" id="product_name"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: Teh Ori 350 ml, Powder Instan 1 kg, dll.">
+                                    placeholder="Contoh: Teh Ori, Powder Instan, Teh Bubuk 1 kg, dll.">
                                 @error('product_name')
                                     <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                 @enderror
