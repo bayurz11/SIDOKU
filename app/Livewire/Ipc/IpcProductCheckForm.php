@@ -78,14 +78,12 @@ class IpcProductCheckForm extends Component
     /**
      * Livewire hook: setiap ada field yang berubah.
      */
-    public function updated($field): void // NEW
+    public function updated($field): void
     {
-        // logika lama updatedLineGroup dipindah ke sini
         if ($field === 'line_group' && $this->line_group !== 'LINE_TEH') {
             $this->sub_line = null;
         }
 
-        // Recalc kadar air kalau field terkait berubah
         if (in_array($field, [
             'line_group',
             'cup_weight',
@@ -97,21 +95,24 @@ class IpcProductCheckForm extends Component
         }
     }
 
+
     /**
      * Hitung ulang total (cawan+produk) dan kadar air (%)
-     * sesuai rumus yang kamu minta.
+     * Rumus:
+     *   Kadar Air (%) = ( (Total Cawan + Produk) - (P1 + P2) / 2 ) / Berat Produk * 100
      */
-    protected function recalcMoisture(): void // NEW
+    protected function recalcMoisture(): void
     {
+        // Hanya hitung otomatis untuk line tertentu
         if (! in_array($this->line_group, $this->moistureLines, true)) {
-            // Kalau bukan line teh / powder, tidak usah hitung otomatis
             $this->total_cup_plus_product = null;
             return;
         }
 
-        // Total (cawan + produk)
+        // 1) Total (cawan + produk) = cup_weight + product_weight
         if ($this->cup_weight !== null && $this->product_weight !== null) {
-            $this->total_cup_plus_product = $this->cup_weight + $this->product_weight;
+            $this->total_cup_plus_product = round($this->cup_weight + $this->product_weight, 3);
+
             // Simpan juga berat produk ke field ringkasan
             $this->avg_weight_g = $this->product_weight;
         } else {
@@ -119,7 +120,7 @@ class IpcProductCheckForm extends Component
             $this->avg_weight_g = null;
         }
 
-        // Hasil kadar air
+        // 2) Hitung kadar air jika semua komponen ada
         if (
             $this->total_cup_plus_product !== null &&
             $this->weighing_1 !== null &&
@@ -127,8 +128,10 @@ class IpcProductCheckForm extends Component
             $this->product_weight !== null &&
             $this->product_weight > 0
         ) {
+            // rata-rata P1 dan P2
             $avgWeighing = ($this->weighing_1 + $this->weighing_2) / 2;
-            // Rumus: (total - (P1 + P2)/2) / berat produk * 100
+
+            // (Total Cawan + Produk - rata2(P1,P2)) / Berat Produk * 100
             $moisture = (($this->total_cup_plus_product - $avgWeighing) / $this->product_weight) * 100;
 
             $this->avg_moisture_percent = round($moisture, 2);
@@ -136,6 +139,7 @@ class IpcProductCheckForm extends Component
             $this->avg_moisture_percent = null;
         }
     }
+
 
     public function openForm(?int $id = null): void
     {

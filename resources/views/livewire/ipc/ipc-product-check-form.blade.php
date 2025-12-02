@@ -133,42 +133,6 @@
                                 @enderror
                             </div>
                         </div>
-
-                        {{-- Row 3: Ringkasan Kadar Air & Berat --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {{-- Kadar Air --}}
-                            <div>
-                                <label for="avg_moisture_percent" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Kadar Air (%) <span class="text-xs text-gray-400">(otomatis / bisa
-                                        diubah)</span>
-                                </label>
-                                <input wire:model.defer="avg_moisture_percent" type="number" step="0.01"
-                                    min="0" id="avg_moisture_percent"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 3.50">
-                                @error('avg_moisture_percent')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            {{-- Berat --}}
-                            <div>
-                                <label for="avg_weight_g" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Berat (g) <span class="text-xs text-gray-400">(otomatis / bisa
-                                        diubah)</span>
-                                </label>
-                                <input wire:model.defer="avg_weight_g" type="number" step="0.001" min="0"
-                                    id="avg_weight_g"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 3.200">
-                                @error('avg_weight_g')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
                         {{-- Row 4: Perhitungan Kadar Air Otomatis (Line Teh & Line Powder) --}}
                         <div class="border border-blue-100 rounded-lg p-4 bg-blue-50/40 space-y-4">
                             <div class="flex items-center justify-between gap-2">
@@ -205,12 +169,11 @@
 
                                 {{-- Berat produk --}}
                                 <div>
-                                    <label for="product_weight"
-                                        class="block text-xs font-medium text-gray-700 mb-1.5">
+                                    <label for="product_weight" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Berat Produk (g)
                                     </label>
-                                    <input wire:model.live="product_weight" type="number" step="0.001"
-                                        min="0" id="product_weight"
+                                    <input wire:model.live="product_weight" type="number" step="0.001" min="0"
+                                        id="product_weight"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                                focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Berat produk">
@@ -235,7 +198,6 @@
                                     @enderror
                                 </div>
                             </div>
-
                             {{-- Baris 2: Penimbangan 1 & 2 --}}
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {{-- Penimbangan 1 --}}
@@ -245,8 +207,7 @@
                                     </label>
                                     <input wire:model.live="weighing_1" type="number" step="0.001" min="0"
                                         id="weighing_1"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                               focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Setelah oven 1">
                                     @error('weighing_1')
                                         <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
@@ -260,23 +221,36 @@
                                     </label>
                                     <input wire:model.live="weighing_2" type="number" step="0.001" min="0"
                                         id="weighing_2"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                               focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Setelah oven 2">
                                     @error('weighing_2')
                                         <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
 
-                                {{-- Info hasil (opsional kecil) --}}
-                                <div class="flex flex-col justify-center text-xs text-gray-500">
-                                    <span>
-                                        Nilai <span class="font-semibold">Rata-rata Kadar Air</span> di atas akan
-                                        diupdate otomatis jika semua data terisi dan Line termasuk
-                                        <span class="font-semibold">Teh / Powder</span>.
+                                {{-- Info hasil kadar air dari rumus --}}
+                                <div class="flex flex-col justify-center text-xs text-gray-600">
+                                    <span class="font-semibold mb-1">
+                                        Hasil Kadar Air (%) – dari rumus:
                                     </span>
+                                    <span class="font-mono text-[11px] mb-1">
+                                        (Total Cawan + Produk − (P1 + P2)/2) ÷ Berat Produk × 100
+                                    </span>
+
+                                    @if (!is_null($avg_moisture_percent))
+                                        <span>
+                                            = <span class="font-mono font-semibold">
+                                                {{ number_format($avg_moisture_percent, 2) }} %
+                                            </span>
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 italic">
+                                            Isi Cawan, Produk, P1 dan P2 untuk melihat hasil.
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
+
                         </div>
 
                         {{-- Notes --}}
