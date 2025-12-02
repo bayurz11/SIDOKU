@@ -97,30 +97,38 @@ class IpcProductCheckForm extends Component
 
 
     /**
-     * Hitung ulang total (cawan+produk) dan kadar air (%)
-     * Rumus:
-     *   Kadar Air (%) = ( (Total Cawan + Produk) - (P1 + P2) / 2 ) / Berat Produk * 100
+     * Hitung ulang total (cawan + produk) dan kadar air (%)
+     * Rumus resmi:
+     *   (Berat Cawan + Berat Produk − (P1 + P2) / 2) ÷ Berat Produk × 100
      */
     protected function recalcMoisture(): void
     {
         // Hanya hitung otomatis untuk line tertentu
         if (! in_array($this->line_group, $this->moistureLines, true)) {
             $this->total_cup_plus_product = null;
+            $this->avg_moisture_percent = null;
             return;
         }
 
-        // 1) Total (cawan + produk) = cup_weight + product_weight
+        /**
+         * 1) Hitung Total (Berat Cawan + Berat Produk)
+         */
         if ($this->cup_weight !== null && $this->product_weight !== null) {
-            $this->total_cup_plus_product = round($this->cup_weight + $this->product_weight, 3);
+            $this->total_cup_plus_product = round(
+                $this->cup_weight + $this->product_weight,
+                3
+            );
 
-            // Simpan juga berat produk ke field ringkasan
+            // Berat produk ringkasan
             $this->avg_weight_g = $this->product_weight;
         } else {
             $this->total_cup_plus_product = null;
             $this->avg_weight_g = null;
         }
 
-        // 2) Hitung kadar air jika semua komponen ada
+        /**
+         * 2) Hitung kadar air jika semua komponen lengkap
+         */
         if (
             $this->total_cup_plus_product !== null &&
             $this->weighing_1 !== null &&
@@ -128,11 +136,15 @@ class IpcProductCheckForm extends Component
             $this->product_weight !== null &&
             $this->product_weight > 0
         ) {
-            // rata-rata P1 dan P2
+            // Rata-rata P1 dan P2: (P1 + P2) / 2
             $avgWeighing = ($this->weighing_1 + $this->weighing_2) / 2;
 
-            // (Total Cawan + Produk - rata2(P1,P2)) / Berat Produk * 100
-            $moisture = (($this->total_cup_plus_product - $avgWeighing) / $this->product_weight) * 100;
+            // Rumus kadar air:
+            // (Total - rata-rata penimbangan) / Berat Produk × 100
+            $moisture = (
+                ($this->total_cup_plus_product - $avgWeighing)
+                / $this->product_weight
+            ) * 100;
 
             $this->avg_moisture_percent = round($moisture, 2);
         } else {

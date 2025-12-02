@@ -104,12 +104,12 @@
                             {{-- Nama Produk --}}
                             <div class="md:col-span-2">
                                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Produk / Nama Botol <span class="text-red-500">*</span>
+                                    Nama Produk <span class="text-red-500">*</span>
                                 </label>
                                 <input wire:model.defer="product_name" type="text" id="product_name"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: Teh Ori 350 ml, Powder Instan 1 kg, AMDK 600 ml">
+                                    placeholder="Contoh: Teh Ori 350 ml, Powder Instan 1 kg, dll.">
                                 @error('product_name')
                                     <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                 @enderror
@@ -188,15 +188,15 @@
                                         class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Total Cawan + Produk (g)
                                     </label>
-                                    <input wire:model.defer="total_cup_plus_product" type="number" step="0.001"
-                                        min="0" id="total_cup_plus_product" readonly
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                               bg-gray-100 text-gray-700 text-sm"
+                                    <input type="number" step="0.001" min="0" id="total_cup_plus_product"
+                                        readonly value="{{ $total_cup_plus_product }}"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-700 text-sm"
                                         placeholder="Otomatis dari cawan + produk">
                                     @error('total_cup_plus_product')
                                         <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
+
                             </div>
                             {{-- Baris 2: Penimbangan 1 & 2 --}}
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -233,22 +233,28 @@
                                     <span class="font-semibold mb-1">
                                         Hasil Kadar Air (%) – dari rumus:
                                     </span>
-                                    <span class="font-mono text-[11px] mb-1">
-                                        (Total Cawan + Produk − (P1 + P2)/2) ÷ Berat Produk × 100
+                                    <span class="font-mono text-[11px] mb-2">
+                                        (Berat Cawan + Berat Produk − (P1 + P2)/2) ÷ Berat Produk × 100
                                     </span>
 
-                                    @if (!is_null($avg_moisture_percent))
-                                        <span>
-                                            = <span class="font-mono font-semibold">
-                                                {{ number_format($avg_moisture_percent, 2) }} %
-                                            </span>
+                                    {{-- Input hasil kadar air otomatis --}}
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" step="0.01" min="0" readonly
+                                            value="{{ $avg_moisture_percent }}"
+                                            class="block w-32 px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-700 text-xs font-mono"
+                                            placeholder="0.00">
+                                        <span class="text-[11px] text-gray-500">
+                                            % (otomatis dari rumus)
                                         </span>
-                                    @else
-                                        <span class="text-gray-400 italic">
+                                    </div>
+
+                                    @if (is_null($avg_moisture_percent))
+                                        <span class="mt-1 text-gray-400 italic">
                                             Isi Cawan, Produk, P1 dan P2 untuk melihat hasil.
                                         </span>
                                     @endif
                                 </div>
+
                             </div>
 
                         </div>
