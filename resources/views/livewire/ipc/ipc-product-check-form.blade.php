@@ -15,12 +15,12 @@
                                 {{ $isEditing ? 'Edit IPC Product Check' : 'Tambah IPC Product Check' }}
                             </h3>
                             <p class="text-sm text-gray-500 mt-1">
-                                Input hasil pemeriksaan IPC (kadar air, berat, pH, Brix, TDS, dll) per Line dan Produk.
+                                Input hasil pemeriksaan IPC (kadar air dan berat) per Line dan Produk.
                             </p>
                         </div>
 
                         <div class="flex flex-col items-end space-y-2">
-                            {{-- Bisa dipakai untuk info Line/Produk ringkas kalau mau --}}
+                            {{-- Info Line/Produk ringkas --}}
                             @if ($line_group && $product_name)
                                 <span
                                     class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
@@ -60,24 +60,26 @@
                                 @enderror
                             </div>
 
-                            {{-- Sub Line (khusus Line Teh) --}}
+                            {{-- Sub Line (khusus LINE_TEH) --}}
                             <div>
                                 <label for="sub_line" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Sub Line (Line Teh)
+                                    Sub Line (Teh)
                                 </label>
                                 <select wire:model.defer="sub_line" id="sub_line"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm
-                                           @if ($line_group !== 'LINE_TEH') bg-gray-50 @endif"
+                                           @if ($line_group !== 'LINE_TEH') bg-gray-100 @endif"
                                     @if ($line_group !== 'LINE_TEH') disabled @endif>
-                                    <option value="">-- Semua Sub Line --</option>
+                                    <option value="">-- Pilih Sub Line --</option>
                                     @foreach ($subLinesTeh as $key => $label)
                                         <option value="{{ $key }}">{{ $label }}</option>
                                     @endforeach
                                 </select>
-                                <p class="mt-1 text-xs text-gray-500">
-                                    Aktif jika Line Group = <span class="font-semibold">Line Teh</span>.
-                                </p>
+                                @if ($line_group !== 'LINE_TEH')
+                                    <p class="mt-1 text-[10px] text-gray-400 italic">
+                                        Sub line aktif jika Line Group = Line Teh.
+                                    </p>
+                                @endif
                                 @error('sub_line')
                                     <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                 @enderror
@@ -132,12 +134,13 @@
                             </div>
                         </div>
 
-                        {{-- Row 3: Kadar Air & Berat --}}
+                        {{-- Row 3: Ringkasan Kadar Air & Berat --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {{-- Kadar Air --}}
                             <div>
                                 <label for="avg_moisture_percent" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Kadar Air (%) <span class="text-xs text-gray-400">(opsional)</span>
+                                    Rata-rata Kadar Air (%) <span class="text-xs text-gray-400">(otomatis / bisa
+                                        diubah)</span>
                                 </label>
                                 <input wire:model.defer="avg_moisture_percent" type="number" step="0.01"
                                     min="0" id="avg_moisture_percent"
@@ -152,7 +155,8 @@
                             {{-- Berat --}}
                             <div>
                                 <label for="avg_weight_g" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Berat (g) <span class="text-xs text-gray-400">(opsional)</span>
+                                    Rata-rata Berat (g) <span class="text-xs text-gray-400">(otomatis / bisa
+                                        diubah)</span>
                                 </label>
                                 <input wire:model.defer="avg_weight_g" type="number" step="0.001" min="0"
                                     id="avg_weight_g"
@@ -165,119 +169,113 @@
                             </div>
                         </div>
 
-                        {{-- Row 4: pH & Brix --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {{-- pH --}}
-                            <div>
-                                <label for="avg_ph" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata pH <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_ph" type="number" step="0.01" min="0"
-                                    max="14" id="avg_ph"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 6.80">
-                                @error('avg_ph')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
+                        {{-- Row 4: Perhitungan Kadar Air Otomatis (Line Teh & Line Powder) --}}
+                        <div class="border border-blue-100 rounded-lg p-4 bg-blue-50/40 space-y-4">
+                            <div class="flex items-center justify-between gap-2">
+                                <div>
+                                    <h4 class="text-sm font-semibold text-gray-800">
+                                        Perhitungan Kadar Air Otomatis
+                                    </h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">
+                                        Untuk <span class="font-semibold">Line Teh & Line Powder</span>,
+                                        isi data berikut. Sistem akan menghitung kadar air otomatis
+                                        sesuai rumus: <span class="font-mono text-[11px]">
+                                            (Total − rata-rata P1,P2) / Berat produk × 100
+                                        </span>.
+                                    </p>
+                                </div>
                             </div>
 
-                            {{-- Brix --}}
-                            <div>
-                                <label for="avg_brix" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Brix (°Brix) <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_brix" type="number" step="0.01" min="0"
-                                    id="avg_brix"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 10.50">
-                                @error('avg_brix')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
+                            {{-- Baris 1: Berat cawan, produk, total --}}
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {{-- Berat cawan --}}
+                                <div>
+                                    <label for="cup_weight" class="block text-xs font-medium text-gray-700 mb-1.5">
+                                        Berat Cawan (g)
+                                    </label>
+                                    <input wire:model.live="cup_weight" type="number" step="0.001" min="0"
+                                        id="cup_weight"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                               focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        placeholder="Berat cawan kosong">
+                                    @error('cup_weight')
+                                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
 
-                        {{-- Row 5: TDS & Klorin --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {{-- TDS --}}
-                            <div>
-                                <label for="avg_tds_ppm" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata TDS (ppm) <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_tds_ppm" type="number" step="0.01" min="0"
-                                    id="avg_tds_ppm"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 120.00">
-                                @error('avg_tds_ppm')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
+                                {{-- Berat produk --}}
+                                <div>
+                                    <label for="product_weight"
+                                        class="block text-xs font-medium text-gray-700 mb-1.5">
+                                        Berat Produk (g)
+                                    </label>
+                                    <input wire:model.live="product_weight" type="number" step="0.001"
+                                        min="0" id="product_weight"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                               focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        placeholder="Berat produk">
+                                    @error('product_weight')
+                                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
 
-                            {{-- Klorin --}}
-                            <div>
-                                <label for="avg_chlorine" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Klorin <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_chlorine" type="number" step="0.001" min="0"
-                                    id="avg_chlorine"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 0.300">
-                                @error('avg_chlorine')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        {{-- Row 6: Ozon & Kekeruhan --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {{-- Ozon --}}
-                            <div>
-                                <label for="avg_ozone" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Ozon <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_ozone" type="number" step="0.001" min="0"
-                                    id="avg_ozone"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 0.200">
-                                @error('avg_ozone')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
+                                {{-- Total cawan + produk (otomatis) --}}
+                                <div>
+                                    <label for="total_cup_plus_product"
+                                        class="block text-xs font-medium text-gray-700 mb-1.5">
+                                        Total Cawan + Produk (g)
+                                    </label>
+                                    <input wire:model.defer="total_cup_plus_product" type="number" step="0.001"
+                                        min="0" id="total_cup_plus_product" readonly
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                               bg-gray-100 text-gray-700 text-sm"
+                                        placeholder="Otomatis dari cawan + produk">
+                                    @error('total_cup_plus_product')
+                                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
                             </div>
 
-                            {{-- Kekeruhan --}}
-                            <div>
-                                <label for="avg_turbidity_ntu" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Kekeruhan (NTU) <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_turbidity_ntu" type="number" step="0.001"
-                                    min="0" id="avg_turbidity_ntu"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 0.500">
-                                @error('avg_turbidity_ntu')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
+                            {{-- Baris 2: Penimbangan 1 & 2 --}}
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {{-- Penimbangan 1 --}}
+                                <div>
+                                    <label for="weighing_1" class="block text-xs font-medium text-gray-700 mb-1.5">
+                                        Penimbangan 1 (g)
+                                    </label>
+                                    <input wire:model.live="weighing_1" type="number" step="0.001" min="0"
+                                        id="weighing_1"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                               focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        placeholder="Setelah oven 1">
+                                    @error('weighing_1')
+                                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
 
-                        {{-- Row 7: Salinitas --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="avg_salinity" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rata-rata Salinitas <span class="text-xs text-gray-400">(opsional)</span>
-                                </label>
-                                <input wire:model.defer="avg_salinity" type="number" step="0.001" min="0"
-                                    id="avg_salinity"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: 0.800">
-                                @error('avg_salinity')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
+                                {{-- Penimbangan 2 --}}
+                                <div>
+                                    <label for="weighing_2" class="block text-xs font-medium text-gray-700 mb-1.5">
+                                        Penimbangan 2 (g)
+                                    </label>
+                                    <input wire:model.live="weighing_2" type="number" step="0.001" min="0"
+                                        id="weighing_2"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                               focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        placeholder="Setelah oven 2">
+                                    @error('weighing_2')
+                                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                {{-- Info hasil (opsional kecil) --}}
+                                <div class="flex flex-col justify-center text-xs text-gray-500">
+                                    <span>
+                                        Nilai <span class="font-semibold">Rata-rata Kadar Air</span> di atas akan
+                                        diupdate otomatis jika semua data terisi dan Line termasuk
+                                        <span class="font-semibold">Teh / Powder</span>.
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -310,7 +308,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
-                                {{ $isEditing ? 'Update IPC' : 'Simpan IPC' }}
+                                {{ $isEditing ? 'Update' : 'Simpan' }}
                             </button>
                         </div>
                     </form>

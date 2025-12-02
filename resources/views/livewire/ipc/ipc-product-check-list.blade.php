@@ -84,13 +84,9 @@
                                            @switch($groupKey)
                                                @case('LINE_TEH') from-green-400 to-emerald-600 @break
                                                @case('LINE_POWDER') from-amber-400 to-orange-500 @break
-                                               @case('LINE_MINUMAN_BERPERISA') from-sky-400 to-blue-600 @break
-                                               @case('LINE_AMDK') from-indigo-400 to-purple-600 @break
-                                               @case('LINE_CONDIMENTS') from-rose-400 to-red-600 @break
                                                @default from-gray-400 to-gray-600
                                            @endswitch"
-                                    style="width: {{ $percent }}%;">
-                                </div>
+                                    style="width: {{ $percent }}%;"></div>
                             </div>
                         </div>
                     @endforeach
@@ -115,7 +111,7 @@
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900">IPC Product Checks</h2>
                         <p class="text-sm text-gray-600 mt-1">
-                            Kelola hasil IPC (kadar air, berat, pH, brix, TDS, dll) per Line dan Produk.
+                            Kelola hasil IPC (kadar air & berat) per Line dan Produk.
                         </p>
                     </div>
                 </div>
@@ -242,14 +238,6 @@
                             class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200">
                             Berat (g)
                         </th>
-                        <th wire:click="sortBy('avg_ph')"
-                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200">
-                            pH
-                        </th>
-                        <th wire:click="sortBy('avg_brix')"
-                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200">
-                            Brix (°Bx)
-                        </th>
                         <th
                             class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider rounded-tr-xl">
                             Aksi
@@ -337,28 +325,6 @@
                                 @endif
                             </td>
 
-                            {{-- pH --}}
-                            <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
-                                @if (!is_null($ipc->avg_ph))
-                                    <span class="font-mono">
-                                        {{ number_format($ipc->avg_ph, 2) }}
-                                    </span>
-                                @else
-                                    <span class="text-xs text-gray-400 italic">-</span>
-                                @endif
-                            </td>
-
-                            {{-- Brix --}}
-                            <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
-                                @if (!is_null($ipc->avg_brix))
-                                    <span class="font-mono">
-                                        {{ number_format($ipc->avg_brix, 2) }}
-                                    </span>
-                                @else
-                                    <span class="text-xs text-gray-400 italic">-</span>
-                                @endif
-                            </td>
-
                             {{-- Aksi --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center gap-2">
@@ -382,8 +348,9 @@
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
+                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -396,7 +363,7 @@
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -406,7 +373,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-16 text-center">
+                            {{-- total kolom sekarang: 8 --}}
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div
                                         class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6 shadow-inner">

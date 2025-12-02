@@ -42,7 +42,7 @@ class DocumentList extends Component
         'created_at',
     ];
 
-    protected array $allowedPerPage = [10, 25, 50];
+    protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
         'search'             => ['except' => ''],

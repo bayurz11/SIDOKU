@@ -24,6 +24,10 @@ class IpcProductCheckList extends Component
     public array $lineGroups = [];
     public array $subLinesTeh = [];
 
+    /**
+     * Kolom yang boleh digunakan untuk sorting.
+     * Disesuaikan dengan struktur tabel terbaru (tanpa avg_ph, avg_brix, dll).
+     */
     protected array $allowedSorts = [
         'test_date',
         'product_name',
@@ -32,11 +36,9 @@ class IpcProductCheckList extends Component
         'shift',
         'avg_moisture_percent',
         'avg_weight_g',
-        'avg_ph',
-        'avg_brix',
     ];
 
-    protected array $allowedPerPage = [10, 25, 50];
+    protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
         'search'          => ['except' => ''],
@@ -55,7 +57,8 @@ class IpcProductCheckList extends Component
 
     public function mount(): void
     {
-        $this->lineGroups = IpcProductCheck::LINE_GROUPS;
+        // Diambil dari konstanta di Model (sekarang hanya LINE_TEH & LINE_POWDER)
+        $this->lineGroups  = IpcProductCheck::LINE_GROUPS;
         $this->subLinesTeh = IpcProductCheck::SUB_LINES_TEH;
     }
 
@@ -64,34 +67,34 @@ class IpcProductCheckList extends Component
         $this->resetPage();
     }
 
-    public function updatingSearch()
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatingFilterLineGroup()
+    public function updatingFilterLineGroup(): void
     {
         // reset subline kalau ganti line group
         $this->filterSubLine = null;
         $this->resetPage();
     }
 
-    public function updatingFilterSubLine()
+    public function updatingFilterSubLine(): void
     {
         $this->resetPage();
     }
 
-    public function updatingFilterDateFrom()
+    public function updatingFilterDateFrom(): void
     {
         $this->resetPage();
     }
 
-    public function updatingFilterDateTo()
+    public function updatingFilterDateTo(): void
     {
         $this->resetPage();
     }
 
-    public function updatingPerPage()
+    public function updatingPerPage(): void
     {
         if (! in_array($this->perPage, $this->allowedPerPage)) {
             $this->perPage = 10;
@@ -102,7 +105,7 @@ class IpcProductCheckList extends Component
 
     public function sortBy(string $field): void
     {
-        if (! in_array($field, $this->allowedSorts)) {
+        if (! in_array($field, $this->allowedSorts, true)) {
             return;
         }
 

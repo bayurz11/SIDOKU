@@ -19,15 +19,17 @@ class IpcProductCheckForm extends Component
     public string $product_name = '';
     public ?int $shift         = null;
 
+    // --- FIELD HASIL RINGKAS (TETAP ADA) ---
     public ?float $avg_moisture_percent = null;
     public ?float $avg_weight_g         = null;
-    public ?float $avg_ph               = null;
-    public ?float $avg_brix             = null;
-    public ?float $avg_tds_ppm          = null;
-    public ?float $avg_chlorine         = null;
-    public ?float $avg_ozone            = null;
-    public ?float $avg_turbidity_ntu    = null;
-    public ?float $avg_salinity         = null;
+
+
+    // --- FIELD KHUSUS HITUNG KADAR AIR LINE TEH / POWDER (NEW) ---
+    public ?float $cup_weight             = null; // berat cawan porselin
+    public ?float $product_weight         = null; // berat produk
+    public ?float $total_cup_plus_product = null; // total (cawan + produk)
+    public ?float $weighing_1             = null; // penimbangan 1
+    public ?float $weighing_2             = null; // penimbangan 2
 
     public ?string $notes               = null;
 
@@ -36,6 +38,9 @@ class IpcProductCheckForm extends Component
 
     public array $lineGroups = [];
     public array $subLinesTeh = [];
+
+    // Line yang pakai perhitungan kadar air otomatis
+    protected array $moistureLines = ['LINE_TEH', 'LINE_POWDER']; // NEW
 
     protected $listeners = [
         'openIpcProductCheckForm' => 'openForm',
@@ -52,13 +57,13 @@ class IpcProductCheckForm extends Component
 
             'avg_moisture_percent' => ['nullable', 'numeric', 'min:0'],
             'avg_weight_g'         => ['nullable', 'numeric', 'min:0'],
-            'avg_ph'               => ['nullable', 'numeric', 'between:0,14'],
-            'avg_brix'             => ['nullable', 'numeric', 'min:0'],
-            'avg_tds_ppm'          => ['nullable', 'numeric', 'min:0'],
-            'avg_chlorine'         => ['nullable', 'numeric', 'min:0'],
-            'avg_ozone'            => ['nullable', 'numeric', 'min:0'],
-            'avg_turbidity_ntu'    => ['nullable', 'numeric', 'min:0'],
-            'avg_salinity'         => ['nullable', 'numeric', 'min:0'],
+
+            // NEW: field kalkulasi kadar air
+            'cup_weight'             => ['nullable', 'numeric', 'min:0'],
+            'product_weight'         => ['nullable', 'numeric', 'min:0'],
+            'total_cup_plus_product' => ['nullable', 'numeric', 'min:0'],
+            'weighing_1'             => ['nullable', 'numeric', 'min:0'],
+            'weighing_2'             => ['nullable', 'numeric', 'min:0'],
 
             'notes' => ['nullable', 'string'],
         ];
@@ -70,11 +75,65 @@ class IpcProductCheckForm extends Component
         $this->subLinesTeh = IpcProductCheck::SUB_LINES_TEH;
     }
 
-    public function updatedLineGroup(): void
+    /**
+     * Livewire hook: setiap ada field yang berubah.
+     */
+    public function updated($field): void // NEW
     {
-        // kalau bukan LINE_TEH, kosongkan sub_line
-        if ($this->line_group !== 'LINE_TEH') {
+        // logika lama updatedLineGroup dipindah ke sini
+        if ($field === 'line_group' && $this->line_group !== 'LINE_TEH') {
             $this->sub_line = null;
+        }
+
+        // Recalc kadar air kalau field terkait berubah
+        if (in_array($field, [
+            'line_group',
+            'cup_weight',
+            'product_weight',
+            'weighing_1',
+            'weighing_2',
+        ], true)) {
+            $this->recalcMoisture();
+        }
+    }
+
+    /**
+     * Hitung ulang total (cawan+produk) dan kadar air (%)
+     * sesuai rumus yang kamu minta.
+     */
+    protected function recalcMoisture(): void // NEW
+    {
+        if (! in_array($this->line_group, $this->moistureLines, true)) {
+            // Kalau bukan line teh / powder, tidak usah hitung otomatis
+            $this->total_cup_plus_product = null;
+            return;
+        }
+
+        // Total (cawan + produk)
+        if ($this->cup_weight !== null && $this->product_weight !== null) {
+            $this->total_cup_plus_product = $this->cup_weight + $this->product_weight;
+            // Simpan juga berat produk ke field ringkasan
+            $this->avg_weight_g = $this->product_weight;
+        } else {
+            $this->total_cup_plus_product = null;
+            $this->avg_weight_g = null;
+        }
+
+        // Hasil kadar air
+        if (
+            $this->total_cup_plus_product !== null &&
+            $this->weighing_1 !== null &&
+            $this->weighing_2 !== null &&
+            $this->product_weight !== null &&
+            $this->product_weight > 0
+        ) {
+            $avgWeighing = ($this->weighing_1 + $this->weighing_2) / 2;
+            // Rumus: (total - (P1 + P2)/2) / berat produk * 100
+            $moisture = (($this->total_cup_plus_product - $avgWeighing) / $this->product_weight) * 100;
+
+            $this->avg_moisture_percent = round($moisture, 2);
+        } else {
+            $this->avg_moisture_percent = null;
         }
     }
 
@@ -99,15 +158,15 @@ class IpcProductCheckForm extends Component
 
             $this->avg_moisture_percent = $record->avg_moisture_percent;
             $this->avg_weight_g         = $record->avg_weight_g;
-            $this->avg_ph               = $record->avg_ph;
-            $this->avg_brix             = $record->avg_brix;
-            $this->avg_tds_ppm          = $record->avg_tds_ppm;
-            $this->avg_chlorine         = $record->avg_chlorine;
-            $this->avg_ozone            = $record->avg_ozone;
-            $this->avg_turbidity_ntu    = $record->avg_turbidity_ntu;
-            $this->avg_salinity         = $record->avg_salinity;
 
             $this->notes                = $record->notes;
+
+            // Field kalkulasi tidak di-load karena belum ada di DB (optional)
+            $this->cup_weight             = null;
+            $this->product_weight         = $this->avg_weight_g;
+            $this->total_cup_plus_product = null;
+            $this->weighing_1             = null;
+            $this->weighing_2             = null;
 
             $this->isEditing = true;
         } else {
@@ -121,13 +180,11 @@ class IpcProductCheckForm extends Component
                 'shift',
                 'avg_moisture_percent',
                 'avg_weight_g',
-                'avg_ph',
-                'avg_brix',
-                'avg_tds_ppm',
-                'avg_chlorine',
-                'avg_ozone',
-                'avg_turbidity_ntu',
-                'avg_salinity',
+                'cup_weight',
+                'product_weight',
+                'total_cup_plus_product',
+                'weighing_1',
+                'weighing_2',
                 'notes',
             ]);
         }
@@ -135,9 +192,12 @@ class IpcProductCheckForm extends Component
 
     public function save(): void
     {
+        // Hitung ulang kadar air dulu, baru validasi
+        $this->recalcMoisture(); // NEW
+
         $this->validate();
 
-        // Kalau line TEH tapi sub_line kosong, boleh kamu paksa required di sini
+        // Kalau line TEH, sub_line boleh diwajibkan (logic lama)
         if ($this->line_group === 'LINE_TEH' && ! $this->sub_line) {
             $this->addError('sub_line', 'Sub-line wajib dipilih untuk Line Teh.');
             return;
@@ -151,13 +211,6 @@ class IpcProductCheckForm extends Component
             'shift'                => $this->shift,
             'avg_moisture_percent' => $this->avg_moisture_percent,
             'avg_weight_g'         => $this->avg_weight_g,
-            'avg_ph'               => $this->avg_ph,
-            'avg_brix'             => $this->avg_brix,
-            'avg_tds_ppm'          => $this->avg_tds_ppm,
-            'avg_chlorine'         => $this->avg_chlorine,
-            'avg_ozone'            => $this->avg_ozone,
-            'avg_turbidity_ntu'    => $this->avg_turbidity_ntu,
-            'avg_salinity'         => $this->avg_salinity,
             'notes'                => $this->notes,
         ];
 
@@ -192,13 +245,11 @@ class IpcProductCheckForm extends Component
             'shift',
             'avg_moisture_percent',
             'avg_weight_g',
-            'avg_ph',
-            'avg_brix',
-            'avg_tds_ppm',
-            'avg_chlorine',
-            'avg_ozone',
-            'avg_turbidity_ntu',
-            'avg_salinity',
+            'cup_weight',
+            'product_weight',
+            'total_cup_plus_product',
+            'weighing_1',
+            'weighing_2',
             'notes',
             'showModal',
             'isEditing',

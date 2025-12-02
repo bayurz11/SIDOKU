@@ -17,15 +17,18 @@ class IpcProductCheck extends Model
         'test_date',
         'product_name',
         'shift',
+
+        // Ringkasan hasil
         'avg_moisture_percent',
         'avg_weight_g',
-        'avg_ph',
-        'avg_brix',
-        'avg_tds_ppm',
-        'avg_chlorine',
-        'avg_ozone',
-        'avg_turbidity_ntu',
-        'avg_salinity',
+
+        // Field perhitungan kadar air (dibutuhkan Livewire Form)
+        'cup_weight',
+        'product_weight',
+        'total_cup_plus_product',
+        'weighing_1',
+        'weighing_2',
+
         'notes',
         'created_by',
     ];
@@ -33,17 +36,27 @@ class IpcProductCheck extends Model
     protected $casts = [
         'test_date' => 'date',
         'shift'     => 'integer',
+        'avg_moisture_percent' => 'float',
+        'avg_weight_g'         => 'float',
+        'cup_weight'           => 'float',
+        'product_weight'       => 'float',
+        'total_cup_plus_product' => 'float',
+        'weighing_1'           => 'float',
+        'weighing_2'           => 'float',
     ];
 
-    // Optional: array untuk dropdown
+    /**
+     * Dropdown Line Group yang dipakai SEKARANG.
+     * (Line lain belum digunakan → tidak ditampilkan dulu)
+     */
     public const LINE_GROUPS = [
-        'LINE_TEH'               => 'Line Teh',
-        'LINE_POWDER'            => 'Line Powder',
-        'LINE_MINUMAN_BERPERISA' => 'Line Minuman Berperisa',
-        'LINE_AMDK'              => 'Line AMDK',
-        'LINE_CONDIMENTS'        => 'Line Condiments',
+        'LINE_TEH'    => 'Line Teh',
+        'LINE_POWDER' => 'Line Powder',
     ];
 
+    /**
+     * Sub line khusus untuk LINE_TEH
+     */
     public const SUB_LINES_TEH = [
         'TEH_ORI'        => 'Teh Ori',
         'TEH_SACHET'     => 'Teh Sachet',

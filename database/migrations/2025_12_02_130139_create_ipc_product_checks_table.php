@@ -15,9 +15,6 @@ return new class extends Migration
             $table->enum('line_group', [
                 'LINE_TEH',
                 'LINE_POWDER',
-                'LINE_MINUMAN_BERPERISA',
-                'LINE_AMDK',
-                'LINE_CONDIMENTS',
             ]);
 
             // Sub-line (khusus line teh, lainnya boleh null)
@@ -38,16 +35,17 @@ return new class extends Migration
             // Shift (kalau tidak dipakai, boleh null)
             $table->tinyInteger('shift')->nullable(); // 1 / 2 / 3
 
-            // Nilai rata-rata (semua nullable supaya fleksibel)
+            // --- FIELD HASIL RINGKAS (SAMA DENGAN FORM) ---
             $table->decimal('avg_moisture_percent', 5, 2)->nullable(); // Kadar air %
-            $table->decimal('avg_weight_g', 8, 3)->nullable();         // Berat g
-            $table->decimal('avg_ph', 4, 2)->nullable();               // pH
-            $table->decimal('avg_brix', 5, 2)->nullable();             // °Brix
-            $table->decimal('avg_tds_ppm', 8, 2)->nullable();          // TDS ppm
-            $table->decimal('avg_chlorine', 6, 3)->nullable();         // Klorin
-            $table->decimal('avg_ozone', 6, 3)->nullable();            // Ozon
-            $table->decimal('avg_turbidity_ntu', 6, 3)->nullable();    // NTU
-            $table->decimal('avg_salinity', 6, 3)->nullable();         // Salinitas
+            $table->decimal('avg_weight_g', 8, 3)->nullable();         // Berat g (rata-rata)
+
+            // --- FIELD KHUSUS HITUNG KADAR AIR (LINE_TEH & LINE_POWDER) ---
+            // Semua dibuat nullable, supaya fleksibel dan tidak wajib diisi jika tidak dipakai
+            $table->decimal('cup_weight', 8, 3)->nullable();             // berat cawan porselin
+            $table->decimal('product_weight', 8, 3)->nullable();         // berat produk
+            $table->decimal('total_cup_plus_product', 8, 3)->nullable(); // total (cawan + produk)
+            $table->decimal('weighing_1', 8, 3)->nullable();             // penimbangan 1
+            $table->decimal('weighing_2', 8, 3)->nullable();             // penimbangan 2
 
             $table->text('notes')->nullable();
 
