@@ -214,6 +214,8 @@
                                                             Document Category Management
                                                         @elseif(request()->routeIs('document_prefix_settings.*'))
                                                             Document Prefix Settings
+                                                        @elseif(request()->routeIs('ipc.product-checks.*'))
+                                                            In Process Control Product Checks
                                                         @elseif(request()->routeIs('documents.*'))
                                                             Document
                                                         @else
