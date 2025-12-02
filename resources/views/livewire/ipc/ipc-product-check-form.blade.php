@@ -76,7 +76,7 @@
                                     @endforeach
                                 </select>
                                 @if ($line_group !== 'LINE_TEH')
-                                    <p class="mt-1 text-[6px] text-gray-400 italic">
+                                    <p class="text-sm text-gray-500 mt-1 italic">
                                         Sub line aktif jika Line Group = Line Teh.
                                     </p>
                                 @endif
