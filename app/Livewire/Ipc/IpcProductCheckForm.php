@@ -227,8 +227,17 @@ class IpcProductCheckForm extends Component
             'shift'                => $this->shift,
             'avg_moisture_percent' => $this->avg_moisture_percent,
             'avg_weight_g'         => $this->avg_weight_g,
-            'notes'                => $this->notes,
+
+            // SIMPAN JUGA FIELD KALKULASI
+            'cup_weight'             => $this->cup_weight,
+            'product_weight'         => $this->product_weight,
+            'total_cup_plus_product' => $this->total_cup_plus_product,
+            'weighing_1'             => $this->weighing_1,
+            'weighing_2'             => $this->weighing_2,
+
+            'notes' => $this->notes,
         ];
+
 
         if ($this->isEditing && $this->ipcId) {
             $record = IpcProductCheck::findOrFail($this->ipcId);
