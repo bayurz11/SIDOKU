@@ -159,8 +159,6 @@
             <!-- Sidebar Navigation -->
             @include('layouts.sidebar')
 
-
-
             <!-- Main Content -->
             <div id="main-content" class="main-content transition-all duration-300 ease-in-out">
                 <!-- Top Navigation Bar -->

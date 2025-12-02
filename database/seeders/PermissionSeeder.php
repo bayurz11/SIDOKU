@@ -119,6 +119,13 @@ class PermissionSeeder extends Seeder
                 'group' => 'documents',
             ],
 
+            // IPC Product Checks permissions
+            ['name' => 'ipc_product_checks.view', 'display_name' => 'View IPC Product Checks', 'description' => 'Can view IPC product checks list and details', 'group' => 'ipc_product_checks'],
+            ['name' => 'ipc_product_checks.create', 'display_name' => 'Create IPC Product Checks', 'description' => 'Can create new IPC product check records', 'group' => 'ipc_product_checks'],
+            ['name' => 'ipc_product_checks.edit', 'display_name' => 'Edit IPC Product Checks', 'description' => 'Can edit existing IPC product check records', 'group' => 'ipc_product_checks'],
+            ['name' => 'ipc_product_checks.delete', 'display_name' => 'Delete IPC Product Checks', 'description' => 'Can delete IPC product check records', 'group' => 'ipc_product_checks'],
+
+
             // Document Types permissions
             ['name' => 'document_types.view', 'display_name' => 'View Document Types', 'description' => 'Can view document type list and details', 'group' => 'document_types'],
             ['name' => 'document_types.create', 'display_name' => 'Create Document Types', 'description' => 'Can create new document types', 'group' => 'document_types'],
