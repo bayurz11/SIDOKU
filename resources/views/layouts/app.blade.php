@@ -386,7 +386,7 @@
             </div>
         </div>
     @endauth
-
+    @stack('scripts')
     @livewireScripts
 
     <!-- SweetAlert2 for modern alerts -->
@@ -512,7 +512,7 @@
             });
         }
     </script>
-    @stack('scripts')
+
     {{-- Chart.js CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
