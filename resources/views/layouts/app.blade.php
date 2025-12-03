@@ -154,6 +154,7 @@
 </head>
 
 <body class="font-sans antialiased bg-gray-50">
+    @stack('scripts')
     @auth
         <div class="min-h-screen">
             <!-- Sidebar -->
@@ -386,12 +387,12 @@
             </div>
         </div>
     @endauth
-    @stack('scripts')
+
     @livewireScripts
 
     <!-- SweetAlert2 for modern alerts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    @stack('scripts')
     <script>
         // Modern Alert System
         window.showAlert = function(type, title, text, options = {}) {
