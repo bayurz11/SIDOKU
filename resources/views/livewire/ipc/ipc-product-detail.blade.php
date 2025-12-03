@@ -156,7 +156,7 @@
                             <h3 class="text-[11px] font-semibold text-gray-500 uppercase">Hasil Ringkas</h3>
                             <dl class="space-y-1">
                                 <div class="flex justify-between">
-                                    <dt class="text-gray-500">Moisture (%)</dt>
+                                    <dt class="text-gray-500">Kadar Air (%)</dt>
                                     <dd class="text-gray-900 font-medium text-right">
                                         {{ $ipc->avg_moisture_percent !== null ? number_format($ipc->avg_moisture_percent, 2) : '-' }}
                                     </dd>

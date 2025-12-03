@@ -1,15 +1,24 @@
 @php
-    use Illuminate\Support\Str;
-
-    // Ringkasan sederhana dari data di halaman ini
-    $collection = $data->getCollection();
-
-    $groupCounts = $collection->groupBy('line_group')->map(fn($items) => $items->count());
-
-    $maxCount = $groupCounts->max() ?: 1;
-
     $lineGroupLabels = \App\Domains\Ipc\Models\IpcProductCheck::LINE_GROUPS;
+    $subLineLabels = \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH ?? [];
+
+    // Bentuk label dan value untuk Chart.js
+    $chartLabels = $moistureSummary
+        ->map(function ($row) use ($lineGroupLabels, $subLineLabels) {
+            $lineLabel = $lineGroupLabels[$row->line_group] ?? $row->line_group;
+            $subLabel = $row->sub_line ? $subLineLabels[$row->sub_line] ?? $row->sub_line : null;
+
+            return $subLabel ? "{$lineLabel} - {$subLabel}" : $lineLabel;
+        })
+        ->values();
+
+    $chartValues = $moistureSummary
+        ->map(function ($row) {
+            return round($row->avg_moisture, 2);
+        })
+        ->values();
 @endphp
+
 
 <div class="space-y-6">
     {{-- CARD CHART / OVERVIEW --}}
@@ -57,41 +66,17 @@
 
         {{-- "Chart" per Line Group --}}
         <div class="px-6 py-5">
-            @if ($groupCounts->isEmpty())
+            @if ($moistureSummary->isEmpty())
                 <p class="text-sm text-gray-500 italic">
-                    Belum ada data untuk ditampilkan di chart. Tambahkan atau ubah filter terlebih dahulu.
+                    Belum ada data moisture untuk ditampilkan. Atur filter line / tanggal terlebih dahulu.
                 </p>
             @else
-                <div class="space-y-3">
-                    @foreach ($groupCounts as $groupKey => $count)
-                        @php
-                            $label = $lineGroupLabels[$groupKey] ?? $groupKey;
-                            $percent = round(($count / $maxCount) * 100, 1);
-                        @endphp
-
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-semibold text-gray-700">
-                                    {{ $label }}
-                                </span>
-                                <span class="text-xs text-gray-500">
-                                    {{ $count }} record &middot; {{ $percent }}%
-                                </span>
-                            </div>
-                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-2.5 rounded-full bg-gradient-to-r
-                                           @switch($groupKey)
-                                               @case('LINE_TEH') from-green-400 to-emerald-600 @break
-                                               @case('LINE_POWDER') from-amber-400 to-orange-500 @break
-                                               @default from-gray-400 to-gray-600
-                                           @endswitch"
-                                    style="width: {{ $percent }}%;"></div>
-                            </div>
-                        </div>
-                    @endforeach
+                <div class="h-72">
+                    <canvas id="ipcMoistureChart"></canvas>
                 </div>
             @endif
         </div>
+
     </div>
 
     {{-- CARD LIST IPC PRODUCT CHECKS --}}
@@ -336,7 +321,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -350,7 +335,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -424,7 +409,7 @@
                     <span class="font-medium">{{ $data->lastItem() ?? 0 }}</span>
                     dari
                     <span class="font-medium">{{ $data->total() }}</span>
-                    data IPC
+                    data Kadar Air & Berat.
                 </div>
                 <div class="flex-1 flex justify-center md:justify-end">
                     {{ $data->links() }}
@@ -434,3 +419,81 @@
     </div>
 
 </div>
+@push('scripts')
+    {{-- Chart.js CDN --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('livewire:load', () => {
+            const renderIpcMoistureChart = () => {
+                const ctx = document.getElementById('ipcMoistureChart');
+                if (!ctx) return;
+
+                const labels = @json($chartLabels);
+                const dataValues = @json($chartValues);
+
+                // destroy chart lama kalau ada (biar nggak dobel saat filter / paginate)
+                if (window.ipcMoistureChart) {
+                    window.ipcMoistureChart.destroy();
+                }
+
+                window.ipcMoistureChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Rata-rata Moisture (%)',
+                            data: dataValues,
+                            backgroundColor: 'rgba(16, 185, 129, 0.6)', // hijau soft
+                            borderColor: 'rgba(5, 150, 105, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // horizontal bar
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Moisture (%)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    autoSkip: false,
+                                    font: {
+                                        size: 10
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return ctx.parsed.x.toFixed(2) + ' %';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // render pertama
+            renderIpcMoistureChart();
+
+            // render ulang setiap Livewire update (filter, paginate, dll)
+            Livewire.hook('message.processed', (message, component) => {
+                renderIpcMoistureChart();
+            });
+        });
+    </script>
+@endpush

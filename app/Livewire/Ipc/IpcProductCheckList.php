@@ -133,7 +133,8 @@ class IpcProductCheckList extends Component
 
     public function render()
     {
-        $query = IpcProductCheck::query()
+        // base query yang sudah pakai semua filter
+        $baseQuery = IpcProductCheck::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
                 $q->where(function ($sub) use ($term) {
@@ -143,11 +144,24 @@ class IpcProductCheckList extends Component
             ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
             ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
             ->when($this->filterDateFrom, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
-            ->when($this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo))
-            ->orderBy($this->sortField, $this->sortDirection);
+            ->when($this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
 
-        $data = $query->paginate($this->perPage);
+        // data utama untuk tabel (pakai pagination & sorting)
+        $data = (clone $baseQuery)
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate($this->perPage);
 
-        return view('livewire.ipc.ipc-product-check-list', compact('data'));
+        // RINGKASAN UNTUK CHART:
+        // rata-rata moisture per line_group + sub_line di rentang filter
+        $moistureSummary = (clone $baseQuery)
+            ->whereNotNull('avg_moisture_percent')
+            ->selectRaw('line_group, sub_line, AVG(avg_moisture_percent) as avg_moisture, COUNT(*) as total_samples')
+            ->groupBy('line_group', 'sub_line')
+            ->get();
+
+        return view('livewire.ipc.ipc-product-check-list', [
+            'data'            => $data,
+            'moistureSummary' => $moistureSummary,
+        ]);
     }
 }
