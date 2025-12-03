@@ -19,8 +19,6 @@
             document.body.style.overflow = 'auto';
         });
     </script>
-    {{-- Chart.js CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     @livewireStyles
     <style>
@@ -513,9 +511,6 @@
             });
         }
     </script>
-
-    {{-- Chart.js CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 
