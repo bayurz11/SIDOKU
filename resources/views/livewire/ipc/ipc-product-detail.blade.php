@@ -25,10 +25,10 @@
 
                             <div class="space-y-0.5">
                                 <h2 class="text-lg font-bold text-gray-900 leading-tight">
-                                    Detail IPC Product Check
+                                    Detail IPC Kadar air Produk
                                 </h2>
                                 <p class="text-xs text-gray-600">
-                                    Informasi lengkap hasil pengecekan IPC per produk dan line.
+                                    Informasi lengkap hasil pengecekan IPC
                                 </p>
                             </div>
                         </div>
@@ -172,7 +172,7 @@
                                     <dt class="text-gray-500">Dibuat oleh</dt>
                                     <dd class="text-gray-900 font-medium text-right">
                                         @if (method_exists($ipc, 'createdBy') && $ipc->createdBy)
-                                            {{ $ipc->createdBy->name }}
+                                            {{ $ipc->createdBy->user->name }}
                                         @else
                                             {{ $ipc->created_by ?? '-' }}
                                         @endif
@@ -192,7 +192,7 @@
                     {{-- Detail Perhitungan Moisture --}}
                     <div class="space-y-1.5">
                         <h3 class="text-[11px] font-semibold text-gray-500 uppercase">
-                            Detail Perhitungan Moisture
+                            Detail Perhitungan Kadar Air (Moisture)
                         </h3>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
@@ -236,12 +236,7 @@
                                             ? ($ipc->weighing_1 + $ipc->weighing_2) / 2
                                             : null;
                                 @endphp
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Rata-rata (P1 + P2) / 2</span>
-                                    <span class="font-semibold text-gray-900">
-                                        {{ $avgWeighing !== null ? number_format($avgWeighing, 3) : '-' }}
-                                    </span>
-                                </div>
+
                             </div>
                         </div>
 
