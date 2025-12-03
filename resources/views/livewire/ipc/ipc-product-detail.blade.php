@@ -172,7 +172,7 @@
                                     <dt class="text-gray-500">Dibuat oleh</dt>
                                     <dd class="text-gray-900 font-medium text-right">
                                         @if (method_exists($ipc, 'createdBy') && $ipc->createdBy)
-                                            {{ $ipc->createdBy->user->name }}
+                                            {{ $ipc->createdBy->name }}
                                         @else
                                             {{ $ipc->created_by ?? '-' }}
                                         @endif

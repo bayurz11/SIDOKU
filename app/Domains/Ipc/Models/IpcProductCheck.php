@@ -2,6 +2,7 @@
 
 namespace App\Domains\Ipc\Models;
 
+use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -66,4 +67,9 @@ class IpcProductCheck extends Model
         'TEH_AMPLOP'     => 'Teh Amplop',
         'TEH_HIJAU'      => 'Teh Hijau',
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
