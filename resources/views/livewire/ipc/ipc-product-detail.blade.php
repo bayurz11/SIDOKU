@@ -47,16 +47,14 @@
                 {{-- BODY --}}
                 <div class="px-5 py-4 sm:px-6 sm:py-5 space-y-4 text-xs">
                     @php
-                        use App\Domains\Ipc\Models\IpcProductCheck;
-
-                        $lineLabel = IpcProductCheck::LINE_GROUPS[$ipc->line_group] ?? $ipc->line_group;
+                        $lineLabel =
+                            \App\Domains\Ipc\Models\IpcProductCheck::LINE_GROUPS[$ipc->line_group] ?? $ipc->line_group;
                         $subLineLabel = $ipc->sub_line
-                            ? IpcProductCheck::SUB_LINES_TEH[$ipc->sub_line] ?? $ipc->sub_line
+                            ? \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH[$ipc->sub_line] ?? $ipc->sub_line
                             : null;
 
                         $shiftLabel = $ipc->shift ? 'Shift ' . $ipc->shift : '-';
 
-                        // Badge warna untuk line group
                         $lineClass = match ($ipc->line_group) {
                             'LINE_TEH' => 'bg-green-50 text-green-700 border-green-100',
                             'LINE_POWDER' => 'bg-amber-50 text-amber-700 border-amber-100',
