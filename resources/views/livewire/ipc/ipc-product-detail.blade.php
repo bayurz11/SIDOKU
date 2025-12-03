@@ -241,7 +241,8 @@
                         </div>
 
                         <p class="text-[10px] text-gray-500">
-                            Rumus: <span class="font-mono">(Total - (P1 + P2) / 2) ÷ Berat Produk × 100</span>
+                            Rumus: <span class="font-mono">(Berat Cawan + Berat Produk − (P1 + P2) / 2) ÷ Berat Produk ×
+                                100</span>
                         </p>
                     </div>
 
