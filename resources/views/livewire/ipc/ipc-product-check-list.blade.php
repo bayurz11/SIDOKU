@@ -51,11 +51,12 @@
                     Belum ada data moisture untuk ditampilkan. Atur filter line / tanggal terlebih dahulu.
                 </p>
             @else
-                <div class="h-72">
+                <div class="h-72" wire:ignore>
                     <canvas id="ipcMoistureChart"></canvas>
                 </div>
             @endif
         </div>
+
 
     </div>
 
@@ -301,7 +302,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -315,7 +316,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -400,80 +401,87 @@
 
 </div>
 @push('scripts')
-    {{-- Chart.js CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        document.addEventListener('livewire:load', () => {
-            const renderIpcMoistureChart = () => {
-                const ctx = document.getElementById('ipcMoistureChart');
-                if (!ctx) return;
+        document.addEventListener('DOMContentLoaded', function() {
+            initIpcMoistureChart();
+        });
 
-                const labels = @json($chartLabels);
-                const dataValues = @json($chartValues);
+        // Kalau halaman ini di-update Livewire (filter, paginate), render ulang
+        document.addEventListener('livewire:load', function() {
+            Livewire.hook('message.processed', (message, component) => {
+                initIpcMoistureChart();
+            });
+        });
 
-                // destroy chart lama kalau ada (biar nggak dobel saat filter / paginate)
-                if (window.ipcMoistureChart) {
-                    window.ipcMoistureChart.destroy();
-                }
+        function initIpcMoistureChart() {
+            const canvas = document.getElementById('ipcMoistureChart');
+            if (!canvas) return;
 
-                window.ipcMoistureChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Rata-rata Moisture (%)',
-                            data: dataValues,
-                            backgroundColor: 'rgba(16, 185, 129, 0.6)', // hijau soft
-                            borderColor: 'rgba(5, 150, 105, 1)',
-                            borderWidth: 1,
-                            borderRadius: 6,
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y', // horizontal bar
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Moisture (%)'
-                                }
-                            },
-                            y: {
-                                ticks: {
-                                    autoSkip: false,
-                                    font: {
-                                        size: 10
-                                    }
-                                }
+            const labels = @json($chartLabels ?? []);
+            const dataValues = @json($chartValues ?? []);
+
+            // Kalau tidak ada data, jangan render chart
+            if (!labels.length || !dataValues.length) {
+                return;
+            }
+
+            // Hancurkan chart lama kalau ada
+            if (window.ipcMoistureChart) {
+                window.ipcMoistureChart.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+
+            window.ipcMoistureChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rata-rata Moisture (%)',
+                        data: dataValues,
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(5, 150, 105, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Moisture (%)'
                             }
                         },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(ctx) {
-                                        return ctx.parsed.x.toFixed(2) + ' %';
-                                    }
+                        y: {
+                            ticks: {
+                                autoSkip: false,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    return ctx.parsed.x.toFixed(2) + ' %';
                                 }
                             }
                         }
                     }
-                });
-            };
-
-            // render pertama
-            renderIpcMoistureChart();
-
-            // render ulang setiap Livewire update (filter, paginate, dll)
-            Livewire.hook('message.processed', (message, component) => {
-                renderIpcMoistureChart();
+                }
             });
-        });
+        }
     </script>
 @endpush
