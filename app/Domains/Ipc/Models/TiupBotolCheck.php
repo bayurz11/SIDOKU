@@ -36,6 +36,9 @@ class TiupBotolCheck extends Model
         'tanggal' => 'date',
     ];
 
+    /**
+     * ENUM: nilai tetap untuk kondisi botol.
+     */
     public const DROP_TEST = [
         'TDK_BCR' => 'Tidak Bocor / Tidak Pecah',
         'BCR'     => 'Bocor / Pecah',
@@ -46,41 +49,50 @@ class TiupBotolCheck extends Model
         'NOK' => 'NOK',
     ];
 
+    /**
+     * Folder penyimpanan gambar.
+     */
     public static function imagePath(): string
     {
         return 'tiup_botol';
     }
 
     /**
-     * Helper untuk bikin URL gambar.
+     * Helper ambil URL gambar dari disk public_path.
      */
-    protected function buildImageUrl(?string $filename): ?string
+    protected function imageUrl(?string $filename): ?string
     {
-        return $filename
-            ? asset(self::imagePath() . '/' . $filename)
-            : null;
+        if (!$filename) {
+            return null;
+        }
+
+        // pastikan sudah bikin disk "public_path" di config/filesystems.php
+        return Storage::disk('public_path')->url(self::imagePath() . '/' . $filename);
     }
 
-    public function getDropTestImageUrlAttribute(): ?string
+    public function getDropTestImageUrlAttribute()
     {
-        return $this->buildImageUrl($this->drop_test_image);
+        return $this->imageUrl($this->drop_test_image);
     }
 
-    public function getPenyebaranRataImageUrlAttribute(): ?string
+    public function getPenyebaranRataImageUrlAttribute()
     {
-        return $this->buildImageUrl($this->penyebaran_rata_image);
+        return $this->imageUrl($this->penyebaran_rata_image);
     }
 
-    public function getBottomTidakMenonjolImageUrlAttribute(): ?string
+    public function getBottomTidakMenonjolImageUrlAttribute()
     {
-        return $this->buildImageUrl($this->bottom_tidak_menonjol_image);
+        return $this->imageUrl($this->bottom_tidak_menonjol_image);
     }
 
-    public function getTidakAdaMaterialImageUrlAttribute(): ?string
+    public function getTidakAdaMaterialImageUrlAttribute()
     {
-        return $this->buildImageUrl($this->tidak_ada_material_image);
+        return $this->imageUrl($this->tidak_ada_material_image);
     }
 
+    /**
+     * Relasi ke User yang membuat data.
+     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
