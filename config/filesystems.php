@@ -47,11 +47,11 @@ return [
             'report' => false,
         ],
 
-        'public_path' => [
-            'driver' => 'local',
-            'root' => public_path('storage'), // langsung ke public/storage
+        'public_tiup_botol' => [
+            'driver'     => 'local',
+            'root'       => public_path('tiup_botol'),
+            'url'        => env('APP_URL') . '/tiup_botol',
             'visibility' => 'public',
-            'throw' => true,
         ],
 
         's3' => [

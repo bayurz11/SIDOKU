@@ -51,29 +51,34 @@ class TiupBotolCheck extends Model
         return 'tiup_botol';
     }
 
-    protected function imageUrl($file)
+    /**
+     * Helper untuk bikin URL gambar.
+     */
+    protected function buildImageUrl(?string $filename): ?string
     {
-        return $file ? Storage::url(self::imagePath() . '/' . $file) : null;
+        return $filename
+            ? asset(self::imagePath() . '/' . $filename)
+            : null;
     }
 
-    public function getDropTestImageUrlAttribute()
+    public function getDropTestImageUrlAttribute(): ?string
     {
-        return $this->imageUrl($this->drop_test_image);
+        return $this->buildImageUrl($this->drop_test_image);
     }
 
-    public function getPenyebaranRataImageUrlAttribute()
+    public function getPenyebaranRataImageUrlAttribute(): ?string
     {
-        return $this->imageUrl($this->penyebaran_rata_image);
+        return $this->buildImageUrl($this->penyebaran_rata_image);
     }
 
-    public function getBottomTidakMenonjolImageUrlAttribute()
+    public function getBottomTidakMenonjolImageUrlAttribute(): ?string
     {
-        return $this->imageUrl($this->bottom_tidak_menonjol_image);
+        return $this->buildImageUrl($this->bottom_tidak_menonjol_image);
     }
 
-    public function getTidakAdaMaterialImageUrlAttribute()
+    public function getTidakAdaMaterialImageUrlAttribute(): ?string
     {
-        return $this->imageUrl($this->tidak_ada_material_image);
+        return $this->buildImageUrl($this->tidak_ada_material_image);
     }
 
     public function creator()
