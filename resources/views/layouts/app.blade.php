@@ -12,7 +12,7 @@
     <title>{{ config('app.name', 'SIDOKU') }}</title>
 
     <link href="{{ asset('public/css/app.css') }}" rel="stylesheet">
-    @livewireScripts
+
     <script>
         document.addEventListener('livewire:navigated', () => {
             // Reset modal scroll position jika diperlukan
