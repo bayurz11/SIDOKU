@@ -82,6 +82,24 @@ Route::get('/ipc/product-checks/import/template', function () {
     );
 })->name('ipc.product-checks.import-template');
 
+//IPC Tiup Botol
+Route::middleware(['auth', 'permission:ipc_product_checks.view'])
+    ->name('ipc.tiup-botol.')
+    ->prefix('ipc/tiup-botol')
+    ->group(function () {
+        Route::get('/', function () {
+            return view('tiup-botol.index');
+        })->name('index');
+    });
+
+Route::get('/ipc/tiup-botol/import/template', function () {
+    return Excel::download(
+        new IpcProductImportTemplateExport(),
+        'template-import-ipc-kadar-air-berat.xlsx'
+    );
+})->name('ipc.tiup-botol.import-template');
+
+
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/users', function () {

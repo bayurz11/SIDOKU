@@ -177,11 +177,17 @@
                          @permission('ipc_product_checks.view')
                              <a href="{{ route('ipc.product-checks.index') }}"
                                  class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.product-checks.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                 IPC Product Checks
+                                 Kadar Air & Berat Produk
                              </a>
                          @endpermission
 
-                         {{-- Tambah menu IPC lain di sini kalau perlu --}}
+                         @permission('ipc_product_checks.view')
+                             <a href="{{ route('ipc.tiup-botol.index') }}"
+                                 class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.tiup-botol.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                 Kadar Air & Berat Produk
+                             </a>
+                         @endpermission
+
                      </div>
                  </div>
 

@@ -66,6 +66,7 @@ class IpcProductCheck extends Model
         'TEH_BUBUK_1KG'  => 'Teh Bubuk 1 kg',
         'TEH_AMPLOP'     => 'Teh Amplop',
         'TEH_HIJAU'      => 'Teh Hijau',
+        'TEH_BAE'      => 'Teh Bae',
     ];
 
     public function createdBy()
