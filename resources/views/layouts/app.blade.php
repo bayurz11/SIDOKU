@@ -217,6 +217,8 @@
                                                             Document Prefix Settings
                                                         @elseif(request()->routeIs('ipc.product-checks.*'))
                                                             Kadar Air Produk
+                                                        @elseif(request()->routeIs('ipc.tiup-botol.*'))
+                                                            Tiup Botol
                                                         @elseif(request()->routeIs('documents.*'))
                                                             Document
                                                         @else
