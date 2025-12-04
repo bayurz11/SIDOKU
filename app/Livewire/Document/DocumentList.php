@@ -18,7 +18,7 @@ class DocumentList extends Component
     public ?int $filterDepartment = null;
     public ?string $filterStatus = null;
 
-    public int $perPage = 10;
+    public int $perPage = 5;
     public string $sortField = 'created_at';
     public string $sortDirection = 'desc';
 
@@ -109,7 +109,7 @@ class DocumentList extends Component
     public function updatingPerPage()
     {
         if (!in_array($this->perPage, $this->allowedPerPage)) {
-            $this->perPage = 5;
+            $this->perPage = 10;
         }
 
         $this->resetPage();
