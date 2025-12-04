@@ -138,7 +138,7 @@ class TiupBotolForm extends Component
 
         // hapus file lama
         if ($oldFilename) {
-            Storage::disk('public')->delete(TiupBotolCheck::imagePath() . '/' . $oldFilename);
+            Storage::disk('public_path')->delete(TiupBotolCheck::imagePath() . '/' . $oldFilename);
         }
 
         $storedPath = $file->store(TiupBotolCheck::imagePath(), 'public'); // tiup_botol/xxx.jpg
