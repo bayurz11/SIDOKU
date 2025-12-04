@@ -18,7 +18,7 @@ class DocumentList extends Component
     public ?int $filterDepartment = null;
     public ?string $filterStatus = null;
 
-    public int $perPage = 5;
+    public int $perPage = 10;
     public string $sortField = 'created_at';
     public string $sortDirection = 'desc';
 
@@ -219,10 +219,11 @@ class DocumentList extends Component
             ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
             ->orderBy($this->sortField, $this->sortDirection);
 
-        // 🔒 Terapkan pembatasan department untuk role "user"
+        // 🔒 scope department
         $query = $this->applyDepartmentScope($query);
 
-        $data = $query->paginate($this->perPage);
+        // 👉 atur jumlah link di kiri–kanan current page
+        $data = $query->paginate($this->perPage)->onEachSide(0);
 
         return view('livewire.document.document-list', compact('data'));
     }
