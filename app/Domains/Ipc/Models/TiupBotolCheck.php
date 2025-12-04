@@ -86,12 +86,24 @@ class TiupBotolCheck extends Model
         return $this->getGambarUrl($this->gambar_tidak_ada_material);
     }
 
-
     /**
      * Relasi ke User yang membuat data.
      */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Helper label singkat (opsional)
+     */
+    public static function dropTestLabel(?string $key): ?string
+    {
+        return $key ? (self::DROP_TEST[$key] ?? $key) : null;
+    }
+
+    public static function okNokLabel(?string $key): ?string
+    {
+        return $key ? (self::OK_NOK[$key] ?? $key) : null;
     }
 }

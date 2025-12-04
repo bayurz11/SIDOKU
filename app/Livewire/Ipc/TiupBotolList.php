@@ -12,48 +12,35 @@ class TiupBotolList extends Component
     use WithPagination, WithAlerts;
 
     public string $search = '';
-    public ?string $filterLineGroup = null;
     public ?string $filterDateFrom  = null;
     public ?string $filterDateTo    = null;
-    public ?string $filterCondition = null; // filter kondisi botol (opsional)
+    public ?string $filterDropTest  = null; // TDK_BCR / BCR
 
     public int $perPage        = 10;
-    public string $sortField   = 'test_date';
+    public string $sortField   = 'tanggal';
     public string $sortDirection = 'desc';
 
-    public array $lineGroups = [];
-    public array $bottleConditions = [];
-
     protected array $allowedSorts = [
-        'test_date',
-        'product_name',
-        'line_group',
-        'shift',
-        'bottle_condition',
+        'tanggal',
+        'nama_botol',
+        'drop_test',
     ];
 
     protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
-        'search'          => ['except' => ''],
-        'filterLineGroup' => ['except' => null],
-        'filterDateFrom'  => ['except' => null],
-        'filterDateTo'    => ['except' => null],
-        'filterCondition' => ['except' => null],
-        'perPage'         => ['except' => 10],
-        'sortField'       => ['except' => 'test_date'],
-        'sortDirection'   => ['except' => 'desc'],
+        'search'         => ['except' => ''],
+        'filterDateFrom' => ['except' => null],
+        'filterDateTo'   => ['except' => null],
+        'filterDropTest' => ['except' => null],
+        'perPage'        => ['except' => 10],
+        'sortField'      => ['except' => 'tanggal'],
+        'sortDirection'  => ['except' => 'desc'],
     ];
 
     protected $listeners = [
         'tiup-botol:saved' => 'refreshList',
     ];
-
-    public function mount(): void
-    {
-        $this->lineGroups        = TiupBotolCheck::LINE_GROUPS;
-        $this->bottleConditions  = TiupBotolCheck::BOTTLE_CONDITIONS;
-    }
 
     public function refreshList(): void
     {
@@ -61,11 +48,6 @@ class TiupBotolList extends Component
     }
 
     public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingFilterLineGroup(): void
     {
         $this->resetPage();
     }
@@ -80,7 +62,7 @@ class TiupBotolList extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterCondition(): void
+    public function updatingFilterDropTest(): void
     {
         $this->resetPage();
     }
@@ -123,44 +105,40 @@ class TiupBotolList extends Component
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
                 $q->where(function ($sub) use ($term) {
-                    $sub->where('product_name', 'like', $term);
+                    $sub->where('nama_botol', 'like', $term)
+                        ->orWhere('catatan', 'like', $term);
                 });
             })
             ->when(
-                $this->filterLineGroup,
+                $this->filterDropTest,
                 fn($q) =>
-                $q->where('line_group', $this->filterLineGroup)
-            )
-            ->when(
-                $this->filterCondition,
-                fn($q) =>
-                $q->where('bottle_condition', $this->filterCondition)
+                $q->where('drop_test', $this->filterDropTest)
             )
             ->when(
                 $this->filterDateFrom,
                 fn($q) =>
-                $q->whereDate('test_date', '>=', $this->filterDateFrom)
+                $q->whereDate('tanggal', '>=', $this->filterDateFrom)
             )
             ->when(
                 $this->filterDateTo,
                 fn($q) =>
-                $q->whereDate('test_date', '<=', $this->filterDateTo)
+                $q->whereDate('tanggal', '<=', $this->filterDateTo)
             );
 
-        // Data utama tabel
+        // data utama tabel
         $data = (clone $baseQuery)
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // RINGKASAN UNTUK CHART: jumlah sampel per Line + Kondisi botol
-        $conditionSummary = (clone $baseQuery)
-            ->selectRaw('line_group, bottle_condition, COUNT(*) as total_samples')
-            ->groupBy('line_group', 'bottle_condition')
+        // RINGKASAN UNTUK CHART: jumlah per drop_test
+        $dropSummary = (clone $baseQuery)
+            ->selectRaw('drop_test, COUNT(*) as total_samples')
+            ->groupBy('drop_test')
             ->get();
 
         return view('livewire.ipc.tiup-botol-list', [
-            'data'             => $data,
-            'conditionSummary' => $conditionSummary,
+            'data'        => $data,
+            'dropSummary' => $dropSummary,
         ]);
     }
 }
