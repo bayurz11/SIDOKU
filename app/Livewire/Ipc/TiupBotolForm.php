@@ -59,10 +59,10 @@ class TiupBotolForm extends Component
             'catatan'               => ['nullable', 'string'],
 
             // gambar opsional
-            'drop_test_image'              => ['nullable', 'image', 'max:2048'],
-            'penyebaran_rata_image'        => ['nullable', 'image', 'max:2048'],
-            'bottom_tidak_menonjol_image'  => ['nullable', 'image', 'max:2048'],
-            'tidak_ada_material_image'     => ['nullable', 'image', 'max:2048'],
+            'drop_test_image'              => ['nullable', 'image', 'max:10048'],
+            'penyebaran_rata_image'        => ['nullable', 'image', 'max:10048'],
+            'bottom_tidak_menonjol_image'  => ['nullable', 'image', 'max:10048'],
+            'tidak_ada_material_image'     => ['nullable', 'image', 'max:10048'],
         ];
     }
 
