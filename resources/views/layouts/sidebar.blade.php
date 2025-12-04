@@ -30,7 +30,7 @@
              @php
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
                  $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
-                 $ipcActive = request()->routeIs('ipc.product-checks.*');
+                 $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*');
 
                  $activeMenuInitial = $masterActive
                      ? 'master'
