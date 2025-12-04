@@ -12,6 +12,7 @@ class TiupBotolList extends Component
     use WithPagination, WithAlerts;
 
     public string $search = '';
+
     public ?string $filterDateFrom  = null;
     public ?string $filterDateTo    = null;
     public ?string $filterDropTest  = null; // TDK_BCR / BCR
@@ -97,6 +98,12 @@ class TiupBotolList extends Component
 
         $this->showSuccessToast('Data tiup botol berhasil dihapus!');
         $this->resetPage();
+    }
+
+    public function showDetail(int $id): void
+    {
+        // nanti bisa diarahkan ke modal detail/form edit khusus Tiup Botol
+        $this->dispatch('openTiupBotolForm', id: $id);
     }
 
     public function render()
