@@ -92,7 +92,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            Tambah Data
+                            Add
                         </button>
                     @endpermission
                 </div>
@@ -316,8 +316,9 @@
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all duration-200">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
+                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
