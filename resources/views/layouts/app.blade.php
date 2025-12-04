@@ -216,7 +216,7 @@
                                                         @elseif(request()->routeIs('document_prefix_settings.*'))
                                                             Document Prefix Settings
                                                         @elseif(request()->routeIs('ipc.product-checks.*'))
-                                                            In Process Control Product Checks
+                                                            Kadar Air Produk
                                                         @elseif(request()->routeIs('documents.*'))
                                                             Document
                                                         @else

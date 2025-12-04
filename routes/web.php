@@ -64,7 +64,7 @@ Route::get('/documents/import/template', function () {
     );
 })->name('documents.import-template');
 
-//ipc product checks
+//IPC Kadar Air
 Route::middleware(['auth', 'permission:ipc_product_checks.view'])
     ->name('ipc.product-checks.')
     ->prefix('ipc/product-checks')
