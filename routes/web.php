@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Domains\Document\Models\Document;
+use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use App\Livewire\Document\DocumentImportTemplateExport;
 
 
@@ -74,6 +75,12 @@ Route::middleware(['auth', 'permission:ipc_product_checks.view'])
         })->name('index');
     });
 
+Route::get('/ipc/product-checks/import/template', function () {
+    return Excel::download(
+        new IpcProductImportTemplateExport(),
+        'template-import-ipc-kadar-air-berat.xlsx'
+    );
+})->name('ipc.product-checks.import-template');
 
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
