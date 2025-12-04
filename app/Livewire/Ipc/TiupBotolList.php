@@ -7,7 +7,7 @@ use Livewire\WithPagination;
 use App\Shared\Traits\WithAlerts;
 use App\Domains\Ipc\Models\TiupBotolCheck;
 
-class TiupBotolCheckList extends Component
+class TiupBotolList extends Component
 {
     use WithPagination, WithAlerts;
 
