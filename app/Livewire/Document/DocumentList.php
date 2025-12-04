@@ -109,7 +109,7 @@ class DocumentList extends Component
     public function updatingPerPage()
     {
         if (!in_array($this->perPage, $this->allowedPerPage)) {
-            $this->perPage = 10;
+            $this->perPage = 5;
         }
 
         $this->resetPage();
