@@ -28,11 +28,11 @@
 
                             <div class="space-y-0.5">
                                 <h2 class="text-lg font-bold text-gray-900 leading-tight">
-                                    Import Data IPC Kadar Air & Berat
+                                    Import Data Kadar Air & Berat
                                 </h2>
                                 <p class="text-xs text-gray-600">
-                                    Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak data IPC
-                                    sekaligus. Nilai kadar air akan dihitung otomatis dari kolom penimbangan.
+                                    Upload file Excel (.xlsx / .xls) sesuai template untuk menambahkan banyak data
+                                    sekaligus.
                                 </p>
                             </div>
                         </div>

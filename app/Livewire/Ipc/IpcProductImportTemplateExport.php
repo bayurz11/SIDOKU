@@ -32,9 +32,93 @@ class IpcProductImportTemplateExport implements FromArray, WithHeadings
             // Contoh 1: Line Teh dengan perhitungan kadar air
             [
                 'LINE_TEH',          // line_group
-                'TEH_A',             // sub_line (contoh key SUB_LINES_TEH)
+                'TEH_ORI',             // sub_line (contoh key SUB_LINES_TEH)
                 '2025-01-01',        // test_date
                 'Teh Ori 200 ml',    // product_name
+                1,                   // shift
+
+                45.50,               // cup_weight
+                5.00,                // product_weight
+                50.10,               // weighing_1
+                50.05,               // weighing_2
+
+                'Contoh data IPC line teh', // notes
+            ],
+            [
+                'LINE_TEH',          // line_group
+                'TEH_SACHET',             // sub_line (contoh key SUB_LINES_TEH)
+                '2025-01-01',        // test_date
+                'Teh Sachet',    // product_name
+                1,                   // shift
+
+                45.50,               // cup_weight
+                5.00,                // product_weight
+                50.10,               // weighing_1
+                50.05,               // weighing_2
+
+                'Contoh data IPC line teh', // notes
+            ],
+            [
+                'LINE_TEH',          // line_group
+                'TEH_SEDUH_50G',             // sub_line (contoh key SUB_LINES_TEH)
+                '2025-01-01',        // test_date
+                'Teh Seduh 50 g',    // product_name
+                1,                   // shift
+
+                45.50,               // cup_weight
+                5.00,                // product_weight
+                50.10,               // weighing_1
+                50.05,               // weighing_2
+
+                'Contoh data IPC line teh', // notes
+            ],
+            [
+                'LINE_TEH',          // line_group
+                'TEH_SEDUH_100G',             // sub_line (contoh key SUB_LINES_TEH)
+                '2025-01-01',        // test_date
+                'Teh Seduh 100 g',    // product_name
+                1,                   // shift
+
+                45.50,               // cup_weight
+                5.00,                // product_weight
+                50.10,               // weighing_1
+                50.05,               // weighing_2
+
+                'Contoh data IPC line teh', // notes
+            ],
+            [
+                'LINE_TEH',          // line_group
+                'TEH_BUBUK_1KG',             // sub_line (contoh key SUB_LINES_TEH)
+                '2025-01-01',        // test_date
+                'Teh Bubuk 1 kg',    // product_name
+                1,                   // shift
+
+                45.50,               // cup_weight
+                5.00,                // product_weight
+                50.10,               // weighing_1
+                50.05,               // weighing_2
+
+                'Contoh data IPC line teh', // notes
+            ],
+            [
+                'LINE_TEH',          // line_group
+                'TEH_AMPLOP',             // sub_line (contoh key SUB_LINES_TEH)
+                '2025-01-01',        // test_date
+                'Teh Amplop',    // product_name
+                1,                   // shift
+
+                45.50,               // cup_weight
+                5.00,                // product_weight
+                50.10,               // weighing_1
+                50.05,               // weighing_2
+
+                'Contoh data IPC line teh', // notes
+            ],
+            [
+                'LINE_TEH',          // line_group
+                'TEH_HIJAU',             // sub_line (contoh key SUB_LINES_TEH)
+                '2025-01-01',        // test_date
+                'Teh Hijau',    // product_name
                 1,                   // shift
 
                 45.50,               // cup_weight
