@@ -10,10 +10,68 @@
             <div class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-2xl bg-white">
                 <div class="mt-1">
                     {{-- HEADER --}}
-                    {{-- ... (bagian header & row tanggal + nama botol tetap) ... --}}
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">
+                                {{ $isEditing ? 'Edit Tiup Botol Check' : 'Tambah Tiup Botol Check' }}
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1">
+                                Input hasil pemeriksaan tiup botol (drop test & kondisi visual botol).
+                            </p>
+                        </div>
 
+                        <div class="flex flex-col items-end space-y-2">
+                            {{-- Info ringkas nama botol + tanggal --}}
+                            @if ($nama_botol && $tanggal)
+                                <span
+                                    class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                    {{ Str::limit($nama_botol, 30) }}
+                                    <span class="ml-2 text-[11px] text-gray-500">
+                                        {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}
+                                    </span>
+                                </span>
+                            @endif
+
+                            <button type="button" wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- FORM --}}
                     <form wire:submit.prevent="save" class="space-y-6">
-                        {{-- Row tanggal & nama botol tetap --}}
+                        {{-- Row 1: Tanggal & Nama Botol --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {{-- Tanggal --}}
+                            <div>
+                                <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Hari, Tanggal <span class="text-red-500">*</span>
+                                </label>
+                                <input wire:model.defer="tanggal" type="date" id="tanggal"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                @error('tanggal')
+                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            {{-- Nama Botol --}}
+                            <div class="md:col-span-2">
+                                <label for="nama_botol" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nama Botol <span class="text-red-500">*</span>
+                                </label>
+                                <input wire:model.defer="nama_botol" type="text" id="nama_botol"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    placeholder="Contoh: Botol 330 ml, Botol 600 ml, dsb.">
+                                @error('nama_botol')
+                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
 
                         {{-- KARTU: Drop Test --}}
                         <div class="border border-emerald-100 rounded-lg p-4 bg-emerald-50/40 space-y-3">
@@ -262,6 +320,7 @@
                                 </div>
                             </div>
                         </div>
+
 
                         {{-- Catatan --}}
                         <div>
