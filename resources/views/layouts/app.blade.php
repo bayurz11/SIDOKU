@@ -152,7 +152,7 @@
 </head>
 
 <body class="font-sans antialiased bg-gray-50">
-    @stack('scripts')
+
     @auth
         <div class="min-h-screen">
             <!-- Sidebar -->
