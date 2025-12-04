@@ -156,7 +156,7 @@ class TiupBotolCheckList extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.ipc.tiup-botol-check-list', [
+        return view('livewire.ipc.tiup-botol-list', [
             'data' => $data,
         ]);
     }
