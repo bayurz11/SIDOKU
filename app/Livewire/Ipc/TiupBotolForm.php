@@ -8,6 +8,7 @@ use App\Shared\Traits\WithAlerts;
 use App\Domains\Ipc\Models\TiupBotolCheck;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class TiupBotolForm extends Component
 {
@@ -28,17 +29,17 @@ class TiupBotolForm extends Component
 
     public ?string $catatan = null;
 
-    // upload baru
-    public $gambar_drop_test;
-    public $gambar_penyebaran_rata;
-    public $gambar_bottom_tidak_menonjol;
-    public $gambar_tidak_ada_material;
+    // upload baru (HARUS pakai nama properti ini)
+    public $drop_test_image;
+    public $penyebaran_rata_image;
+    public $bottom_tidak_menonjol_image;
+    public $tidak_ada_material_image;
 
     // url gambar lama (untuk preview)
-    public ?string $existing_gambar_drop_test_url = null;
-    public ?string $existing_gambar_penyebaran_rata_url = null;
-    public ?string $existing_gambar_bottom_tidak_menonjol_url = null;
-    public ?string $existing_gambar_tidak_ada_material_url = null;
+    public ?string $existing_drop_test_image_url = null;
+    public ?string $existing_penyebaran_rata_image_url = null;
+    public ?string $existing_bottom_tidak_menonjol_image_url = null;
+    public ?string $existing_tidak_ada_material_image_url = null;
 
     protected $listeners = [
         'openTiupBotolForm' => 'open',
@@ -57,10 +58,11 @@ class TiupBotolForm extends Component
 
             'catatan'               => ['nullable', 'string'],
 
-            'gambar_drop_test'              => ['nullable', 'image', 'max:2048'],
-            'gambar_penyebaran_rata'        => ['nullable', 'image', 'max:2048'],
-            'gambar_bottom_tidak_menonjol'  => ['nullable', 'image', 'max:2048'],
-            'gambar_tidak_ada_material'     => ['nullable', 'image', 'max:2048'],
+            // gambar opsional
+            'drop_test_image'              => ['nullable', 'image', 'max:2048'],
+            'penyebaran_rata_image'        => ['nullable', 'image', 'max:2048'],
+            'bottom_tidak_menonjol_image'  => ['nullable', 'image', 'max:2048'],
+            'tidak_ada_material_image'     => ['nullable', 'image', 'max:2048'],
         ];
     }
 
@@ -83,14 +85,15 @@ class TiupBotolForm extends Component
             $this->tidak_ada_material    = $record->tidak_ada_material;
             $this->catatan               = $record->catatan;
 
-            $this->existing_gambar_drop_test_url =
-                $record->gambar_drop_test_url;
-            $this->existing_gambar_penyebaran_rata_url =
-                $record->gambar_penyebaran_rata_url;
-            $this->existing_gambar_bottom_tidak_menonjol_url =
-                $record->gambar_bottom_tidak_menonjol_url;
-            $this->existing_gambar_tidak_ada_material_url =
-                $record->gambar_tidak_ada_material_url;
+            // URL gambar lama
+            $this->existing_drop_test_image_url =
+                $record->drop_test_image_url;
+            $this->existing_penyebaran_rata_image_url =
+                $record->penyebaran_rata_image_url;
+            $this->existing_bottom_tidak_menonjol_image_url =
+                $record->bottom_tidak_menonjol_image_url;
+            $this->existing_tidak_ada_material_image_url =
+                $record->tidak_ada_material_image_url;
         } else {
             $this->isEditing = false;
             $this->tiupId = null;
@@ -110,15 +113,15 @@ class TiupBotolForm extends Component
 
     protected function resetUploadFields(): void
     {
-        $this->gambar_drop_test = null;
-        $this->gambar_penyebaran_rata = null;
-        $this->gambar_bottom_tidak_menonjol = null;
-        $this->gambar_tidak_ada_material = null;
+        $this->drop_test_image = null;
+        $this->penyebaran_rata_image = null;
+        $this->bottom_tidak_menonjol_image = null;
+        $this->tidak_ada_material_image = null;
 
-        $this->existing_gambar_drop_test_url = null;
-        $this->existing_gambar_penyebaran_rata_url = null;
-        $this->existing_gambar_bottom_tidak_menonjol_url = null;
-        $this->existing_gambar_tidak_ada_material_url = null;
+        $this->existing_drop_test_image_url = null;
+        $this->existing_penyebaran_rata_image_url = null;
+        $this->existing_bottom_tidak_menonjol_image_url = null;
+        $this->existing_tidak_ada_material_image_url = null;
     }
 
     public function closeModal(): void
@@ -129,6 +132,7 @@ class TiupBotolForm extends Component
     protected function storeImage($file, ?string $oldFilename = null): ?string
     {
         if (! $file) {
+            // tidak upload baru, pakai file lama (kalau ada)
             return $oldFilename;
         }
 
@@ -145,8 +149,13 @@ class TiupBotolForm extends Component
     {
         $this->validate();
 
+        $hari = $this->tanggal
+            ? Carbon::parse($this->tanggal)->translatedFormat('l')
+            : null;
+
         $data = [
             'tanggal'               => $this->tanggal,
+            'hari'                  => $hari,
             'nama_botol'            => $this->nama_botol,
             'drop_test'             => $this->drop_test,
             'penyebaran_rata'       => $this->penyebaran_rata,
@@ -159,18 +168,18 @@ class TiupBotolForm extends Component
         if ($this->tiupId) {
             $record = TiupBotolCheck::findOrFail($this->tiupId);
 
-            $data['gambar_drop_test'] = $this->storeImage($this->gambar_drop_test, $record->gambar_drop_test);
-            $data['gambar_penyebaran_rata'] = $this->storeImage($this->gambar_penyebaran_rata, $record->gambar_penyebaran_rata);
-            $data['gambar_bottom_tidak_menonjol'] = $this->storeImage($this->gambar_bottom_tidak_menonjol, $record->gambar_bottom_tidak_menonjol);
-            $data['gambar_tidak_ada_material'] = $this->storeImage($this->gambar_tidak_ada_material, $record->gambar_tidak_ada_material);
+            $data['drop_test_image'] = $this->storeImage($this->drop_test_image, $record->drop_test_image);
+            $data['penyebaran_rata_image'] = $this->storeImage($this->penyebaran_rata_image, $record->penyebaran_rata_image);
+            $data['bottom_tidak_menonjol_image'] = $this->storeImage($this->bottom_tidak_menonjol_image, $record->bottom_tidak_menonjol_image);
+            $data['tidak_ada_material_image'] = $this->storeImage($this->tidak_ada_material_image, $record->tidak_ada_material_image);
 
             $record->update($data);
             $this->showSuccessToast('Data tiup botol berhasil diupdate!');
         } else {
-            $data['gambar_drop_test'] = $this->storeImage($this->gambar_drop_test);
-            $data['gambar_penyebaran_rata'] = $this->storeImage($this->gambar_penyebaran_rata);
-            $data['gambar_bottom_tidak_menonjol'] = $this->storeImage($this->gambar_bottom_tidak_menonjol);
-            $data['gambar_tidak_ada_material'] = $this->storeImage($this->gambar_tidak_ada_material);
+            $data['drop_test_image'] = $this->storeImage($this->drop_test_image);
+            $data['penyebaran_rata_image'] = $this->storeImage($this->penyebaran_rata_image);
+            $data['bottom_tidak_menonjol_image'] = $this->storeImage($this->bottom_tidak_menonjol_image);
+            $data['tidak_ada_material_image'] = $this->storeImage($this->tidak_ada_material_image);
 
             TiupBotolCheck::create($data);
             $this->showSuccessToast('Data tiup botol berhasil disimpan!');

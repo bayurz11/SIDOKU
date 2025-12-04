@@ -15,19 +15,18 @@ class TiupBotolCheck extends Model
 
     protected $fillable = [
         'tanggal',
+        'hari',
         'nama_botol',
 
         'drop_test',
-        'gambar_drop_test',
-
         'penyebaran_rata',
-        'gambar_penyebaran_rata',
-
         'bottom_tidak_menonjol',
-        'gambar_bottom_tidak_menonjol',
-
         'tidak_ada_material',
-        'gambar_tidak_ada_material',
+
+        'drop_test_image',
+        'penyebaran_rata_image',
+        'bottom_tidak_menonjol_image',
+        'tidak_ada_material_image',
 
         'catatan',
         'created_by',
@@ -37,9 +36,6 @@ class TiupBotolCheck extends Model
         'tanggal' => 'date',
     ];
 
-    /**
-     * ENUM: nilai tetap untuk kondisi botol.
-     */
     public const DROP_TEST = [
         'TDK_BCR' => 'Tidak Bocor / Tidak Pecah',
         'BCR'     => 'Bocor / Pecah',
@@ -50,60 +46,38 @@ class TiupBotolCheck extends Model
         'NOK' => 'NOK',
     ];
 
-    /**
-     * Folder penyimpanan gambar.
-     */
     public static function imagePath(): string
     {
         return 'tiup_botol';
     }
 
-    /**
-     * Accessor otomatis untuk mengambil URL penuh gambar.
-     */
-    protected function getGambarUrl($value)
+    protected function imageUrl($file)
     {
-        return $value ? Storage::url(self::imagePath() . '/' . $value) : null;
+        return $file ? Storage::url(self::imagePath() . '/' . $file) : null;
     }
 
-    public function getGambarDropTestUrlAttribute()
+    public function getDropTestImageUrlAttribute()
     {
-        return $this->getGambarUrl($this->gambar_drop_test);
+        return $this->imageUrl($this->drop_test_image);
     }
 
-    public function getGambarPenyebaranRataUrlAttribute()
+    public function getPenyebaranRataImageUrlAttribute()
     {
-        return $this->getGambarUrl($this->gambar_penyebaran_rata);
+        return $this->imageUrl($this->penyebaran_rata_image);
     }
 
-    public function getGambarBottomTidakMenonjolUrlAttribute()
+    public function getBottomTidakMenonjolImageUrlAttribute()
     {
-        return $this->getGambarUrl($this->gambar_bottom_tidak_menonjol);
+        return $this->imageUrl($this->bottom_tidak_menonjol_image);
     }
 
-    public function getGambarTidakAdaMaterialUrlAttribute()
+    public function getTidakAdaMaterialImageUrlAttribute()
     {
-        return $this->getGambarUrl($this->gambar_tidak_ada_material);
+        return $this->imageUrl($this->tidak_ada_material_image);
     }
 
-    /**
-     * Relasi ke User yang membuat data.
-     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    /**
-     * Helper label singkat (opsional)
-     */
-    public static function dropTestLabel(?string $key): ?string
-    {
-        return $key ? (self::DROP_TEST[$key] ?? $key) : null;
-    }
-
-    public static function okNokLabel(?string $key): ?string
-    {
-        return $key ? (self::OK_NOK[$key] ?? $key) : null;
     }
 }

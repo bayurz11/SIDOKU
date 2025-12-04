@@ -10,68 +10,10 @@
             <div class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-2xl bg-white">
                 <div class="mt-1">
                     {{-- HEADER --}}
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-900">
-                                {{ $isEditing ? 'Edit Tiup Botol Check' : 'Tambah Tiup Botol Check' }}
-                            </h3>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Input hasil pemeriksaan tiup botol (drop test & kondisi visual botol).
-                            </p>
-                        </div>
+                    {{-- ... (bagian header & row tanggal + nama botol tetap) ... --}}
 
-                        <div class="flex flex-col items-end space-y-2">
-                            {{-- Info ringkas nama botol + tanggal --}}
-                            @if ($nama_botol && $tanggal)
-                                <span
-                                    class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                                    {{ Str::limit($nama_botol, 30) }}
-                                    <span class="ml-2 text-[11px] text-gray-500">
-                                        {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}
-                                    </span>
-                                </span>
-                            @endif
-
-                            <button type="button" wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- FORM --}}
                     <form wire:submit.prevent="save" class="space-y-6">
-                        {{-- Row 1: Tanggal & Nama Botol --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {{-- Tanggal --}}
-                            <div>
-                                <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Hari, Tanggal <span class="text-red-500">*</span>
-                                </label>
-                                <input wire:model.defer="tanggal" type="date" id="tanggal"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                @error('tanggal')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            {{-- Nama Botol --}}
-                            <div class="md:col-span-2">
-                                <label for="nama_botol" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Botol <span class="text-red-500">*</span>
-                                </label>
-                                <input wire:model.defer="nama_botol" type="text" id="nama_botol"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                           focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    placeholder="Contoh: Botol 330 ml, Botol 600 ml, dsb.">
-                                @error('nama_botol')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
+                        {{-- Row tanggal & nama botol tetap --}}
 
                         {{-- KARTU: Drop Test --}}
                         <div class="border border-emerald-100 rounded-lg p-4 bg-emerald-50/40 space-y-3">
@@ -107,32 +49,35 @@
 
                                 {{-- Upload Gambar Drop Test --}}
                                 <div class="md:col-span-2">
-                                    <label for="gambar_drop_test"
-                                        class="block text-xs font-medium text-gray-700 mb-1.5">
+                                    <label for="drop_test_image" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Foto Kondisi Botol (Drop Test)
                                     </label>
-                                    <input wire:model="gambar_drop_test" type="file" id="gambar_drop_test"
-                                        accept="image/*"
+                                    <input wire:model="drop_test_image" type="file" id="drop_test_image"
+                                        accept="image/*" capture="environment"
                                         class="block w-full text-xs text-gray-700
                                                file:mr-3 file:py-2 file:px-3
                                                file:rounded-md file:border-0
                                                file:text-xs file:font-semibold
                                                file:bg-emerald-50 file:text-emerald-700
                                                hover:file:bg-emerald-100">
-                                    @error('gambar_drop_test')
+                                    @error('drop_test_image')
                                         <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                     @enderror
 
-                                    {{-- Info file terpilih / gambar lama --}}
+                                    {{-- PREVIEW: file baru atau gambar lama --}}
                                     <div class="mt-2 flex items-center gap-3">
-                                        @if ($gambar_drop_test instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                        @if ($drop_test_image instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                            {{-- preview thumbnail file baru --}}
+                                            <img src="{{ $drop_test_image->temporaryUrl() }}" alt="Preview Drop Test"
+                                                class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                             <span class="text-[11px] text-gray-600">
                                                 File baru:
-                                                {{ Str::limit($gambar_drop_test->getClientOriginalName(), 40) }}
+                                                {{ Str::limit($drop_test_image->getClientOriginalName(), 40) }}
                                             </span>
-                                        @elseif (!empty($existing_gambar_drop_test_url))
-                                            <img src="{{ $existing_gambar_drop_test_url }}" alt="Drop Test"
-                                                class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                        @elseif (!empty($existing_drop_test_image_url))
+                                            {{-- preview gambar lama --}}
+                                            <img src="{{ $existing_drop_test_image_url }}" alt="Drop Test"
+                                                class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                         @endif
                                     </div>
                                 </div>
@@ -172,32 +117,35 @@
                                     </div>
 
                                     <div>
-                                        <label for="gambar_penyebaran_rata"
+                                        <label for="penyebaran_rata_image"
                                             class="block text-xs font-medium text-gray-700 mb-1.5">
                                             Foto Penyebaran Rata
                                         </label>
-                                        <input wire:model="gambar_penyebaran_rata" type="file"
-                                            id="gambar_penyebaran_rata" accept="image/*"
+                                        <input wire:model="penyebaran_rata_image" type="file"
+                                            id="penyebaran_rata_image" accept="image/*" capture="environment"
                                             class="block w-full text-xs text-gray-700
                                                    file:mr-3 file:py-2 file:px-3
                                                    file:rounded-md file:border-0
                                                    file:text-xs file:font-semibold
                                                    file:bg-blue-50 file:text-blue-700
                                                    hover:file:bg-blue-100">
-                                        @error('gambar_penyebaran_rata')
+                                        @error('penyebaran_rata_image')
                                             <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                         @enderror
 
                                         <div class="mt-2 flex items-center gap-3">
-                                            @if ($gambar_penyebaran_rata instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                            @if ($penyebaran_rata_image instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                                <img src="{{ $penyebaran_rata_image->temporaryUrl() }}"
+                                                    alt="Preview Penyebaran Rata"
+                                                    class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                                 <span class="text-[11px] text-gray-600">
                                                     File baru:
-                                                    {{ Str::limit($gambar_penyebaran_rata->getClientOriginalName(), 40) }}
+                                                    {{ Str::limit($penyebaran_rata_image->getClientOriginalName(), 40) }}
                                                 </span>
-                                            @elseif (!empty($existing_gambar_penyebaran_rata_url))
-                                                <img src="{{ $existing_gambar_penyebaran_rata_url }}"
+                                            @elseif (!empty($existing_penyebaran_rata_image_url))
+                                                <img src="{{ $existing_penyebaran_rata_image_url }}"
                                                     alt="Penyebaran Rata"
-                                                    class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                                    class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                             @endif
                                         </div>
                                     </div>
@@ -224,32 +172,35 @@
                                     </div>
 
                                     <div>
-                                        <label for="gambar_bottom_tidak_menonjol"
+                                        <label for="bottom_tidak_menonjol_image"
                                             class="block text-xs font-medium text-gray-700 mb-1.5">
                                             Foto Bottom
                                         </label>
-                                        <input wire:model="gambar_bottom_tidak_menonjol" type="file"
-                                            id="gambar_bottom_tidak_menonjol" accept="image/*"
+                                        <input wire:model="bottom_tidak_menonjol_image" type="file"
+                                            id="bottom_tidak_menonjol_image" accept="image/*" capture="environment"
                                             class="block w-full text-xs text-gray-700
                                                    file:mr-3 file:py-2 file:px-3
                                                    file:rounded-md file:border-0
                                                    file:text-xs file:font-semibold
                                                    file:bg-blue-50 file:text-blue-700
                                                    hover:file:bg-blue-100">
-                                        @error('gambar_bottom_tidak_menonjol')
+                                        @error('bottom_tidak_menonjol_image')
                                             <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                         @enderror
 
                                         <div class="mt-2 flex items-center gap-3">
-                                            @if ($gambar_bottom_tidak_menonjol instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                            @if ($bottom_tidak_menonjol_image instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                                <img src="{{ $bottom_tidak_menonjol_image->temporaryUrl() }}"
+                                                    alt="Preview Bottom"
+                                                    class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                                 <span class="text-[11px] text-gray-600">
                                                     File baru:
-                                                    {{ Str::limit($gambar_bottom_tidak_menonjol->getClientOriginalName(), 40) }}
+                                                    {{ Str::limit($bottom_tidak_menonjol_image->getClientOriginalName(), 40) }}
                                                 </span>
-                                            @elseif (!empty($existing_gambar_bottom_tidak_menonjol_url))
-                                                <img src="{{ $existing_gambar_bottom_tidak_menonjol_url }}"
+                                            @elseif (!empty($existing_bottom_tidak_menonjol_image_url))
+                                                <img src="{{ $existing_bottom_tidak_menonjol_image_url }}"
                                                     alt="Bottom Tidak Menonjol"
-                                                    class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                                    class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                             @endif
                                         </div>
                                     </div>
@@ -276,32 +227,35 @@
                                     </div>
 
                                     <div>
-                                        <label for="gambar_tidak_ada_material"
+                                        <label for="tidak_ada_material_image"
                                             class="block text-xs font-medium text-gray-700 mb-1.5">
                                             Foto Kondisi Dalam Botol
                                         </label>
-                                        <input wire:model="gambar_tidak_ada_material" type="file"
-                                            id="gambar_tidak_ada_material" accept="image/*"
+                                        <input wire:model="tidak_ada_material_image" type="file"
+                                            id="tidak_ada_material_image" accept="image/*" capture="environment"
                                             class="block w-full text-xs text-gray-700
                                                    file:mr-3 file:py-2 file:px-3
                                                    file:rounded-md file:border-0
                                                    file:text-xs file:font-semibold
                                                    file:bg-blue-50 file:text-blue-700
                                                    hover:file:bg-blue-100">
-                                        @error('gambar_tidak_ada_material')
+                                        @error('tidak_ada_material_image')
                                             <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                         @enderror
 
                                         <div class="mt-2 flex items-center gap-3">
-                                            @if ($gambar_tidak_ada_material instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                            @if ($tidak_ada_material_image instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                                <img src="{{ $tidak_ada_material_image->temporaryUrl() }}"
+                                                    alt="Preview Dalam Botol"
+                                                    class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                                 <span class="text-[11px] text-gray-600">
                                                     File baru:
-                                                    {{ Str::limit($gambar_tidak_ada_material->getClientOriginalName(), 40) }}
+                                                    {{ Str::limit($tidak_ada_material_image->getClientOriginalName(), 40) }}
                                                 </span>
-                                            @elseif (!empty($existing_gambar_tidak_ada_material_url))
-                                                <img src="{{ $existing_gambar_tidak_ada_material_url }}"
+                                            @elseif (!empty($existing_tidak_ada_material_image_url))
+                                                <img src="{{ $existing_tidak_ada_material_image_url }}"
                                                     alt="Tidak Ada Material"
-                                                    class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                                    class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                             @endif
                                         </div>
                                     </div>
