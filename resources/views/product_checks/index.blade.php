@@ -5,5 +5,6 @@
         <livewire:ipc.ipc-product-check-list />
         <livewire:ipc.ipc-product-check-form />
         <livewire:ipc.ipc-product-detail />
+        <livewire:ipc.ipc-product-import />
     </div>
 @endsection
