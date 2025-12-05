@@ -67,6 +67,12 @@ class IpcProductCheck extends Model
         'TEH_AMPLOP'     => 'Teh Amplop',
         'TEH_HIJAU'      => 'Teh Hijau',
         'TEH_BAE'      => 'Teh Bae',
+        'BLENDING_BUBUK_1KG'      => 'Blending Bubuk 1 kg',
+        'BLENDING_ORI'      => 'Blending Ori',
+        'BLENDING_SACHET'      => 'Blending Sachet',
+        'BLENDING_SEDUH'      => 'Blending Seduh',
+        'BLENDING_SEDUH'      => 'Blending Seduh',
+        'TEH_REWORK'      => 'Teh Rework',
     ];
 
     public function createdBy()
