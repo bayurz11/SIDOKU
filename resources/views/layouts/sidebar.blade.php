@@ -44,11 +44,12 @@
                                  : '')));
              @endphp
 
+
              {{-- WRAPPER ACCORDION --}}
              <div x-data="{ activeMenu: @js($activeMenuInitial) }" class="space-y-2">
 
                  {{-- ============== MASTER DATA ============== --}}
-                 @canany(['departments.view', 'document_types.view', 'document_prefix_settings.view'])
+                 @permission('departments.view|document_types.view|document_prefix_settings.view')
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'master' ? '' : 'master')" aria-controls="menu-master"
                              :aria-expanded="(activeMenu === 'master').toString()"
@@ -97,10 +98,10 @@
                              @endpermission
                          </div>
                      </div>
-                 @endcanany
+                 @endpermission
 
                  {{-- ============== DOKUMEN ============== --}}
-                 @canany(['documents.view', 'documents.approve', 'documents.revision'])
+                 @permission('documents.view|documents.approve|documents.revision')
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'document' ? '' : 'document')"
                              aria-controls="menu-document" :aria-expanded="(activeMenu === 'document').toString()"
@@ -149,9 +150,9 @@
                              @endpermission
                          </div>
                      </div>
-                 @endcanany
+                 @endpermission
                  {{-- ============== IPC ============== --}}
-                 @canany(['ipc_product_checks.view'])
+                 @permission('ipc_product_checks.view')
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'ipc' ? '' : 'ipc')" aria-controls="menu-ipc"
                              :aria-expanded="(activeMenu === 'ipc').toString()"
@@ -196,9 +197,9 @@
 
                          </div>
                      </div>
-                 @endcanany
+                 @endpermission
                  {{-- ACCOUNT --}}
-                 @canany(['users.view', 'roles.view'])
+                 @permission('users.view|roles.view')
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'account' ? '' : 'account')"
                              aria-controls="menu-account" :aria-expanded="(activeMenu === 'account').toString()"
@@ -245,7 +246,8 @@
                              @endpermission
                          </div>
                      </div>
-                 @endcanany
+                 @endpermission
+
              </div>
          </div>
      </nav>
