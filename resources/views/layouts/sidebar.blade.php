@@ -28,20 +28,40 @@
              </a>
 
              @php
+                 // ===== ACTIVE ROUTE (UNTUK HIGHLIGHT & AUTO-OPEN) =====
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
                  $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
                  $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*');
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
-                 $activeMenuInitial = $masterActive
-                     ? 'master'
-                     : ($documentActive
-                         ? 'document'
-                         : ($ipcActive
-                             ? 'ipc'
-                             : ($accountActive
-                                 ? 'account'
-                                 : '')));
+                 // ===== VISIBILITY (MINIMAL 1 PERMISSION DI GROUP) =====
+                 $canSeeMasterMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['departments.view', 'document_types.view', 'document_prefix_settings.view']);
+
+                 $canSeeDocumentMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['documents.view', 'documents.approve', 'documents.revision']);
+
+                 $canSeeIpcMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['ipc_product_checks.view']);
+
+                 $canSeeAccountMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['users.view', 'roles.view']);
+
+                 // ===== ACTIVE ACCORDION (HANYA JIKA MENU TAMPIL) =====
+                 $activeMenuInitial =
+                     $masterActive && $canSeeMasterMenu
+                         ? 'master'
+                         : ($documentActive && $canSeeDocumentMenu
+                             ? 'document'
+                             : ($ipcActive && $canSeeIpcMenu
+                                 ? 'ipc'
+                                 : ($accountActive && $canSeeAccountMenu
+                                     ? 'account'
+                                     : '')));
              @endphp
 
 
@@ -49,10 +69,10 @@
              <div x-data="{ activeMenu: @js($activeMenuInitial) }" class="space-y-2">
 
                  {{-- ============== MASTER DATA ============== --}}
-                 @permission('departments.view|document_types.view|document_prefix_settings.view')
+                 @if ($canSeeMasterMenu)
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
-                         <button @click="activeMenu = (activeMenu === 'master' ? '' : 'master')" aria-controls="menu-master"
-                             :aria-expanded="(activeMenu === 'master').toString()"
+                         <button @click="activeMenu = (activeMenu === 'master' ? '' : 'master')"
+                             aria-controls="menu-master" :aria-expanded="(activeMenu === 'master').toString()"
                              class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $masterActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
                              type="button">
                              @if ($masterActive)
@@ -70,7 +90,8 @@
                              <svg :class="{ 'rotate-180': activeMenu === 'master' }"
                                  class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
                                  stroke="currentColor" viewBox="0 0 24 24">
-                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M19 9l-7 7-7-7" />
                              </svg>
                          </button>
 
@@ -98,10 +119,10 @@
                              @endpermission
                          </div>
                      </div>
-                 @endpermission
+                 @endif
 
                  {{-- ============== DOKUMEN ============== --}}
-                 @permission('documents.view|documents.approve|documents.revision')
+                 @if ($canSeeDocumentMenu)
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'document' ? '' : 'document')"
                              aria-controls="menu-document" :aria-expanded="(activeMenu === 'document').toString()"
@@ -122,7 +143,8 @@
                              <svg :class="{ 'rotate-180': activeMenu === 'document' }"
                                  class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
                                  stroke="currentColor" viewBox="0 0 24 24">
-                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M19 9l-7 7-7-7" />
                              </svg>
                          </button>
 
@@ -150,9 +172,10 @@
                              @endpermission
                          </div>
                      </div>
-                 @endpermission
+                 @endif
+
                  {{-- ============== IPC ============== --}}
-                 @permission('ipc_product_checks.view')
+                 @if ($canSeeIpcMenu)
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'ipc' ? '' : 'ipc')" aria-controls="menu-ipc"
                              :aria-expanded="(activeMenu === 'ipc').toString()"
@@ -197,16 +220,18 @@
 
                          </div>
                      </div>
-                 @endpermission
+                 @endif
+
                  {{-- ACCOUNT --}}
-                 @permission('users.view|roles.view')
+                 @if ($canSeeAccountMenu)
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
                          <button @click="activeMenu = (activeMenu === 'account' ? '' : 'account')"
                              aria-controls="menu-account" :aria-expanded="(activeMenu === 'account').toString()"
                              class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $accountActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
                              type="button">
                              @if ($accountActive)
-                                 <span class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400">
+                                 <span
+                                     class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400">
                                  </span>
                              @endif
 
@@ -246,7 +271,7 @@
                              @endpermission
                          </div>
                      </div>
-                 @endpermission
+                 @endif
 
              </div>
          </div>
