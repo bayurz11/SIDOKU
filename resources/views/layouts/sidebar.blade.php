@@ -31,7 +31,7 @@
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
                  $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
                  $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*');
-
+                 $accountActive = request()->routeIs('users.*') || request()->routeIs('roles.*');
                  $activeMenuInitial = $masterActive
                      ? 'master'
                      : ($documentActive
