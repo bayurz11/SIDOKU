@@ -31,16 +31,18 @@
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
                  $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
                  $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*');
-                 $accountActive = request()->routeIs('users.*') || request()->routeIs('roles.*');
+                 $accountActive = request()->routeIs('users.*', 'roles.*');
+
                  $activeMenuInitial = $masterActive
                      ? 'master'
                      : ($documentActive
                          ? 'document'
                          : ($ipcActive
                              ? 'ipc'
-                             : ''));
+                             : ($accountActive
+                                 ? 'account'
+                                 : '')));
              @endphp
-
 
              {{-- WRAPPER ACCORDION --}}
              <div x-data="{ activeMenu: @js($activeMenuInitial) }" class="space-y-2">
@@ -213,7 +215,7 @@
                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                      </svg>
 
-                     <span>Account</span>
+                     <span>Users & Roles</span>
 
                      {{-- CHEVRON --}}
                      <svg :class="{ 'rotate-180': activeMenu === 'account' }"
