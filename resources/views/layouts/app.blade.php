@@ -236,7 +236,7 @@
                             <div class="flex items-center gap-3">
                                 {{-- Notifications --}}
                                 <button type="button"
-                                    class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-md">
+                                    class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -255,7 +255,7 @@
                                         </svg>
                                     </div>
                                     <input type="text" placeholder="Quick search..."
-                                        class="w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg bg-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500">
+                                        class="w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg bg-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 </div>
 
 
@@ -272,7 +272,7 @@
                                 <div x-data="{ open: false }" @keydown.escape.window="open=false" class="relative">
                                     <!-- Trigger: avatar + chevron badge -->
                                     <button @click="open=!open" @click.outside="open=false" type="button"
-                                        class="relative h-10 w-10 rounded-full bg-green-600 text-white font-bold flex items-center justify-center shadow hover:brightness-95 select-none outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none"
+                                        class="relative h-10 w-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow hover:brightness-95 select-none outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none"
                                         aria-haspopup="menu" :aria-expanded="open.toString()"
                                         style="-webkit-tap-highlight-color: transparent;">
                                         <span class="text-sm">{{ $initials }}</span>
@@ -347,11 +347,11 @@
                 <main class="p-6 min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
                     <!-- Modern Flash Messages -->
                     @if (session('message'))
-                        <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl shadow-lg backdrop-blur-sm"
+                        <div class="mb-6 bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 text-blue-700 px-6 py-4 rounded-2xl shadow-lg backdrop-blur-sm"
                             role="alert">
                             <div class="flex items-center">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -403,7 +403,7 @@
                             </div>
                             <div class="flex items-center space-x-6 text-gray-500">
                                 <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                                     <span class="text-xs font-medium">Version 1.0.0</span>
                                 </div>
                                 <div class="hidden md:flex items-center space-x-4">
