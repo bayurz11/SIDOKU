@@ -280,10 +280,19 @@
      <!-- User Profile Section -->
      <div class="absolute bottom-0 w-full p-4">
          <div class="bg-white bg-opacity-10 rounded-lg p-3">
+             <div class="flex items-center">
+                 <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                     <span class="text-xs font-bold text-green-600">{{ substr(auth()->user()->name, 0, 2) }}</span>
+                 </div>
+                 <div class="ml-3 flex-1">
+                     <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name }}</p>
+                     <p class="text-xs text-green-200 truncate">{{ auth()->user()->email }}</p>
+                 </div>
+             </div>
              <form method="POST" action="{{ route('logout') }}" class="mt-3" id="logout-form">
                  @csrf
                  <button type="button" onclick="confirmLogout()"
-                     class="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-blue-100 bg-white bg-opacity-10 rounded-md hover:bg-opacity-20 transition-colors duration-200">
+                     class="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-green-100 bg-white bg-opacity-10 rounded-md hover:bg-opacity-20 transition-colors duration-200">
                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
