@@ -48,54 +48,62 @@
              <div x-data="{ activeMenu: @js($activeMenuInitial) }" class="space-y-2">
 
                  {{-- ============== MASTER DATA ============== --}}
-                 <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
-                     <button @click="activeMenu = (activeMenu === 'master' ? '' : 'master')" aria-controls="menu-master"
-                         :aria-expanded="(activeMenu === 'master').toString()"
-                         class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $masterActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
-                         type="button">
-                         @if ($masterActive)
-                             <span
-                                 class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
-                         @endif
+                 @if (auth()->user()->can('departments.view') ||
+                         auth()->user()->can('document_types.view') ||
+                         auth()->user()->can('document_prefix_settings.view'))
+                     <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
+                         <button @click="activeMenu = (activeMenu === 'master' ? '' : 'master')"
+                             aria-controls="menu-master" :aria-expanded="(activeMenu === 'master').toString()"
+                             class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $masterActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                             type="button">
 
-                         <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path stroke-linecap="round" stroke-linejoin="round"
-                                 d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-                         </svg>
+                             @if ($masterActive)
+                                 <span
+                                     class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
+                             @endif
 
-                         <span>Master Data</span>
+                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round"
+                                     d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                             </svg>
 
-                         <svg :class="{ 'rotate-180': activeMenu === 'master' }"
-                             class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
-                             stroke="currentColor" viewBox="0 0 24 24">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                         </svg>
-                     </button>
+                             <span>Master Data</span>
 
-                     <div id="menu-master" x-show="activeMenu === 'master'" x-collapse
-                         class="mt-1 pl-10 space-y-1 overflow-hidden">
-                         @permission('departments.view')
-                             <a href="{{ route('department.index') }}"
-                                 class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('department.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                 Department
-                             </a>
-                         @endpermission
+                             <svg :class="{ 'rotate-180': activeMenu === 'master' }"
+                                 class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M19 9l-7 7-7-7" />
+                             </svg>
+                         </button>
 
-                         @permission('document_types.view')
-                             <a href="{{ route('document_types.index') }}"
-                                 class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_types.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                 Document Type
-                             </a>
-                         @endpermission
+                         <div id="menu-master" x-show="activeMenu === 'master'" x-collapse
+                             class="mt-1 pl-10 space-y-1 overflow-hidden">
 
-                         @permission('document_prefix_settings.view')
-                             <a href="{{ route('document_prefix_settings.index') }}"
-                                 class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_prefix_settings.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                 Dokumen Prefix
-                             </a>
-                         @endpermission
+                             @permission('departments.view')
+                                 <a href="{{ route('department.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('department.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Department
+                                 </a>
+                             @endpermission
+
+                             @permission('document_types.view')
+                                 <a href="{{ route('document_types.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_types.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Document Type
+                                 </a>
+                             @endpermission
+
+                             @permission('document_prefix_settings.view')
+                                 <a href="{{ route('document_prefix_settings.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_prefix_settings.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Dokumen Prefix
+                                 </a>
+                             @endpermission
+
+                         </div>
                      </div>
-                 </div>
+                 @endif
 
                  {{-- ============== DOKUMEN ============== --}}
                  <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
