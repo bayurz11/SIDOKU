@@ -4,7 +4,7 @@
     $lineGroupLabels = \App\Domains\Ipc\Models\IpcProductCheck::LINE_GROUPS;
     $subLineLabels = \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH ?? [];
 
-    // Bentuk label dan value untuk Chart.js (tetap dari $moistureSummary)
+    // Label & value untuk Chart.js dari summary
     $chartLabels = $moistureSummary
         ->map(function ($row) use ($lineGroupLabels, $subLineLabels) {
             $lineLabel = $lineGroupLabels[$row->line_group] ?? $row->line_group;
@@ -20,23 +20,31 @@
         })
         ->values();
 
-    // 🔴 ALERT: ambil dari data asli ($data), bukan summary
-    // $data biasanya Paginator ->getCollection() untuk ambil koleksinya
-    $highMoistureItems = $data
-        ->getCollection()
-        ->filter(function ($ipc) {
-            return $ipc->avg_moisture_percent >= 10;
+    // Hitung jumlah data (record) per line + subline dari data asli (tabel IPC)
+    $rawCollection = $data->getCollection(); // asumsinya $data adalah paginator IpcProductCheck
+
+    $countsByKey = $rawCollection
+        ->groupBy(function ($row) {
+            return $row->line_group . '|' . ($row->sub_line ?? '');
         })
-        ->map(function ($ipc) {
-            // samakan nama field agar bisa pakai $row->avg_moisture di Blade
-            $ipc->avg_moisture = $ipc->avg_moisture_percent;
-            return $ipc;
-        });
+        ->map->count();
+
+    // Susun chartCounts sesuai urutan $moistureSummary
+    $chartCounts = $moistureSummary
+        ->map(function ($row) use ($countsByKey) {
+            $key = $row->line_group . '|' . ($row->sub_line ?? '');
+            return $countsByKey[$key] ?? 0;
+        })
+        ->values();
+
+    // ALERT kadar air tinggi (>= 10%) – kalau masih dipakai
+    $highMoistureItems = $rawCollection->filter(fn($ipc) => $ipc->avg_moisture_percent >= 10)->map(function ($ipc) {
+        $ipc->avg_moisture = $ipc->avg_moisture_percent;
+        return $ipc;
+    });
 
     $hasHighMoistureAlert = $highMoistureItems->isNotEmpty();
 @endphp
-
-
 
 <div class="space-y-6">
 
@@ -405,7 +413,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -419,7 +427,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -520,6 +528,7 @@
 
                 const labels = @json($chartLabels ?? []);
                 const dataValues = @json($chartValues ?? []);
+                const counts = @json($chartCounts ?? []); // << jumlah data per label
 
                 // Tidak ada data -> destroy semua chart kalau ada
                 if (!labels.length || !dataValues.length) {
@@ -640,7 +649,8 @@
                                         label: function(context) {
                                             const label = context.label || '';
                                             const value = context.parsed || 0;
-                                            return `${label}: ${value.toFixed(2)} %`;
+                                            const count = counts[context.dataIndex] ?? 0;
+                                            return `${label}: ${value.toFixed(2)} % (${count} data)`;
                                         }
                                     }
                                 }
