@@ -34,11 +34,28 @@ class Document extends Model
         'is_active'      => 'boolean',
     ];
 
-    // Status constants (optional, biar rapi)
-    public const STATUS_DRAFT     = 'draft';
+    // ===============================
+    // ISO DOCUMENT STATUS CONSTANTS
+    // ===============================
+
+    // 1. Dokumen baru dibuat, belum diajukan
+    public const STATUS_DRAFT = 'draft';
+
+    // 2. Dokumen sudah diajukan menunggu persetujuan
     public const STATUS_IN_REVIEW = 'in_review';
-    public const STATUS_APPROVED  = 'approved';
-    public const STATUS_OBSOLETE  = 'obsolete';
+
+    // 3. Dokumen ditolak saat proses review
+    public const STATUS_REJECTED = 'rejected';
+
+    // 4. Dokumen sudah disetujui & aktif digunakan
+    public const STATUS_APPROVED = 'approved';
+
+    // 5. Dokumen dalam proses revisi
+    public const STATUS_REVISION = 'revision';
+
+    // 6. Dokumen sudah tidak berlaku (digantikan / ditarik)
+    public const STATUS_OBSOLETE = 'obsolete';
+
 
     public function documentType(): BelongsTo
     {
