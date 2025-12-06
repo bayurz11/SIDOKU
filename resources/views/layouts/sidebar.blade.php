@@ -213,6 +213,13 @@
 
                              @permission('ipc_product_checks.view')
                                  <a href="{{ route('ipc.tiup-botol.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.produk.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Produk
+                                 </a>
+                             @endpermission
+
+                             @permission('ipc_product_checks.view')
+                                 <a href="{{ route('ipc.tiup-botol.index') }}"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.tiup-botol.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Tiup Botol
                                  </a>
