@@ -44,12 +44,12 @@
     <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
         {{-- HEADER --}}
         <div
-            class="px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-emerald-50 via-blue-50 to-indigo-50
+            class="px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-blue-50 via-blue-50 to-indigo-50
                border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
 
             <div class="flex items-start sm:items-center gap-3 sm:gap-4">
                 <div
-                    class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-blue-600
+                    class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600
                        rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -336,7 +336,7 @@
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
                                 @if ($ipc->sub_line)
                                     <span
-                                        class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                        class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                                         {{ \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH[$ipc->sub_line] ?? $ipc->sub_line }}
                                     </span>
                                 @else
@@ -405,7 +405,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -419,7 +419,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
