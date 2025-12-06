@@ -28,11 +28,31 @@
              </a>
 
              @php
-                 $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
-                 $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
-                 $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*');
-                 $accountActive = request()->routeIs('users.*', 'roles.*');
+                 // === MASTER ===
+                 $masterActive =
+                     request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*') &&
+                     (auth()->user()->can('departments.view') ||
+                         auth()->user()->can('document_types.view') ||
+                         auth()->user()->can('document_prefix_settings.view'));
 
+                 // === DOCUMENT ===
+                 $documentActive =
+                     request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*') &&
+                     (auth()->user()->can('documents.view') ||
+                         auth()->user()->can('documents.approve') ||
+                         auth()->user()->can('documents.revision'));
+
+                 // === IPC ===
+                 $ipcActive =
+                     request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*') &&
+                     auth()->user()->can('ipc_product_checks.view');
+
+                 // === ACCOUNT ===
+                 $accountActive =
+                     request()->routeIs('users.*', 'roles.*') &&
+                     (auth()->user()->can('users.view') || auth()->user()->can('roles.view'));
+
+                 // === ACTIVE MENU AWAL (UNTUK ACCORDION) ===
                  $activeMenuInitial = $masterActive
                      ? 'master'
                      : ($documentActive
@@ -43,6 +63,7 @@
                                  ? 'account'
                                  : '')));
              @endphp
+
 
              {{-- WRAPPER ACCORDION --}}
              <div x-data="{ activeMenu: @js($activeMenuInitial) }" class="space-y-2">
