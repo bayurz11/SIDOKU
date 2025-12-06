@@ -232,27 +232,111 @@
                                 </nav>
                             </div>
 
-                            <!-- Right side items -->
-                            <div class="flex items-center space-x-4">
-                                <!-- Notifications -->
-                                {{-- <button class="p-2 text-gray-400 hover:text-gray-600 relative">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-8a4.5 4.5 0 00-4.5-4.5h-1"></path>
+                            {{-- RIGHT: Bell + Search + Avatar --}}
+                            <div class="flex items-center gap-3">
+                                {{-- Notifications --}}
+                                <button type="button"
+                                    class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                                     </svg>
-                                    <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400"></span>
-                                </button> --}}
+                                    <span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+                                </button>
 
-                                <!-- Search -->
+                                {{-- Search (desktop) --}}
                                 <div class="relative hidden md:block">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
                                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
                                     <input type="text" placeholder="Quick search..."
-                                        class="block w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        class="w-64 pl-10 pr-3 py-2 border border-gray-200 rounded-lg bg-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500">
+                                </div>
+
+
+                                {{-- Avatar + Dropdown (compact, no focus ring) --}}
+                                @php
+                                    $name = Auth::user()->name ?? 'User';
+                                    $email = Auth::user()->email ?? '';
+
+                                    // Ambil dua huruf pertama dari nama (tanpa spasi)
+                                    $nameClean = preg_replace('/\s+/', '', $name);
+                                    $initials = strtoupper(substr($nameClean, 0, 2));
+                                @endphp
+
+                                <div x-data="{ open: false }" @keydown.escape.window="open=false" class="relative">
+                                    <!-- Trigger: avatar + chevron badge -->
+                                    <button @click="open=!open" @click.outside="open=false" type="button"
+                                        class="relative h-10 w-10 rounded-full bg-green-600 text-white font-bold flex items-center justify-center shadow hover:brightness-95 select-none outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none"
+                                        aria-haspopup="menu" :aria-expanded="open.toString()"
+                                        style="-webkit-tap-highlight-color: transparent;">
+                                        <span class="text-sm">{{ $initials }}</span>
+
+                                        <span
+                                            class="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-white ring-1 ring-black/10 flex items-center justify-center">
+                                            <svg class="h-3 w-3 text-gray-500 transition-transform duration-200 transform-gpu"
+                                                :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </span>
+
+                                        <span class="sr-only">Open user menu</span>
+                                    </button>
+
+                                    <!-- Menu -->
+                                    <div x-cloak x-show="open" x-transition:enter="transition ease-out duration-150"
+                                        x-transition:enter-start="opacity-0 translate-y-1"
+                                        x-transition:enter-end="opacity-100 translate-y-0"
+                                        x-transition:leave="transition ease-in duration-100"
+                                        x-transition:leave-start="opacity-100 translate-y-0"
+                                        x-transition:leave-end="opacity-0 translate-y-1"
+                                        class="absolute right-0 mt-2 w-56 z-50 rounded-xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden"
+                                        role="menu" aria-label="User menu">
+                                        <div class="px-4 py-3 bg-gray-50">
+                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $name }}
+                                            </p>
+                                            @if ($email)
+                                                <p class="text-xs text-gray-600 truncate">{{ $email }}</p>
+                                            @endif
+                                        </div>
+                                        <div class="my-1 border-t border-gray-100"></div>
+                                        <p class="px-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                            Account</p>
+
+                                        <div class="py-1">
+                                            <a href="{{ route('profile.index') }}"
+                                                class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                role="menuitem">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM4 21a8 8 0 1116 0H4z" />
+                                                </svg>
+                                                Profile Settings
+                                            </a>
+                                        </div>
+                                        <div class="my-1 border-t border-gray-100"></div>
+                                        <form method="POST" action="{{ route('logout') }}" role="none">
+                                            @csrf
+                                            <button type="submit"
+                                                class="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                                                role="menuitem">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+                                                </svg>
+                                                Sign Out
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
