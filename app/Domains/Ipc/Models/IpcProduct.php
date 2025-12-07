@@ -57,28 +57,22 @@ class IpcProduct extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Konstanta Line Group
-     */
     public const LINE_GROUPS = [
-        'LINE_TEH',
-        'LINE_POWDER',
-        'LINE_MINUMAN_BERPERISA',
-        'LINE_AMDK',
-        'LINE_CONDIMENTS',
+        'LINE_TEH'               => 'Line Teh',
+        'LINE_POWDER'            => 'Line Powder',
+        'LINE_MINUMAN_BERPERISA' => 'Line Minuman Berperisa',
+        'LINE_AMDK'              => 'Line AMDK',
+        'LINE_CONDIMENTS'        => 'Line Condiments',
     ];
 
-    /**
-     * Konstanta Sub Line Teh
-     */
     public const SUB_LINES = [
-        'TEH_ORI',
-        'TEH_SACHET',
-        'TEH_SEDUH_50G',
-        'TEH_SEDUH_100G',
-        'TEH_BUBUK_1KG',
-        'TEH_AMPLOP',
-        'TEH_HIJAU',
-        'TEH_JASMINE',
+        'TEH_ORI'        => 'Teh Ori',
+        'TEH_SACHET'     => 'Teh Sachet',
+        'TEH_SEDUH_50G'  => 'Teh Seduh 50 g',
+        'TEH_SEDUH_100G' => 'Teh Seduh 100 g',
+        'TEH_BUBUK_1KG'  => 'Teh Bubuk 1 kg',
+        'TEH_AMPLOP'     => 'Teh Amplop',
+        'TEH_HIJAU'      => 'Teh Hijau',
+        'TEH_JASMINE'    => 'Teh Jasmine',
     ];
 }
