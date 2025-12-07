@@ -48,7 +48,8 @@
                                 <label for="line_group" class="block text-sm font-medium text-gray-700 mb-2">
                                     Line Group <span class="text-red-500">*</span>
                                 </label>
-                                <select wire:model.defer="line_group" id="line_group"
+                                {{-- 🔥 pakai live supaya form param langsung berubah --}}
+                                <select wire:model.live="line_group" id="line_group"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
                                     <option value="">-- Pilih Line --</option>
@@ -66,7 +67,8 @@
                                 <label for="sub_line" class="block text-sm font-medium text-gray-700 mb-2">
                                     Sub Line (Teh)
                                 </label>
-                                <select wire:model.defer="sub_line" id="sub_line"
+                                {{-- boleh tetap defer, tapi kalau mau reaktif penuh bisa pakai live --}}
+                                <select wire:model.live="sub_line" id="sub_line"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm
                                            @if ($line_group !== 'LINE_TEH') bg-gray-100 @endif"
@@ -107,7 +109,7 @@
                                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nama Produk <span class="text-red-500">*</span>
                                 </label>
-                                <input wire:model.defer="product_name" type="text" id="product_name"
+                                <input wire:model.live="product_name" type="text" id="product_name"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                     placeholder="Contoh: Teh Ori, Powder Instan, Teh Bubuk 1 kg, dll.">
@@ -157,7 +159,7 @@
                                 </p>
                             @endif
 
-                            {{-- LINE TEH: Rata-rata Berat (g) --}}
+                            {{-- LINE TEH --}}
                             @if ($line_group === 'LINE_TEH')
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
@@ -177,7 +179,7 @@
                                 </div>
                             @endif
 
-                            {{-- LINE POWDER: Berat, pH, Brix --}}
+                            {{-- LINE POWDER --}}
                             @if ($line_group === 'LINE_POWDER')
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
@@ -222,7 +224,7 @@
                                 </div>
                             @endif
 
-                            {{-- LINE MINUMAN BERPERISA: pH, Brix, TDS --}}
+                            {{-- LINE MINUMAN BERPERISA --}}
                             @if ($line_group === 'LINE_MINUMAN_BERPERISA')
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
@@ -267,7 +269,7 @@
                                 </div>
                             @endif
 
-                            {{-- LINE AMDK: pH, Brix, TDS, Klorin, Ozon, Kekeruhan --}}
+                            {{-- LINE AMDK --}}
                             @if ($line_group === 'LINE_AMDK')
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
@@ -353,7 +355,7 @@
                                 </div>
                             @endif
 
-                            {{-- LINE CONDIMENTS: pH, Brix, TDS (opsional), Salinitas --}}
+                            {{-- LINE CONDIMENTS --}}
                             @if ($line_group === 'LINE_CONDIMENTS')
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div>
