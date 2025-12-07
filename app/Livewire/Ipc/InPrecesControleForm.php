@@ -7,7 +7,7 @@ use App\Shared\Traits\WithAlerts;
 use App\Domains\Ipc\Models\IpcProduct;
 use Illuminate\Validation\Rule;
 
-class InPrecesControleForm extends Component
+class InPrecesControlelForm extends Component
 {
     use WithAlerts;
 

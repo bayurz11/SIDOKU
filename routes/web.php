@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Domains\Document\Models\Document;
-use App\Livewire\Ipc\InPrecesControlelList;
+use App\Livewire\Ipc\InPrecesControleList;
 use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use App\Livewire\Document\DocumentImportTemplateExport;
 
