@@ -7,7 +7,7 @@ use Livewire\WithPagination;
 use App\Shared\Traits\WithAlerts;
 use App\Domains\Ipc\Models\IpcProduct;
 
-class InPrecesControlelList extends Component
+class InPrecesControleList extends Component
 {
     use WithPagination, WithAlerts;
 
