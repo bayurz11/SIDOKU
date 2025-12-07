@@ -22,6 +22,11 @@
 
     @livewireStyles
     <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    <style>
         .sidebar-gradient {
             background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
         }
