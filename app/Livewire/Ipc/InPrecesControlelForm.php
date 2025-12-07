@@ -19,7 +19,6 @@ class InPrecesControlelForm extends Component
     public string $product_name = '';
     public ?int $shift         = null;
 
-    // Parameter utama
     public ?float $avg_weight_g       = null;
     public ?float $avg_ph             = null;
     public ?float $avg_brix           = null;
@@ -43,8 +42,8 @@ class InPrecesControlelForm extends Component
 
     public function mount(): void
     {
-        $this->lineGroups  = IpcProduct::LINE_GROUPS;
-        $this->subLinesTeh = IpcProduct::SUB_LINES;
+        $this->lineGroups  = IpcProduct::LINE_GROUPS; // ['LINE_TEH' => 'Line Teh', ...]
+        $this->subLinesTeh = IpcProduct::SUB_LINES;   // ['TEH_ORI' => 'Teh Ori', ...]
     }
 
     /** ketika line_group berubah, kosongkan sub_line kalau bukan LINE_TEH */
@@ -132,7 +131,7 @@ class InPrecesControlelForm extends Component
 
     public function save(): void
     {
-        $data = $this->validate();
+        $this->validate();
 
         if ($this->line_group === 'LINE_TEH' && ! $this->sub_line) {
             $this->addError('sub_line', 'Sub-line wajib dipilih untuk Line Teh.');
@@ -155,7 +154,7 @@ class InPrecesControlelForm extends Component
             'avg_turbidity_ntu' => $this->avg_turbidity_ntu,
             'avg_salinity'      => $this->avg_salinity,
 
-            'notes'      => $this->notes,
+            'notes' => $this->notes,
         ];
 
         if ($this->isEditing && $this->ipcId) {
@@ -165,7 +164,6 @@ class InPrecesControlelForm extends Component
             $this->showSuccessToast('IPC product updated successfully!');
         } else {
             $payload['created_by'] = auth()->id();
-
             IpcProduct::create($payload);
 
             $this->showSuccessToast('IPC product created successfully!');
@@ -205,6 +203,9 @@ class InPrecesControlelForm extends Component
 
     public function render()
     {
-        return view('livewire.ipc.in-preces-controlel-form');
+        return view('livewire.ipc.in-preces-controlel-form', [
+            'lineGroups'  => $this->lineGroups,
+            'subLinesTeh' => $this->subLinesTeh,
+        ]);
     }
 }

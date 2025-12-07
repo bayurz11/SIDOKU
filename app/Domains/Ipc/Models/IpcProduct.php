@@ -4,18 +4,12 @@ namespace App\Domains\Ipc\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Domains\User\Models\User; // sesuaikan namespace user kamu
+use App\Domains\User\Models\User;
 
 class IpcProduct extends Model
 {
-    /**
-     * Nama tabel
-     */
     protected $table = 'ipc_check_product';
 
-    /**
-     * Mass assignment
-     */
     protected $fillable = [
         'line_group',
         'sub_line',
@@ -30,12 +24,10 @@ class IpcProduct extends Model
         'avg_ozone',
         'avg_turbidity_ntu',
         'avg_salinity',
+        'notes',
         'created_by',
     ];
 
-    /**
-     * Casting tipe data
-     */
     protected $casts = [
         'test_date'         => 'date',
         'shift'             => 'integer',
@@ -49,14 +41,14 @@ class IpcProduct extends Model
         'avg_salinity'      => 'decimal:3',
     ];
 
-    /**
-     * Relasi ke user penginput
-     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Konstanta Line Group (ASSOCIATIVE: key = value di DB, value = label)
+     */
     public const LINE_GROUPS = [
         'LINE_TEH'               => 'Line Teh',
         'LINE_POWDER'            => 'Line Powder',
@@ -65,6 +57,9 @@ class IpcProduct extends Model
         'LINE_CONDIMENTS'        => 'Line Condiments',
     ];
 
+    /**
+     * Konstanta Sub Line Teh (ASSOCIATIVE)
+     */
     public const SUB_LINES = [
         'TEH_ORI'        => 'Teh Ori',
         'TEH_SACHET'     => 'Teh Sachet',
