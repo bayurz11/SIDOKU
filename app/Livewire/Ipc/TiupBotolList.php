@@ -41,6 +41,7 @@ class TiupBotolList extends Component
 
     protected $listeners = [
         'tiup-botol:saved' => 'refreshList',
+        'openTiupBotolDetail' => 'open',
     ];
 
     public function refreshList(): void
