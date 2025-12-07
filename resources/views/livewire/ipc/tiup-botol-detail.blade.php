@@ -1,4 +1,4 @@
-@php
+{{-- @php
     use App\Domains\Ipc\Models\TiupBotolCheck;
     use Illuminate\Support\Str;
 
@@ -24,7 +24,7 @@
             default => 'bg-gray-50 text-gray-600 border-gray-200',
         };
     }
-@endphp
+@endphp --}}
 
 <div>
     @if ($showModal && $record)
