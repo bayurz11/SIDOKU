@@ -21,7 +21,6 @@
                         </div>
 
                         <div class="flex flex-col items-end space-y-2">
-                            {{-- Info Line/Produk ringkas --}}
                             @if ($line_group && $product_name)
                                 <span
                                     class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
@@ -39,11 +38,13 @@
                         </div>
                     </div>
 
+                    {{-- DEBUG SEMENTARA (boleh dihapus setelah beres) --}}
+                    {{-- <pre class="text-xs text-gray-500 mb-2">line_group: {{ json_encode($line_group) }}</pre> --}}
+
                     {{-- FORM --}}
                     <form wire:submit.prevent="save" class="space-y-6">
                         {{-- Row 1: Line Group, Sub Line, Tanggal --}}
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {{-- Line Group --}}
                             <div>
                                 <label for="line_group" class="block text-sm font-medium text-gray-700 mb-2">
                                     Line Group <span class="text-red-500">*</span>
@@ -61,7 +62,6 @@
                                 @enderror
                             </div>
 
-                            {{-- Sub Line (khusus LINE_TEH) --}}
                             <div>
                                 <label for="sub_line" class="block text-sm font-medium text-gray-700 mb-2">
                                     Sub Line (Teh)
@@ -86,7 +86,6 @@
                                 @enderror
                             </div>
 
-                            {{-- Tanggal --}}
                             <div>
                                 <label for="test_date" class="block text-sm font-medium text-gray-700 mb-2">
                                     Hari, Tanggal <span class="text-red-500">*</span>
@@ -102,7 +101,6 @@
 
                         {{-- Row 2: Nama Produk & Shift --}}
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {{-- Nama Produk --}}
                             <div class="md:col-span-2">
                                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nama Produk <span class="text-red-500">*</span>
@@ -116,7 +114,6 @@
                                 @enderror
                             </div>
 
-                            {{-- Shift --}}
                             <div>
                                 <label for="shift" class="block text-sm font-medium text-gray-700 mb-2">
                                     Shift (opsional)
@@ -413,7 +410,6 @@
                             @endif
                         </div>
 
-                        {{-- Notes --}}
                         <div>
                             <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
                                 Catatan (opsional)
@@ -427,7 +423,6 @@
                             @enderror
                         </div>
 
-                        {{-- FOOTER BUTTONS --}}
                         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                             <button type="button" wire:click="closeModal"
                                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md
