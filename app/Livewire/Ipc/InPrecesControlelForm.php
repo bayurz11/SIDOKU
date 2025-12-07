@@ -44,12 +44,11 @@ class InPrecesControlelForm extends Component
     protected function rules(): array
     {
         return [
-            'line_group'   => ['required', Rule::in(IpcProduct::LINE_GROUPS)],
-            'sub_line'     => ['nullable', Rule::in(IpcProduct::SUB_LINES)],
+            'line_group'   => ['required', Rule::in(array_keys(IpcProduct::LINE_GROUPS))],
+            'sub_line'     => ['nullable', Rule::in(array_keys(IpcProduct::SUB_LINES))],
             'test_date'    => ['required', 'date'],
             'product_name' => ['required', 'string', 'max:150'],
             'shift'        => ['nullable', 'integer', 'min:1', 'max:3'],
-
             'avg_weight_g'      => ['nullable', 'numeric', 'min:0'],
             'avg_ph'            => ['nullable', 'numeric', 'min:0'],
             'avg_brix'          => ['nullable', 'numeric', 'min:0'],
@@ -58,8 +57,7 @@ class InPrecesControlelForm extends Component
             'avg_ozone'         => ['nullable', 'numeric', 'min:0'],
             'avg_turbidity_ntu' => ['nullable', 'numeric', 'min:0'],
             'avg_salinity'      => ['nullable', 'numeric', 'min:0'],
-
-            'notes' => ['nullable', 'string'],
+            'notes'             => ['nullable', 'string'],
         ];
     }
 
@@ -68,6 +66,7 @@ class InPrecesControlelForm extends Component
         $this->lineGroups  = IpcProduct::LINE_GROUPS;
         $this->subLinesTeh = IpcProduct::SUB_LINES;
     }
+
 
     public function openForm(?int $id = null): void
     {
