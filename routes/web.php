@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Domains\Document\Models\Document;
+use App\Livewire\Ipc\InPrecesControlelList;
 use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use App\Livewire\Document\DocumentImportTemplateExport;
 
@@ -99,6 +100,15 @@ Route::get('/ipc/tiup-botol/import/template', function () {
     );
 })->name('ipc.tiup-botol.import-template');
 
+// IPC PRODUK
+Route::middleware(['auth', 'permission:ipc_product_checks.view'])
+    ->name('ipc.product.')
+    ->prefix('ipc/product')
+    ->group(function () {
+        Route::get('/', function () {
+            return view('product.index');
+        })->name('index');
+    });
 
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {

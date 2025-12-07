@@ -31,7 +31,7 @@
                  // ===== ACTIVE ROUTE (UNTUK HIGHLIGHT & AUTO-OPEN) =====
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
                  $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
-                 $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*');
+                 $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*', 'ipc.product.*');
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
                  // ===== VISIBILITY (MINIMAL 1 PERMISSION DI GROUP) =====
@@ -212,8 +212,8 @@
                              @endpermission
 
                              @permission('ipc_product_checks.view')
-                                 <a href="{{ route('ipc.tiup-botol.index') }}"
-                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.produk.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                 <a href="{{ route('ipc.product.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.product.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Produk
                                  </a>
                              @endpermission
