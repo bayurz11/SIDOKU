@@ -13,33 +13,47 @@ class InPrecesControlelForm extends Component
 
     public ?int $ipcId = null;
 
-    public ?string $line_group   = null;
-    public ?string $sub_line     = null;
-    public ?string $test_date    = null;
-    public string $product_name  = '';
-    public ?int $shift           = null;
+    public ?string $line_group = null;
+    public ?string $sub_line   = null;
+    public ?string $test_date  = null;
+    public string $product_name = '';
+    public ?int $shift         = null;
 
-    // --- FIELD PARAMETER HASIL UJI ---
-    public ?float $avg_weight_g      = null; // Line Teh & Powder
-    public ?float $avg_ph            = null; // Powder, Minuman Berperisa, AMDK, Condiments
-    public ?float $avg_brix          = null; // Powder, Minuman Berperisa, AMDK, Condiments
-    public ?float $avg_tds_ppm       = null; // Minuman Berperisa, AMDK, Condiments
-    public ?float $avg_chlorine      = null; // AMDK
-    public ?float $avg_ozone         = null; // AMDK
-    public ?float $avg_turbidity_ntu = null; // AMDK
-    public ?float $avg_salinity      = null; // Condiments
+    // Parameter utama
+    public ?float $avg_weight_g       = null;
+    public ?float $avg_ph             = null;
+    public ?float $avg_brix           = null;
+    public ?float $avg_tds_ppm        = null;
+    public ?float $avg_chlorine       = null;
+    public ?float $avg_ozone          = null;
+    public ?float $avg_turbidity_ntu  = null;
+    public ?float $avg_salinity       = null;
 
-    public ?string $notes = null; // opsional – pastikan ada kolom di migration jika dipakai
+    public ?string $notes = null;
 
     public bool $showModal = false;
     public bool $isEditing = false;
 
-    public array $lineGroups = [];
+    public array $lineGroups  = [];
     public array $subLinesTeh = [];
 
     protected $listeners = [
-        'openIpcProductForm' => 'openForm', // disamakan dengan list component baru
+        'openIpcProductForm' => 'openForm',
     ];
+
+    public function mount(): void
+    {
+        $this->lineGroups  = IpcProduct::LINE_GROUPS;
+        $this->subLinesTeh = IpcProduct::SUB_LINES;
+    }
+
+    /** ketika line_group berubah, kosongkan sub_line kalau bukan LINE_TEH */
+    public function updatedLineGroup($value): void
+    {
+        if ($value !== 'LINE_TEH') {
+            $this->sub_line = null;
+        }
+    }
 
     protected function rules(): array
     {
@@ -49,24 +63,19 @@ class InPrecesControlelForm extends Component
             'test_date'    => ['required', 'date'],
             'product_name' => ['required', 'string', 'max:150'],
             'shift'        => ['nullable', 'integer', 'min:1', 'max:3'],
-            'avg_weight_g'      => ['nullable', 'numeric', 'min:0'],
-            'avg_ph'            => ['nullable', 'numeric', 'min:0'],
-            'avg_brix'          => ['nullable', 'numeric', 'min:0'],
-            'avg_tds_ppm'       => ['nullable', 'numeric', 'min:0'],
-            'avg_chlorine'      => ['nullable', 'numeric', 'min:0'],
-            'avg_ozone'         => ['nullable', 'numeric', 'min:0'],
-            'avg_turbidity_ntu' => ['nullable', 'numeric', 'min:0'],
-            'avg_salinity'      => ['nullable', 'numeric', 'min:0'],
-            'notes'             => ['nullable', 'string'],
+
+            'avg_weight_g'       => ['nullable', 'numeric', 'min:0'],
+            'avg_ph'             => ['nullable', 'numeric', 'min:0'],
+            'avg_brix'           => ['nullable', 'numeric', 'min:0'],
+            'avg_tds_ppm'        => ['nullable', 'numeric', 'min:0'],
+            'avg_chlorine'       => ['nullable', 'numeric', 'min:0'],
+            'avg_ozone'          => ['nullable', 'numeric', 'min:0'],
+            'avg_turbidity_ntu'  => ['nullable', 'numeric', 'min:0'],
+            'avg_salinity'       => ['nullable', 'numeric', 'min:0'],
+
+            'notes' => ['nullable', 'string'],
         ];
     }
-
-    public function mount(): void
-    {
-        $this->lineGroups  = IpcProduct::LINE_GROUPS;
-        $this->subLinesTeh = IpcProduct::SUB_LINES;
-    }
-
 
     public function openForm(?int $id = null): void
     {
@@ -77,13 +86,12 @@ class InPrecesControlelForm extends Component
         $this->isEditing = false;
 
         if ($id) {
-            // MODE EDIT
             $record = IpcProduct::findOrFail($id);
 
             $this->ipcId        = $record->id;
             $this->line_group   = $record->line_group;
             $this->sub_line     = $record->sub_line;
-            $this->test_date    = optional($record->test_date)?->format('Y-m-d');
+            $this->test_date    = optional($record->test_date)->format('Y-m-d');
             $this->product_name = $record->product_name;
             $this->shift        = $record->shift;
 
@@ -96,11 +104,10 @@ class InPrecesControlelForm extends Component
             $this->avg_turbidity_ntu = $record->avg_turbidity_ntu;
             $this->avg_salinity      = $record->avg_salinity;
 
-            $this->notes = $record->notes ?? null;
+            $this->notes = $record->notes;
 
             $this->isEditing = true;
         } else {
-            // MODE CREATE
             $this->reset([
                 'ipcId',
                 'line_group',
@@ -125,9 +132,8 @@ class InPrecesControlelForm extends Component
 
     public function save(): void
     {
-        $this->validate();
+        $data = $this->validate();
 
-        // Kalau line TEH, wajib pilih sub_line
         if ($this->line_group === 'LINE_TEH' && ! $this->sub_line) {
             $this->addError('sub_line', 'Sub-line wajib dipilih untuk Line Teh.');
             return;
@@ -149,7 +155,7 @@ class InPrecesControlelForm extends Component
             'avg_turbidity_ntu' => $this->avg_turbidity_ntu,
             'avg_salinity'      => $this->avg_salinity,
 
-            'notes' => $this->notes,
+            'notes'      => $this->notes,
         ];
 
         if ($this->isEditing && $this->ipcId) {
@@ -160,14 +166,12 @@ class InPrecesControlelForm extends Component
         } else {
             $payload['created_by'] = auth()->id();
 
-            $record = IpcProduct::create($payload);
+            IpcProduct::create($payload);
 
             $this->showSuccessToast('IPC product created successfully!');
         }
 
-        // sinkron dengan list: InProcessControlList
         $this->dispatch('ipc:product_saved');
-
         $this->closeModal();
     }
 
@@ -201,9 +205,6 @@ class InPrecesControlelForm extends Component
 
     public function render()
     {
-        return view('livewire.ipc.in-preces-controlel-form', [
-            'lineGroups'  => $this->lineGroups,
-            'subLinesTeh' => $this->subLinesTeh,
-        ]);
+        return view('livewire.ipc.in-preces-controlel-form');
     }
 }
