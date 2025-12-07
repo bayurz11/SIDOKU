@@ -53,11 +53,6 @@ class TiupBotolList extends Component
     {
         $this->resetPage();
     }
-    public function openTiupBotolDetail(int $id): void
-    {
-        // kirim event ke komponen detail
-        $this->emit('openTiupBotolDetail', $id);
-    }
 
     public function updatingFilterDateFrom(): void
     {

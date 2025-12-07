@@ -11,8 +11,6 @@ class TiupBotolDetail extends Component
     public ?TiupBotolCheck $record = null;
 
     protected $listeners = [
-        // Trigger dari luar:
-        // $dispatch('openTiupBotolDetail', { id: $id })
         'openTiupBotolDetail' => 'open',
     ];
 
