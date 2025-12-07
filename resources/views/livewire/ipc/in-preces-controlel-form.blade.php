@@ -6,7 +6,9 @@
     @if ($showModal)
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center"
             wire:click.self="closeModal">
-            <div class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-2xl bg-white">
+            {{-- 🔥 Alpine x-data + entangle line_group --}}
+            <div class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-2xl bg-white"
+                x-data="{ lineGroup: @entangle('line_group') }">
                 <div class="mt-1">
                     {{-- HEADER --}}
                     <div class="flex justify-between items-start mb-6">
@@ -45,7 +47,8 @@
                                 <label for="line_group" class="block text-sm font-medium text-gray-700 mb-2">
                                     Line Group <span class="text-red-500">*</span>
                                 </label>
-                                <select wire:model="line_group" id="line_group"
+                                {{-- 🧠 wire + Alpine sinkron --}}
+                                <select wire:model="line_group" x-model="lineGroup" id="line_group"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
                                     <option value="">-- Pilih Line --</option>
