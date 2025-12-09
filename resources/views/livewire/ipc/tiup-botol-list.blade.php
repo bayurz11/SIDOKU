@@ -3,15 +3,16 @@
 
     $dropTestLabels = TiupBotolCheck::DROP_TEST;
 
-    // Data untuk chart
-    $chartLabels = $dropSummary
-        ->map(function ($row) use ($dropTestLabels) {
-            return $dropTestLabels[$row->drop_test] ?? $row->drop_test;
-        })
-        ->values();
+    // ✅ Summary OK vs NG
+    $dropSummary = collect($dropSummary ?? []);
+
+    $chartLabels = $dropSummary->map(fn($row) => $dropTestLabels[$row->drop_test] ?? $row->drop_test)->values();
 
     $chartValues = $dropSummary->map(fn($row) => (int) $row->total_samples)->values();
+
+    $totalSamples = $chartValues->sum();
 @endphp
+
 
 <div class="space-y-6">
     {{-- CARD CHART / OVERVIEW --}}
@@ -48,9 +49,18 @@
                     Belum ada data tiup botol untuk ditampilkan. Atur filter tanggal terlebih dahulu.
                 </p>
             @else
-                {{-- tinggi lebih kecil di mobile --}}
-                <div class="h-56 sm:h-72" wire:ignore>
-                    <canvas id="tiupBotolChart"></canvas>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 py-4 sm:px-6 sm:py-5">
+
+                    {{-- ✅ BAR CHART --}}
+                    <div class="h-64 sm:h-72" wire:ignore>
+                        <canvas id="tiupBotolBarChart"></canvas>
+                    </div>
+
+                    {{-- ✅ DONUT CHART --}}
+                    <div class="h-64 sm:h-72" wire:ignore>
+                        <canvas id="tiupBotolDonutChart"></canvas>
+                    </div>
+
                 </div>
             @endif
         </div>
@@ -318,7 +328,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -409,47 +419,53 @@
             if (window.__tiupBotolChartInitialized) return;
             window.__tiupBotolChartInitialized = true;
 
-            window.tiupBotolChart = null;
+            window.tiupBotolBarChart = null;
+            window.tiupBotolDonutChart = null;
 
-            function renderTiupBotolChart() {
-                const canvas = document.getElementById('tiupBotolChart');
-                if (!canvas) return;
+            function renderTiupBotolCharts() {
+                const barCanvas = document.getElementById('tiupBotolBarChart');
+                const donutCanvas = document.getElementById('tiupBotolDonutChart');
 
                 const labels = @json($chartLabels ?? []);
-                const dataValues = @json($chartValues ?? []);
+                const values = @json($chartValues ?? []);
+                const total = values.reduce((a, b) => a + b, 0);
 
-                if (!labels.length || !dataValues.length) {
-                    if (window.tiupBotolChart && typeof window.tiupBotolChart.destroy === 'function') {
-                        window.tiupBotolChart.destroy();
-                        window.tiupBotolChart = null;
-                    }
+                if (!labels.length || !values.length) {
+                    if (window.tiupBotolBarChart) window.tiupBotolBarChart.destroy();
+                    if (window.tiupBotolDonutChart) window.tiupBotolDonutChart.destroy();
                     return;
                 }
 
-                if (window.tiupBotolChart && typeof window.tiupBotolChart.destroy === 'function') {
-                    window.tiupBotolChart.destroy();
-                    window.tiupBotolChart = null;
-                }
+                // ✅ Destroy old chart
+                if (window.tiupBotolBarChart) window.tiupBotolBarChart.destroy();
+                if (window.tiupBotolDonutChart) window.tiupBotolDonutChart.destroy();
 
-                const ctx = canvas.getContext('2d');
-
-                window.tiupBotolChart = new Chart(ctx, {
+                // ✅ BAR CHART (OK vs NG)
+                window.tiupBotolBarChart = new Chart(barCanvas, {
                     type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Jumlah Sampel',
-                            data: dataValues,
-                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                            borderColor: 'rgba(37, 99, 235, 1)',
+                            data: values,
                             borderWidth: 1,
-                            borderRadius: 6,
+                            borderRadius: 8,
                         }]
                     },
                     options: {
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${ctx.parsed.x} sampel`
+                                }
+                            }
+                        },
                         scales: {
                             x: {
                                 beginAtZero: true,
@@ -457,24 +473,36 @@
                                     display: true,
                                     text: 'Jumlah Sampel'
                                 }
-                            },
-                            y: {
-                                ticks: {
-                                    autoSkip: false,
-                                    font: {
-                                        size: 10
-                                    }
-                                }
                             }
-                        },
+                        }
+                    }
+                });
+
+                // ✅ DONUT CHART (PERSENTASE)
+                window.tiupBotolDonutChart = new Chart(donutCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            borderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
-                            },
                             tooltip: {
                                 callbacks: {
-                                    label: (ctx) => ctx.parsed.x + ' sampel'
+                                    label: (ctx) => {
+                                        const value = ctx.raw;
+                                        const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${value} sampel (${percent}%)`;
+                                    }
                                 }
+                            },
+                            legend: {
+                                position: 'bottom'
                             }
                         }
                     }
@@ -482,20 +510,19 @@
             }
 
             function boot() {
-                renderTiupBotolChart();
+                renderTiupBotolCharts();
 
                 if (window.Livewire) {
                     Livewire.hook('message.processed', () => {
-                        renderTiupBotolChart();
+                        renderTiupBotolCharts();
                     });
                 }
             }
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', boot);
-            } else {
+            document.readyState === 'loading' ?
+                document.addEventListener('DOMContentLoaded', boot) :
                 boot();
-            }
+
         })();
     </script>
 @endpush
