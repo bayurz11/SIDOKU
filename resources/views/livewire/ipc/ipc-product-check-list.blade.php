@@ -514,64 +514,12 @@
 </div>
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
         (function() {
             if (window.__ipcChartInitialized) return;
             window.__ipcChartInitialized = true;
 
-            window.ipcMoistureChart = new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Rata-rata Moisture (%)',
-                        data: dataValues,
-                        backgroundColor: barBackgroundColors,
-                        borderColor: barBorderColors,
-                        borderWidth: 1,
-                        borderRadius: 6,
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 10, // ⬅️ batasi tampilan maksimal 10%
-                            // optional: supaya lebih enak dibaca
-                            // ticks: {
-                            //     stepSize: 1
-                            // },
-                            title: {
-                                display: true,
-                                text: 'Moisture (%)'
-                            }
-                        },
-                        y: {
-                            ticks: {
-                                autoSkip: false,
-                                font: {
-                                    size: 10
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => ctx.parsed.x.toFixed(2) + ' %'
-                            }
-                        }
-                    }
-                }
-            });
-
+            window.ipcMoistureChart = null; // bar chart
             window.ipcMoistureDonutChart = null; // doughnut chart
 
             function renderIpcMoistureCharts() {
@@ -604,7 +552,7 @@
 
                     const barCtx = barCanvas.getContext('2d');
 
-                    // ⬇️ Warna per bar:
+                    // Warna per bar:
                     //   - merah kalau ≥ 10%
                     //   - hijau kalau < 10%
                     const barBackgroundColors = dataValues.map(v =>
@@ -621,8 +569,8 @@
                             datasets: [{
                                 label: 'Rata-rata Moisture (%)',
                                 data: dataValues,
-                                backgroundColor: barBackgroundColors, // ⬅️ pakai array
-                                borderColor: barBorderColors, // ⬅️ pakai array
+                                backgroundColor: barBackgroundColors,
+                                borderColor: barBorderColors,
                                 borderWidth: 1,
                                 borderRadius: 6,
                             }]
@@ -634,6 +582,7 @@
                             scales: {
                                 x: {
                                     beginAtZero: true,
+                                    max: 10, // ⬅️ BATAS MAKSIMAL TAMPIL 10%
                                     title: {
                                         display: true,
                                         text: 'Moisture (%)'
@@ -697,7 +646,7 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            cutout: '60%', // bikin lubang di tengah
+                            cutout: '60%',
                             plugins: {
                                 legend: {
                                     position: 'bottom',
