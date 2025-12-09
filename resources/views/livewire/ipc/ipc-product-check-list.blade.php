@@ -414,7 +414,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -428,7 +428,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -523,161 +523,153 @@
             window.ipcMoistureChart = null; // bar chart
             window.ipcMoistureDonutChart = null; // doughnut chart
 
-            h backgroundColor & borderColor dalam bentuk array buat setiap bar,
-                lalu cek apakah nilai≥ 10. Kalau iya→ merah, kalau tidak→ hijau.Hanya di ipcMoistureChart.
+            function renderIpcMoistureCharts() {
+                const barCanvas = document.getElementById('ipcMoistureChart');
+                const donutCanvas = document.getElementById('ipcMoistureDonutChart');
 
-            Di bagian JS kamu, ubah
-            function renderIpcMoistureCharts() jadi seperti ini(fokus di BAR CHART saja):
+                const labels = @json($chartLabels ?? []);
+                const dataValues = @json($chartValues ?? []);
+                const counts = @json($chartCounts ?? []);
 
-                function renderIpcMoistureCharts() {
-                    const barCanvas = document.getElementById('ipcMoistureChart');
-                    const donutCanvas = document.getElementById('ipcMoistureDonutChart');
+                // Tidak ada data -> destroy semua chart kalau ada
+                if (!labels.length || !dataValues.length) {
+                    if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
+                        window.ipcMoistureChart.destroy();
+                        window.ipcMoistureChart = null;
+                    }
+                    if (window.ipcMoistureDonutChart && typeof window.ipcMoistureDonutChart.destroy === 'function') {
+                        window.ipcMoistureDonutChart.destroy();
+                        window.ipcMoistureDonutChart = null;
+                    }
+                    return;
+                }
 
-                    const labels = @json($chartLabels ?? []);
-                    const dataValues = @json($chartValues ?? []);
-                    const counts = @json($chartCounts ?? []);
-
-                    // Tidak ada data -> destroy semua chart kalau ada
-                    if (!labels.length || !dataValues.length) {
-                        if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
-                            window.ipcMoistureChart.destroy();
-                            window.ipcMoistureChart = null;
-                        }
-                        if (window.ipcMoistureDonutChart && typeof window.ipcMoistureDonutChart.destroy ===
-                            'function') {
-                            window.ipcMoistureDonutChart.destroy();
-                            window.ipcMoistureDonutChart = null;
-                        }
-                        return;
+                // ================= BAR CHART (horizontal) =================
+                if (barCanvas) {
+                    if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
+                        window.ipcMoistureChart.destroy();
+                        window.ipcMoistureChart = null;
                     }
 
-                    // ================= BAR CHART (horizontal) =================
-                    if (barCanvas) {
-                        if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
-                            window.ipcMoistureChart.destroy();
-                            window.ipcMoistureChart = null;
-                        }
+                    const barCtx = barCanvas.getContext('2d');
 
-                        const barCtx = barCanvas.getContext('2d');
+                    // ⬇️ Warna per bar:
+                    //   - merah kalau ≥ 10%
+                    //   - hijau kalau < 10%
+                    const barBackgroundColors = dataValues.map(v =>
+                        v >= 10 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.6)'
+                    );
+                    const barBorderColors = dataValues.map(v =>
+                        v >= 10 ? 'rgba(220, 38, 38, 1)' : 'rgba(5, 150, 105, 1)'
+                    );
 
-                        // ⬇️ Warna per bar:
-                        //   - merah kalau ≥ 10%
-                        //   - hijau kalau < 10%
-                        const barBackgroundColors = dataValues.map(v =>
-                            v >= 10 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.6)'
-                        );
-                        const barBorderColors = dataValues.map(v =>
-                            v >= 10 ? 'rgba(220, 38, 38, 1)' : 'rgba(5, 150, 105, 1)'
-                        );
-
-                        window.ipcMoistureChart = new Chart(barCtx, {
-                            type: 'bar',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    label: 'Rata-rata Moisture (%)',
-                                    data: dataValues,
-                                    backgroundColor: barBackgroundColors, // ⬅️ pakai array
-                                    borderColor: barBorderColors, // ⬅️ pakai array
-                                    borderWidth: 1,
-                                    borderRadius: 6,
-                                }]
-                            },
-                            options: {
-                                indexAxis: 'y',
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    x: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Moisture (%)'
-                                        }
-                                    },
-                                    y: {
-                                        ticks: {
-                                            autoSkip: false,
-                                            font: {
-                                                size: 10
-                                            }
-                                        }
+                    window.ipcMoistureChart = new Chart(barCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Rata-rata Moisture (%)',
+                                data: dataValues,
+                                backgroundColor: barBackgroundColors, // ⬅️ pakai array
+                                borderColor: barBorderColors, // ⬅️ pakai array
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Moisture (%)'
                                     }
                                 },
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: (ctx) => ctx.parsed.x.toFixed(2) + ' %'
+                                y: {
+                                    ticks: {
+                                        autoSkip: false,
+                                        font: {
+                                            size: 10
                                         }
                                     }
                                 }
-                            }
-                        });
-                    }
-
-                    // ===== DOUGHNUT CHART =====
-                    if (donutCanvas) {
-                        if (window.ipcMoistureDonutChart && typeof window.ipcMoistureDonutChart.destroy ===
-                            'function') {
-                            window.ipcMoistureDonutChart.destroy();
-                            window.ipcMoistureDonutChart = null;
-                        }
-
-                        const donutCtx = donutCanvas.getContext('2d');
-
-                        // Palet warna: akan mengulang jika label lebih banyak
-                        const baseColors = [
-                            '#22c55e', // hijau
-                            '#3b82f6', // biru
-                            '#eab308', // kuning
-                            '#f97316', // oranye
-                            '#ef4444', // merah
-                            '#a855f7', // ungu
-                            '#6b7280', // abu
-                            '#14b8a6', // teal
-                        ];
-                        const backgroundColors = labels.map((_, i) => baseColors[i % baseColors.length]);
-
-                        window.ipcMoistureDonutChart = new Chart(donutCtx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    data: dataValues,
-                                    backgroundColor: backgroundColors,
-                                    borderWidth: 1,
-                                }]
                             },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                cutout: '60%', // bikin lubang di tengah
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom',
-                                        labels: {
-                                            usePointStyle: true,
-                                            boxWidth: 10,
-                                        }
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                const label = context.label || '';
-                                                const value = context.parsed || 0;
-                                                const count = counts[context.dataIndex] ?? 0;
-                                                return `${label}: ${value.toFixed(2)} % (${count} data)`;
-                                            }
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => ctx.parsed.x.toFixed(2) + ' %'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // ===== DOUGHNUT CHART =====
+                if (donutCanvas) {
+                    if (window.ipcMoistureDonutChart && typeof window.ipcMoistureDonutChart.destroy === 'function') {
+                        window.ipcMoistureDonutChart.destroy();
+                        window.ipcMoistureDonutChart = null;
+                    }
+
+                    const donutCtx = donutCanvas.getContext('2d');
+
+                    // Palet warna: akan mengulang jika label lebih banyak
+                    const baseColors = [
+                        '#22c55e', // hijau
+                        '#3b82f6', // biru
+                        '#eab308', // kuning
+                        '#f97316', // oranye
+                        '#ef4444', // merah
+                        '#a855f7', // ungu
+                        '#6b7280', // abu
+                        '#14b8a6', // teal
+                    ];
+                    const backgroundColors = labels.map((_, i) => baseColors[i % baseColors.length]);
+
+                    window.ipcMoistureDonutChart = new Chart(donutCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: dataValues,
+                                backgroundColor: backgroundColors,
+                                borderWidth: 1,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%', // bikin lubang di tengah
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10,
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.parsed || 0;
+                                            const count = counts[context.dataIndex] ?? 0;
+                                            return `${label}: ${value.toFixed(2)} % (${count} data)`;
                                         }
                                     }
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
                 }
+            }
 
             function boot() {
                 renderIpcMoistureCharts();
