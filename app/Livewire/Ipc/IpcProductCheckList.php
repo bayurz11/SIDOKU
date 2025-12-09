@@ -38,7 +38,7 @@ class IpcProductCheckList extends Component
         'avg_weight_g',
     ];
 
-    protected array $allowedPerPage = [10, 25, 50, 100, 250];
+    protected array $allowedPerPage = [10, 25, 50, 100, 250, 500];
 
     protected $queryString = [
         'search'          => ['except' => ''],
