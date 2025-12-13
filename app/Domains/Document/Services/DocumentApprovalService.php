@@ -23,6 +23,13 @@ class DocumentApprovalService
     ];
 
     /**
+     * 🔧 Mode approver:
+     * - false = GLOBAL approver (disarankan untuk ISO: DC/QS approve lintas dept)
+     * - true  = Per-department (approver harus dept sama / null)
+     */
+    protected bool $useDepartmentScopeForApprover = false;
+
+    /**
      * Submit dokumen untuk approval.
      */
     public function submit(Document $doc, ?array $approverUserIds = null, ?string $note = null): DocumentApprovalRequest
@@ -35,25 +42,28 @@ class DocumentApprovalService
             throw new \RuntimeException('Dokumen sedang locked (dalam proses approval).');
         }
 
+        // ✅ Cegah double-submit jika masih ada current approval
+        if ($doc->current_approval_request_id) {
+            throw new \RuntimeException('Dokumen sudah memiliki pengajuan aktif.');
+        }
+
         // Tentukan approver (by role) jika tidak dikirim manual
         $approvers = $approverUserIds ?: $this->resolveDefaultApprovers($doc);
 
         // ✅ Validasi harus lengkap sesuai jumlah step
         $expectedSteps = count(self::DEFAULT_FLOW_ROLES);
+
         if (count($approvers) < $expectedSteps) {
             $missing = $this->getMissingApproversByRole($doc);
+
             throw new \RuntimeException(
                 'Approver tidak ditemukan untuk: ' . implode(', ', $missing) .
-                    '. Pastikan user sudah di-assign role tersebut (cek tabel user_roles).'
+                    '. Pastikan user sudah di-assign role tersebut (cek tabel user_roles). ' .
+                    'Jika kamu pakai per-department approver, pastikan department user approver cocok dengan dokumen.'
             );
         }
 
         return DB::transaction(function () use ($doc, $approvers, $note) {
-
-            // ✅ Cegah double-submit jika masih ada current approval
-            if ($doc->current_approval_request_id) {
-                throw new \RuntimeException('Dokumen sudah memiliki pengajuan aktif.');
-            }
 
             // buat approval request
             $request = DocumentApprovalRequest::create([
@@ -139,7 +149,6 @@ class DocumentApprovalService
                 'is_locked' => false,
                 'is_active' => true,
                 'current_approval_request_id' => null, // ✅ clear active request
-                // set effective_date jika belum ada
                 'effective_date' => $doc->effective_date ?: now()->toDateString(),
             ]);
         });
@@ -182,12 +191,12 @@ class DocumentApprovalService
                 'completed_at' => now(),
             ]);
 
-            // dokumen balik draft (atau rejected sesuai preferensi ISO kamu)
+            // dokumen balik draft
             $doc->update([
-                'status' => Document::STATUS_DRAFT, // bisa diganti STATUS_REJECTED kalau kamu pakai status itu
+                'status' => Document::STATUS_DRAFT, // atau STATUS_REJECTED jika kamu pakai status itu
                 'is_locked' => false,
-                'current_approval_request_id' => null, // ✅ clear active request
-                // 'submitted_at' => null, // opsional: reset waktu pengajuan
+                'current_approval_request_id' => null,
+                // 'submitted_at' => null, // opsional
             ]);
         });
     }
@@ -198,7 +207,6 @@ class DocumentApprovalService
 
     /**
      * Ambil approver default berdasarkan role.
-     * Menggunakan query whereHas('roles') agar sesuai pivot user_roles.
      */
     protected function resolveDefaultApprovers(Document $doc): array
     {
@@ -216,27 +224,28 @@ class DocumentApprovalService
     }
 
     /**
-     * Cari 1 user pertama yang punya role tertentu (role.name),
-     * opsional bisa di-scope department.
+     * ✅ FIX UTAMA:
+     * Cari 1 user pertama yang punya role tertentu.
+     *
+     * Default: GLOBAL approver (tidak filter department).
+     * Jika $useDepartmentScopeForApprover = true → akan filter dept.
      */
     protected function findUserByRole(string $roleName, ?int $departmentId = null): ?User
     {
-        $query = User::query();
+        $query = User::query()
+            ->whereHas('roles', function ($q) use ($roleName) {
+                $q->where('roles.name', $roleName);
+            });
 
-        // Optional: scope dept jika memang approver per dept
-        // Jika approver global, kamu boleh hapus block ini.
-        if ($departmentId && Schema::hasColumn('users', 'department_id')) {
+        // Optional: per-department approver (kalau kamu aktifkan)
+        if ($this->useDepartmentScopeForApprover && $departmentId && Schema::hasColumn('users', 'department_id')) {
             $query->where(function ($q) use ($departmentId) {
                 $q->whereNull('department_id')
                     ->orWhere('department_id', $departmentId);
             });
         }
 
-        return $query
-            ->whereHas('roles', function ($q) use ($roleName) {
-                $q->where('roles.name', $roleName);
-            })
-            ->first();
+        return $query->orderBy('id')->first();
     }
 
     /**
@@ -287,7 +296,7 @@ class DocumentApprovalService
             'action'              => $action,
             'ip_address'          => request()->ip(),
             'user_agent'          => substr((string) request()->userAgent(), 0, 255),
-            'device_name'         => null, // opsional: isi dari frontend
+            'device_name'         => null,
             'signed_at'           => now(),
         ]);
     }
