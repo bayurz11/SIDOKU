@@ -30,7 +30,11 @@
              @php
                  // ===== ACTIVE ROUTE (UNTUK HIGHLIGHT & AUTO-OPEN) =====
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
-                 $documentActive = request()->routeIs('documents.*', 'document_approvals.*', 'document_revisions.*');
+                 $documentActive = request()->routeIs(
+                     'documents.*',
+                     'documents.approval-queue',
+                     'document_revisions.*',
+                 );
                  $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*', 'ipc.product.*');
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
@@ -41,7 +45,12 @@
 
                  $canSeeDocumentMenu = auth()
                      ->user()
-                     ->hasAnyPermission(['documents.view', 'documents.approve', 'documents.revision']);
+                     ->hasAnyPermission([
+                         'documents.view',
+                         'documents.review',
+                         'documents.approve',
+                         'documents.revision',
+                     ]);
 
                  $canSeeIpcMenu = auth()
                      ->user()
@@ -157,12 +166,13 @@
                                  </a>
                              @endpermission
 
-                             @permission('documents.approve')
-                                 <a href="#"
-                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_approvals.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                             @if (auth()->user()->hasAnyPermission(['documents.review', 'documents.approve']))
+                                 <a href="{{ route('documents.approval-queue') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('documents.approval-queue') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Approval Queue
                                  </a>
-                             @endpermission
+                             @endif
+
 
                              @permission('documents.revision')
                                  <a href="#"
