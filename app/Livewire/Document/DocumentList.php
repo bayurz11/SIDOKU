@@ -6,8 +6,9 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Shared\Traits\WithAlerts;
 use App\Domains\Document\Models\Document;
-use App\Domains\Document\Models\DocumentType;
 use App\Domains\Department\Models\Department;
+use App\Domains\Document\Models\DocumentType;
+use App\Domains\Document\Services\DocumentApprovalService;
 
 class DocumentList extends Component
 {
@@ -156,7 +157,16 @@ class DocumentList extends Component
         $this->showSuccessToast('Document deleted!');
         $this->resetPage();
     }
+    public function requestApproval(int $id): void
+    {
+        $doc = Document::findOrFail($id);
 
+        // submit pakai default flow role-based
+        app(DocumentApprovalService::class)->submit($doc);
+
+        $this->showSuccessToast('Dokumen berhasil diajukan untuk approval.');
+        $this->dispatch('document:saved');
+    }
     /**
      * Cek apakah user adalah role "user" (basic user)
      */
