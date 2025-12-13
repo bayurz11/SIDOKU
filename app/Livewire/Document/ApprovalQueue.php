@@ -14,19 +14,17 @@ class ApprovalQueue extends Component
     use WithPagination, WithAlerts;
 
     public int $perPage = 10;
-
     public string $search = '';
     public ?string $status = 'pending'; // pending|approved|rejected|null
 
-    // modal action
     public bool $showActionModal = false;
     public ?int $selectedStepId = null;
     public ?string $actionType = null; // approve|reject
     public string $note = '';
 
     protected $queryString = [
-        'search' => ['except' => ''],
-        'status' => ['except' => 'pending'],
+        'search'  => ['except' => ''],
+        'status'  => ['except' => 'pending'],
         'perPage' => ['except' => 10],
     ];
 
@@ -53,14 +51,13 @@ class ApprovalQueue extends Component
 
     public function closeActionModal(): void
     {
-        $this->showActionModal = false;
-        $this->selectedStepId = null;
-        $this->actionType = null;
-        $this->note = '';
+        $this->reset(['showActionModal', 'selectedStepId', 'actionType', 'note']);
     }
 
-    public function submitAction(DocumentApprovalService $service): void
+    public function submitAction(): void
     {
+        $service = app(DocumentApprovalService::class);
+
         if (!$this->selectedStepId || !$this->actionType) {
             $this->showErrorToast('Step tidak valid.');
             return;
@@ -71,16 +68,19 @@ class ApprovalQueue extends Component
             ->findOrFail($this->selectedStepId);
 
         try {
+            $user = Auth::user();
+
             if ($this->actionType === 'approve') {
-                // permission check (pakai permission middleware di route juga)
-                if (!Auth::user()->hasPermission('documents.approve')) {
+
+                if (!$user->hasAnyPermission(['documents.approve'])) {
                     throw new \RuntimeException('Tidak punya izin approve.');
                 }
 
                 $service->approveStep($step, $this->note ?: null);
                 $this->showSuccessToast('Step berhasil di-approve.');
             } else {
-                if (!Auth::user()->hasPermission('documents.review')) {
+
+                if (!$user->hasAnyPermission(['documents.review'])) {
                     throw new \RuntimeException('Tidak punya izin reject/review.');
                 }
 
@@ -104,19 +104,18 @@ class ApprovalQueue extends Component
         $userId = Auth::id();
 
         $query = DocumentApprovalStep::query()
+            ->join('document_approval_requests', 'document_approval_requests.id', '=', 'document_approval_steps.approval_request_id')
+            ->select('document_approval_steps.*')
             ->with([
                 'approvalRequest',
                 'approvalRequest.document',
                 'approvalRequest.document.department',
                 'approvalRequest.document.documentType',
             ])
-            ->where('approver_id', $userId)
-            // hanya step yang sedang aktif (current_step)
-            ->whereHas('approvalRequest', function ($q) {
-                $q->whereColumn('document_approval_requests.current_step', 'document_approval_steps.step_order')
-                    ->where('status', 'pending');
-            })
-            ->when($this->status, fn($q) => $q->where('status', $this->status))
+            ->where('document_approval_steps.approver_id', $userId)
+            ->where('document_approval_requests.status', 'pending')
+            ->whereColumn('document_approval_steps.step_order', 'document_approval_requests.current_step')
+            ->when($this->status, fn($q) => $q->where('document_approval_steps.status', $this->status))
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
                 $q->whereHas('approvalRequest.document', function ($docQ) use ($term) {
@@ -124,7 +123,7 @@ class ApprovalQueue extends Component
                         ->orWhere('title', 'like', $term);
                 });
             })
-            ->orderByDesc('id');
+            ->orderByDesc('document_approval_steps.id');
 
         $data = $query->paginate($this->perPage)->onEachSide(0);
 
