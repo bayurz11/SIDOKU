@@ -166,15 +166,12 @@
                                  </a>
                              @endpermission
 
-                             @if (auth()->user()->hasAnyPermission(['documents.approve', 'documents.review']))
+                             @permission('documents.view')
                                  <a href="{{ route('documents.approval-queue') }}"
-                                     class="block rounded-md px-4 py-2 text-sm
-       {{ request()->routeIs('documents.approval-queue')
-           ? 'bg-white bg-opacity-20 text-white'
-           : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('documents.approval-queue') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Approval Queue
                                  </a>
-                             @endif
+                             @endpermission
 
 
                              @permission('documents.revision')
