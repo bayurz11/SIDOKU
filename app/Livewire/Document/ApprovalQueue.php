@@ -17,10 +17,14 @@ class ApprovalQueue extends Component
     public string $search = '';
     public ?string $status = 'pending'; // pending|approved|rejected|null
 
+    // modal action
     public bool $showActionModal = false;
     public ?int $selectedStepId = null;
     public ?string $actionType = null; // approve|reject
     public string $note = '';
+
+    // ✅ penting: deklarasikan property ini
+    public ?DocumentApprovalStep $selectedStep = null;
 
     protected $queryString = [
         'search'  => ['except' => ''],
@@ -46,12 +50,31 @@ class ApprovalQueue extends Component
         $this->selectedStepId = $stepId;
         $this->actionType = $type;
         $this->note = '';
+
+        // ✅ Ambil step + relasi lengkap untuk modal
+        $this->selectedStep = DocumentApprovalStep::query()
+            ->with([
+                'approvalRequest',
+                'approvalRequest.document.department',
+                'approvalRequest.document.documentType',
+            ])
+            ->where('id', $stepId)
+            ->where('approver_id', Auth::id()) // ✅ pastikan milik user yg login
+            ->firstOrFail();
+
         $this->showActionModal = true;
     }
 
     public function closeActionModal(): void
     {
-        $this->reset(['showActionModal', 'selectedStepId', 'actionType', 'note']);
+        // ✅ reset semua termasuk selectedStep
+        $this->reset([
+            'showActionModal',
+            'selectedStepId',
+            'actionType',
+            'note',
+            'selectedStep',
+        ]);
     }
 
     public function submitAction(): void
@@ -63,23 +86,28 @@ class ApprovalQueue extends Component
             return;
         }
 
+        $user = Auth::user();
+        if (!$user) {
+            $this->showErrorToast('Unauthorized.');
+            return;
+        }
+
+        // ✅ Ambil ulang step terkini (biar tidak approve step yang sudah berubah)
         $step = DocumentApprovalStep::query()
             ->with(['approvalRequest.document'])
-            ->findOrFail($this->selectedStepId);
+            ->where('id', $this->selectedStepId)
+            ->where('approver_id', $user->id)
+            ->firstOrFail();
 
         try {
-            $user = Auth::user();
-
             if ($this->actionType === 'approve') {
-
                 if (!$user->hasAnyPermission(['documents.approve'])) {
                     throw new \RuntimeException('Tidak punya izin approve.');
                 }
 
                 $service->approveStep($step, $this->note ?: null);
                 $this->showSuccessToast('Step berhasil di-approve.');
-            } else {
-
+            } elseif ($this->actionType === 'reject') {
                 if (!$user->hasAnyPermission(['documents.review'])) {
                     throw new \RuntimeException('Tidak punya izin reject/review.');
                 }
@@ -90,6 +118,8 @@ class ApprovalQueue extends Component
 
                 $service->rejectStep($step, $this->note);
                 $this->showSuccessToast('Step berhasil di-reject.');
+            } else {
+                throw new \RuntimeException('Action tidak dikenali.');
             }
 
             $this->closeActionModal();
@@ -108,16 +138,20 @@ class ApprovalQueue extends Component
             ->select('document_approval_steps.*')
             ->with([
                 'approvalRequest',
-                'approvalRequest.document',
                 'approvalRequest.document.department',
                 'approvalRequest.document.documentType',
             ])
             ->where('document_approval_steps.approver_id', $userId)
+            // ✅ hanya request yang masih pending
             ->where('document_approval_requests.status', 'pending')
+            // ✅ hanya step yang aktif (current_step)
             ->whereColumn('document_approval_steps.step_order', 'document_approval_requests.current_step')
+            // filter status step (pending/approved/rejected)
             ->when($this->status, fn($q) => $q->where('document_approval_steps.status', $this->status))
+            // search by doc code / title
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
+
                 $q->whereHas('approvalRequest.document', function ($docQ) use ($term) {
                     $docQ->where('document_code', 'like', $term)
                         ->orWhere('title', 'like', $term);

@@ -268,125 +268,224 @@
         </div>
     </div>
 
-    {{-- MODAL APPROVE/REJECT (style seperti modal dokumen) --}}
-    @if ($showActionModal)
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center"
-            wire:click.self="closeActionModal">
-            <div class="relative top-8 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-                <div class="mt-3">
 
-                    {{-- HEADER --}}
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-900">
-                                {{ $actionType === 'approve' ? 'Approve Dokumen' : 'Reject Dokumen' }}
-                            </h3>
-                            <p class="text-sm text-gray-500 mt-1">
-                                {{ $actionType === 'approve' ? 'Catatan opsional.' : 'Catatan reject wajib diisi.' }}
-                            </p>
+    @if ($showActionModal && $selectedStep)
+        @php
+            $doc = $selectedStep->approvalRequest?->document;
+            $status = $doc?->status ?? 'draft';
+
+            $statusClass =
+                [
+                    'draft' => 'bg-gray-50 text-gray-700 border-gray-200',
+                    'in_review' => 'bg-amber-50 text-amber-700 border-amber-200',
+                    'approved' => 'bg-green-50 text-green-700 border-green-200',
+                    'obsolete' => 'bg-red-50 text-red-700 border-red-200',
+                ][$status] ?? 'bg-gray-50 text-gray-700 border-gray-200';
+        @endphp
+
+        <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm px-3 sm:px-4
+                overflow-y-auto flex items-center justify-center"
+            wire:click.self="closeActionModal">
+
+            <div
+                class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-100
+                    max-h-[90vh] overflow-y-auto transform transition-all duration-200 ease-out">
+
+                {{-- HEADER --}}
+                <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="w-11 h-11 rounded-2xl
+                                    {{ $actionType === 'approve' ? 'bg-gradient-to-br from-green-50 to-green-100 border border-green-100' : 'bg-gradient-to-br from-red-50 to-red-100 border border-red-100' }}
+                                    flex items-center justify-center shadow-sm flex-shrink-0">
+
+                                @if ($actionType === 'approve')
+                                    <svg class="w-6 h-6 text-green-700" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                @else
+                                    <svg class="w-6 h-6 text-red-700" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                @endif
+                            </div>
+
+                            <div class="space-y-0.5">
+                                <h3 class="text-lg font-bold text-gray-900 leading-tight">
+                                    {{ $actionType === 'approve' ? 'Approve Dokumen' : 'Reject Dokumen' }}
+                                </h3>
+                                <p class="text-xs text-gray-600">
+                                    {{ $actionType === 'approve' ? 'Catatan opsional.' : 'Catatan reject wajib diisi.' }}
+                                </p>
+                            </div>
                         </div>
 
                         <button type="button" wire:click="closeActionModal"
-                            class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
+                </div>
 
-                    {{-- BODY --}}
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-gray-700">
+                {{-- BODY --}}
+                <div class="px-5 py-4 sm:px-6 sm:py-5 space-y-4 text-xs">
+
+                    {{-- INFO DOKUMEN (READ ONLY) --}}
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 space-y-3">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
+                                     bg-green-50 text-green-700 border border-green-100">
+                                {{ $doc->document_code ?? '-' }}
+                            </span>
+
+                            @if ($doc?->documentType)
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
+                                         bg-blue-50 text-blue-700 border border-blue-100">
+                                    {{ $doc->documentType->name }}
+                                </span>
+                            @endif
+
+                            @if ($doc?->department)
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
+                                         bg-purple-50 text-purple-700 border border-purple-100">
+                                    {{ $doc->department->name }}
+                                </span>
+                            @endif
+
+                            @if ($doc?->level)
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold
+                                         bg-gray-50 text-gray-700 border border-gray-200">
+                                    Level {{ $doc->level }}
+                                </span>
+                            @endif
+
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border {{ $statusClass }}">
+                                <span class="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-70"></span>
+                                {{ ucfirst(str_replace('_', ' ', $status)) }}
+                            </span>
+
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
+                                     bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                Step {{ $selectedStep->step_order }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="text-sm font-semibold text-gray-900">
+                                {{ $doc->title ?? '-' }}
+                            </div>
+
+                            @if ($doc?->summary)
+                                <div class="text-[11px] text-gray-700 border-t border-gray-200 pt-2">
+                                    <span class="font-semibold text-gray-700">Ringkasan:</span><br>
+                                    {{ $doc->summary }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <div
+                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 border-t border-gray-200">
+                            <div class="text-[11px] text-gray-600">
+                                <span class="font-semibold text-gray-700">Effective:</span>
+                                {{ optional($doc?->effective_date)->format('d M Y') ?? '-' }}
+                                <span class="mx-1">•</span>
+                                <span class="font-semibold text-gray-700">Revision:</span>
+                                {{ $doc->revision_no ?? 0 }}
+                            </div>
+
+                            @if ($doc?->file_path)
+                                <a href="{{ asset('public/storage/' . ltrim($doc->file_path, '/')) }}"
+                                    target="_blank"
+                                    class="inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-semibold
+                                      text-white bg-gradient-to-r from-green-500 via-green-500 to-green-500
+                                      hover:from-green-600 hover:via-green-600 hover:to-green-600
+                                      shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+                                    <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    Lihat / Download
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- CATATAN --}}
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-gray-700">
                             Catatan
                             @if ($actionType === 'reject')
                                 <span class="text-red-500">*</span>
                             @endif
                         </label>
-                        {{-- DOCUMENT INFO --}}
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2 mb-4">
-                            <div class="text-sm">
-                                <span class="font-semibold text-gray-700">No Dokumen:</span>
-                                <span
-                                    class="font-mono">{{ $step->approvalRequest->document->document_code ?? '-' }}</span>
-                            </div>
-
-                            <div class="text-sm">
-                                <span class="font-semibold text-gray-700">Judul:</span>
-                                {{ $step->approvalRequest->document->title ?? '-' }}
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 text-sm">
-                                <div>
-                                    <span class="font-semibold text-gray-700">Department:</span>
-                                    {{ $step->approvalRequest->document->department->name ?? '-' }}
-                                </div>
-                                <div>
-                                    <span class="font-semibold text-gray-700">Level:</span>
-                                    Level {{ $step->approvalRequest->document->level ?? '-' }}
-                                </div>
-                            </div>
-
-                            @if ($step->approvalRequest->document->summary)
-                                <div class="text-sm text-gray-600 border-t pt-2">
-                                    <span class="font-semibold text-gray-700">Ringkasan:</span><br>
-                                    {{ $step->approvalRequest->document->summary }}
-                                </div>
-                            @endif
-
-                            @if ($step->approvalRequest->document->file_path)
-                                <div class="pt-2">
-                                    <a href="{{ asset('storage/' . $step->approvalRequest->document->file_path) }}"
-                                        target="_blank"
-                                        class="inline-flex items-center px-3 py-2 text-xs font-semibold
-                      bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 border border-blue-200">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Lihat / Download Dokumen
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
 
                         <textarea wire:model.defer="note" rows="4"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
-                                   focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            class="block w-full rounded-xl border-gray-200 text-sm
+                               focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="Tulis catatan..."></textarea>
+
+                        @if ($actionType === 'reject')
+                            <p class="text-[11px] text-gray-500">
+                                Tips: tulis alasan reject + poin yang harus diperbaiki (audit-friendly).
+                            </p>
+                        @endif
                     </div>
 
-                    {{-- FOOTER --}}
-                    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+                </div>
+
+                {{-- FOOTER --}}
+                <div class="px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 bg-gray-50/60">
+                    <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2">
+
                         <button type="button" wire:click="closeActionModal"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md
-                                   hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-medium
+                               text-gray-700 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-colors">
                             Cancel
                         </button>
 
                         <button type="button" wire:click="submitAction"
-                            class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2
-                                {{ $actionType === 'approve' ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-red-600 hover:bg-red-700 focus:ring-red-500' }}
-                                flex items-center">
+                            class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
+                               {{ $actionType === 'approve'
+                                   ? 'bg-gradient-to-r from-green-500 via-green-500 to-green-600 hover:from-green-600 hover:via-green-600 hover:to-green-700'
+                                   : 'bg-gradient-to-r from-red-500 via-red-500 to-red-600 hover:from-red-600 hover:via-red-600 hover:to-red-700' }}
+                               shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+
                             @if ($actionType === 'approve')
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4L19 7" />
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                                 Approve
                             @else
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                                 Reject
                             @endif
                         </button>
-                    </div>
 
+                    </div>
                 </div>
+
             </div>
         </div>
     @endif
+
 </div>
