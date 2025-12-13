@@ -21,9 +21,36 @@ class CheckPermission
 
         $user = auth()->user();
 
-        // OR logic: cukup punya SATU permission
-        foreach ($permissions as $permission) {
-            if ($user->hasPermission($permission)) {
+        foreach ($permissions as $permissionGroup) {
+
+            // AND condition: permission:a&b&c
+            if (str_contains($permissionGroup, '&')) {
+                $required = explode('&', $permissionGroup);
+
+                foreach ($required as $perm) {
+                    if (!$user->hasPermission($perm)) {
+                        abort(403, 'You do not have permission to access this resource.');
+                    }
+                }
+
+                return $next($request);
+            }
+
+            // OR condition: permission:a|b|c
+            if (str_contains($permissionGroup, '|')) {
+                $options = explode('|', $permissionGroup);
+
+                foreach ($options as $perm) {
+                    if ($user->hasPermission($perm)) {
+                        return $next($request);
+                    }
+                }
+
+                abort(403, 'You do not have permission to access this resource.');
+            }
+
+            // Single permission
+            if ($user->hasPermission($permissionGroup)) {
                 return $next($request);
             }
         }
