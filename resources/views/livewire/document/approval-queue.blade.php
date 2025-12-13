@@ -303,6 +303,53 @@
                                 <span class="text-red-500">*</span>
                             @endif
                         </label>
+                        {{-- DOCUMENT INFO --}}
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2 mb-4">
+                            <div class="text-sm">
+                                <span class="font-semibold text-gray-700">No Dokumen:</span>
+                                <span
+                                    class="font-mono">{{ $step->approvalRequest->document->document_code ?? '-' }}</span>
+                            </div>
+
+                            <div class="text-sm">
+                                <span class="font-semibold text-gray-700">Judul:</span>
+                                {{ $step->approvalRequest->document->title ?? '-' }}
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <span class="font-semibold text-gray-700">Department:</span>
+                                    {{ $step->approvalRequest->document->department->name ?? '-' }}
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-700">Level:</span>
+                                    Level {{ $step->approvalRequest->document->level ?? '-' }}
+                                </div>
+                            </div>
+
+                            @if ($step->approvalRequest->document->summary)
+                                <div class="text-sm text-gray-600 border-t pt-2">
+                                    <span class="font-semibold text-gray-700">Ringkasan:</span><br>
+                                    {{ $step->approvalRequest->document->summary }}
+                                </div>
+                            @endif
+
+                            @if ($step->approvalRequest->document->file_path)
+                                <div class="pt-2">
+                                    <a href="{{ asset('storage/' . $step->approvalRequest->document->file_path) }}"
+                                        target="_blank"
+                                        class="inline-flex items-center px-3 py-2 text-xs font-semibold
+                      bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 border border-blue-200">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        Lihat / Download Dokumen
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
 
                         <textarea wire:model.defer="note" rows="4"
                             class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
