@@ -67,15 +67,11 @@ Route::get('/documents/import/template', function () {
 })->name('documents.import-template');
 
 // DOCUMENT APPROVAL QUEUE
-Route::middleware([
-    'auth',
-    'permission:documents.review|documents.approve',
-])->group(function () {
-
-    Route::get('/documents/approval-queue', function () {
+Route::middleware(['auth', 'permission:documents.review|documents.approve'])
+    ->get('/documents/approval-queue', function () {
         return view('approval-queue.index');
-    })->name('documents.approval-queue');
-});
+    })
+    ->name('documents.approval-queue');
 
 
 //IPC Kadar Air
