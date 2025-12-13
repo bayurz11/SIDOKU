@@ -20,13 +20,14 @@ class CheckPermission
         }
 
         $user = auth()->user();
-        
+
+        // OR logic: cukup punya SATU permission
         foreach ($permissions as $permission) {
-            if (!$user->hasPermission($permission)) {
-                abort(403, 'You do not have permission to access this resource.');
+            if ($user->hasPermission($permission)) {
+                return $next($request);
             }
         }
 
-        return $next($request);
+        abort(403, 'You do not have permission to access this resource.');
     }
 }
