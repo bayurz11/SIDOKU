@@ -2,10 +2,8 @@
 
 namespace App\Domains\Document\Services;
 
-use Illuminate\Support\Arr;
 use App\Domains\User\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentApprovalLog;
@@ -15,9 +13,9 @@ use App\Domains\Document\Models\DocumentApprovalRequest;
 class DocumentApprovalService
 {
     /**
-     * Default flow role-based:
-     * 1) document_controller
-     * 2) quality_system_manager
+     * Default flow role-based (sesuai slug roles di DB):
+     * Step 1: document-controller
+     * Step 2: quality-system-manager
      */
     public const DEFAULT_FLOW_ROLES = [
         1 => 'document-controller',
@@ -26,15 +24,10 @@ class DocumentApprovalService
 
     /**
      * Submit dokumen untuk approval.
-     *
-     * @param  Document $doc
-     * @param  array|null $approverUserIds  Optional: [userId1, userId2, ...]
-     * @param  string|null $note
-     * @return DocumentApprovalRequest
      */
     public function submit(Document $doc, ?array $approverUserIds = null, ?string $note = null): DocumentApprovalRequest
     {
-        if ($doc->status !== Document::STATUS_DRAFT && $doc->status !== Document::STATUS_REVISION) {
+        if (!in_array($doc->status, [Document::STATUS_DRAFT, Document::STATUS_REVISION], true)) {
             throw new \RuntimeException('Hanya dokumen status draft/revision yang bisa diajukan.');
         }
 
@@ -45,11 +38,22 @@ class DocumentApprovalService
         // Tentukan approver (by role) jika tidak dikirim manual
         $approvers = $approverUserIds ?: $this->resolveDefaultApprovers($doc);
 
-        if (count($approvers) < 1) {
-            throw new \RuntimeException('Approver tidak ditemukan. Pastikan role approver sudah ada.');
+        // ✅ Validasi harus lengkap sesuai jumlah step
+        $expectedSteps = count(self::DEFAULT_FLOW_ROLES);
+        if (count($approvers) < $expectedSteps) {
+            $missing = $this->getMissingApproversByRole($doc);
+            throw new \RuntimeException(
+                'Approver tidak ditemukan untuk: ' . implode(', ', $missing) .
+                    '. Pastikan user sudah di-assign role tersebut (cek tabel user_roles).'
+            );
         }
 
         return DB::transaction(function () use ($doc, $approvers, $note) {
+
+            // ✅ Cegah double-submit jika masih ada current approval
+            if ($doc->current_approval_request_id) {
+                throw new \RuntimeException('Dokumen sudah memiliki pengajuan aktif.');
+            }
 
             // buat approval request
             $request = DocumentApprovalRequest::create([
@@ -89,10 +93,11 @@ class DocumentApprovalService
     {
         DB::transaction(function () use ($step, $note) {
 
-            $request = $step->approvalRequest()->lockForUpdate()->first();
-            $doc     = $request->document()->lockForUpdate()->first();
+            // lock request + document biar aman race condition
+            $request = $step->approvalRequest()->lockForUpdate()->firstOrFail();
+            $doc     = $request->document()->lockForUpdate()->firstOrFail();
 
-            $this->assertCanActOnStep($step);
+            $this->assertCanActOnStep($step, $request);
 
             if ($request->status !== DocumentApprovalRequest::STATUS_PENDING) {
                 throw new \RuntimeException('Approval request sudah tidak pending.');
@@ -104,9 +109,9 @@ class DocumentApprovalService
 
             // approve current step
             $step->update([
-                'status'  => DocumentApprovalStep::STATUS_APPROVED,
+                'status'   => DocumentApprovalStep::STATUS_APPROVED,
                 'acted_at' => now(),
-                'note'    => $note,
+                'note'     => $note,
             ]);
 
             $this->logAction($step, 'approved');
@@ -133,6 +138,7 @@ class DocumentApprovalService
                 'approved_at' => now(),
                 'is_locked' => false,
                 'is_active' => true,
+                'current_approval_request_id' => null, // ✅ clear active request
                 // set effective_date jika belum ada
                 'effective_date' => $doc->effective_date ?: now()->toDateString(),
             ]);
@@ -150,10 +156,10 @@ class DocumentApprovalService
 
         DB::transaction(function () use ($step, $note) {
 
-            $request = $step->approvalRequest()->lockForUpdate()->first();
-            $doc     = $request->document()->lockForUpdate()->first();
+            $request = $step->approvalRequest()->lockForUpdate()->firstOrFail();
+            $doc     = $request->document()->lockForUpdate()->firstOrFail();
 
-            $this->assertCanActOnStep($step);
+            $this->assertCanActOnStep($step, $request);
 
             if ($request->status !== DocumentApprovalRequest::STATUS_PENDING) {
                 throw new \RuntimeException('Approval request sudah tidak pending.');
@@ -164,9 +170,9 @@ class DocumentApprovalService
             }
 
             $step->update([
-                'status'  => DocumentApprovalStep::STATUS_REJECTED,
+                'status'   => DocumentApprovalStep::STATUS_REJECTED,
                 'acted_at' => now(),
-                'note'    => $note,
+                'note'     => $note,
             ]);
 
             $this->logAction($step, 'rejected');
@@ -178,9 +184,10 @@ class DocumentApprovalService
 
             // dokumen balik draft (atau rejected sesuai preferensi ISO kamu)
             $doc->update([
-                'status' => Document::STATUS_DRAFT, // atau Document::STATUS_REJECTED jika kamu ingin status khusus
+                'status' => Document::STATUS_DRAFT, // bisa diganti STATUS_REJECTED kalau kamu pakai status itu
                 'is_locked' => false,
-                'current_approval_request_id' => null,
+                'current_approval_request_id' => null, // ✅ clear active request
+                // 'submitted_at' => null, // opsional: reset waktu pengajuan
             ]);
         });
     }
@@ -191,11 +198,7 @@ class DocumentApprovalService
 
     /**
      * Ambil approver default berdasarkan role.
-     * - step 1: document_controller
-     * - step 2: quality_system_manager
-     *
-     * Default: ambil user pertama yang match role.
-     * Bisa kamu upgrade: filter per department_id doc.
+     * Menggunakan query whereHas('roles') agar sesuai pivot user_roles.
      */
     protected function resolveDefaultApprovers(Document $doc): array
     {
@@ -203,6 +206,7 @@ class DocumentApprovalService
 
         foreach (self::DEFAULT_FLOW_ROLES as $order => $role) {
             $user = $this->findUserByRole($role, $doc->department_id);
+
             if ($user) {
                 $approvers[] = $user->id;
             }
@@ -212,53 +216,52 @@ class DocumentApprovalService
     }
 
     /**
-     * Cari user berdasarkan role.
-     * - Jika pakai Spatie: hasRole()
-     * - Fallback: join relasi roles (jika ada)
+     * Cari 1 user pertama yang punya role tertentu (role.name),
+     * opsional bisa di-scope department.
      */
-    protected function findUserByRole(string $role, ?int $departmentId = null)
+    protected function findUserByRole(string $roleName, ?int $departmentId = null): ?User
     {
-        $userModel = config('auth.providers.users.model', User::class);
-        $query = $userModel::query();
+        $query = User::query();
 
-        // opsional: batasi department jika ingin
-        // NOTE: kalau approver tidak selalu punya department, comment baris ini
-        if ($departmentId && Schema::hasColumn((new $userModel)->getTable(), 'department_id')) {
+        // Optional: scope dept jika memang approver per dept
+        // Jika approver global, kamu boleh hapus block ini.
+        if ($departmentId && Schema::hasColumn('users', 'department_id')) {
             $query->where(function ($q) use ($departmentId) {
                 $q->whereNull('department_id')
                     ->orWhere('department_id', $departmentId);
             });
         }
 
-        // Spatie style
-        if (method_exists($userModel, 'role')) {
-            // beberapa project punya scope role()
-            $query->role($role);
-            return $query->first();
-        }
-
-        // fallback: coba hasRole via eager check (ambil semua, cek satu-satu) - kurang efisien tapi aman
-        $candidates = $query->limit(50)->get();
-        foreach ($candidates as $u) {
-            if (method_exists($u, 'hasRole') && $u->hasRole($role)) {
-                return $u;
-            }
-            if (method_exists($u, 'roles')) {
-                if ($u->roles()->where('name', $role)->exists()) {
-                    return $u;
-                }
-            }
-        }
-
-        return null;
+        return $query
+            ->whereHas('roles', function ($q) use ($roleName) {
+                $q->where('roles.name', $roleName);
+            })
+            ->first();
     }
 
     /**
-     * Validasi approver yang boleh action.
+     * Buat list step yang missing supaya error jelas.
      */
-    protected function assertCanActOnStep(DocumentApprovalStep $step): void
+    protected function getMissingApproversByRole(Document $doc): array
+    {
+        $missing = [];
+
+        foreach (self::DEFAULT_FLOW_ROLES as $step => $role) {
+            if (!$this->findUserByRole($role, $doc->department_id)) {
+                $missing[] = "Step {$step} ({$role})";
+            }
+        }
+
+        return $missing ?: ['(unknown)'];
+    }
+
+    /**
+     * Validasi approver yang boleh action + pastikan step aktif.
+     */
+    protected function assertCanActOnStep(DocumentApprovalStep $step, DocumentApprovalRequest $request): void
     {
         $userId = auth()->id();
+
         if (!$userId) {
             throw new \RuntimeException('Unauthorized.');
         }
@@ -267,15 +270,13 @@ class DocumentApprovalService
             throw new \RuntimeException('Anda bukan approver untuk step ini.');
         }
 
-        // boleh juga: pastikan step yang sedang aktif = current_step
-        $request = $step->approvalRequest;
         if ((int) $request->current_step !== (int) $step->step_order) {
             throw new \RuntimeException('Step ini belum aktif / sudah lewat.');
         }
     }
 
     /**
-     * Digital signature log
+     * Digital signature log (audit ISO).
      */
     protected function logAction(DocumentApprovalStep $step, string $action): void
     {
@@ -286,7 +287,7 @@ class DocumentApprovalService
             'action'              => $action,
             'ip_address'          => request()->ip(),
             'user_agent'          => substr((string) request()->userAgent(), 0, 255),
-            'device_name'         => null, // bisa kamu isi dari front-end kalau mau
+            'device_name'         => null, // opsional: isi dari frontend
             'signed_at'           => now(),
         ]);
     }
