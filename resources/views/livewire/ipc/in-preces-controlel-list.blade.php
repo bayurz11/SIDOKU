@@ -57,6 +57,10 @@
                     Belum ada data IPC untuk ditampilkan. Atur filter line / tanggal terlebih dahulu.
                 </p>
             @else
+                {{-- PAYLOAD DATA untuk Chart (ikut ke-update oleh Livewire) --}}
+                <div id="ipcChartData" class="hidden" data-labels='@json($chartLabels ?? [])'
+                    data-values='@json($chartCounts ?? [])'></div>
+
                 {{-- BAR CHART --}}
                 <div class="h-56 sm:h-72 mb-6" wire:ignore>
                     <canvas id="ipcSummaryBarChart"></canvas>
@@ -68,6 +72,7 @@
                 </div>
             @endif
         </div>
+
     </div>
 
     {{-- CARD LIST IPC PRODUCT --}}
@@ -443,7 +448,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -457,7 +462,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -553,23 +558,63 @@
             window.ipcSummaryBarChart = null;
             window.ipcSummaryDonutChart = null;
 
+            function getChartPayload() {
+                const el = document.getElementById('ipcChartData');
+                if (!el) return {
+                    labels: [],
+                    values: []
+                };
+
+                let labels = [];
+                let values = [];
+
+                try {
+                    labels = JSON.parse(el.dataset.labels || '[]');
+                } catch (e) {
+                    labels = [];
+                }
+
+                try {
+                    values = JSON.parse(el.dataset.values || '[]');
+                } catch (e) {
+                    values = [];
+                }
+
+                return {
+                    labels: Array.isArray(labels) ? labels : [],
+                    values: Array.isArray(values) ? values : []
+                };
+            }
+
+            function destroyCharts() {
+                if (window.ipcSummaryBarChart && typeof window.ipcSummaryBarChart.destroy === 'function') {
+                    window.ipcSummaryBarChart.destroy();
+                    window.ipcSummaryBarChart = null;
+                }
+                if (window.ipcSummaryDonutChart && typeof window.ipcSummaryDonutChart.destroy === 'function') {
+                    window.ipcSummaryDonutChart.destroy();
+                    window.ipcSummaryDonutChart = null;
+                }
+            }
+
             function renderIpcCharts() {
                 const barCanvas = document.getElementById('ipcSummaryBarChart');
                 const donutCanvas = document.getElementById('ipcSummaryDonutChart');
 
-                const labels = @json($chartLabels ?? []);
-                const dataValues = @json($chartCounts ?? []);
+                // kalau summary empty, canvas bisa tidak ada → destroy & stop
+                if (!barCanvas && !donutCanvas) {
+                    destroyCharts();
+                    return;
+                }
+
+                const {
+                    labels,
+                    values: dataValues
+                } = getChartPayload();
 
                 // Tidak ada data -> destroy semua chart kalau ada
                 if (!labels.length || !dataValues.length) {
-                    if (window.ipcSummaryBarChart && typeof window.ipcSummaryBarChart.destroy === 'function') {
-                        window.ipcSummaryBarChart.destroy();
-                        window.ipcSummaryBarChart = null;
-                    }
-                    if (window.ipcSummaryDonutChart && typeof window.ipcSummaryDonutChart.destroy === 'function') {
-                        window.ipcSummaryDonutChart.destroy();
-                        window.ipcSummaryDonutChart = null;
-                    }
+                    destroyCharts();
                     return;
                 }
 
@@ -640,14 +685,8 @@
                     const donutCtx = donutCanvas.getContext('2d');
 
                     const baseColors = [
-                        '#22c55e', // hijau
-                        '#3b82f6', // biru
-                        '#eab308', // kuning
-                        '#f97316', // oranye
-                        '#ef4444', // merah
-                        '#a855f7', // ungu
-                        '#6b7280', // abu
-                        '#14b8a6', // teal
+                        '#22c55e', '#3b82f6', '#eab308', '#f97316',
+                        '#ef4444', '#a855f7', '#6b7280', '#14b8a6',
                     ];
                     const backgroundColors = labels.map((_, i) => baseColors[i % baseColors.length]);
 
@@ -670,7 +709,7 @@
                                     position: 'bottom',
                                     labels: {
                                         usePointStyle: true,
-                                        boxWidth: 10,
+                                        boxWidth: 10
                                     }
                                 },
                                 tooltip: {
@@ -693,7 +732,8 @@
 
                 if (window.Livewire) {
                     Livewire.hook('message.processed', () => {
-                        renderIpcCharts();
+                        // kasih 1 tick biar DOM payload sudah benar-benar terpasang
+                        requestAnimationFrame(() => renderIpcCharts());
                     });
                 }
             }
