@@ -155,16 +155,25 @@
                         </div>
                     </div>
 
-                    {{-- Per page --}}
-                    <div>
-                        <select wire:model.live="perPage"
-                            class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium transition-all duration-200">
-                            <option value="10">10 per halaman</option>
-                            <option value="25">25 per halaman</option>
-                            <option value="50">50 per halaman</option>
-                            <option value="100">100 per halaman</option>
-                            <option value="250">250 per halaman</option>
-                        </select>
+                    {{-- Right tools: Bulan Ini + Per page --}}
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        {{-- Bulan Ini --}}
+                        <button type="button" wire:click="resetToCurrentMonth"
+                            class="px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-semibold text-gray-700 transition-all duration-200">
+                            Bulan Ini
+                        </button>
+
+                        {{-- Per page --}}
+                        <div>
+                            <select wire:model.live="perPage"
+                                class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium transition-all duration-200">
+                                <option value="10">10 per halaman</option>
+                                <option value="25">25 per halaman</option>
+                                <option value="50">50 per halaman</option>
+                                <option value="100">100 per halaman</option>
+                                <option value="250">250 per halaman</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -211,6 +220,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         {{-- TABLE --}}
@@ -448,7 +458,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -462,7 +472,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>

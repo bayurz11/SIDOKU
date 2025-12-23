@@ -4,6 +4,7 @@ namespace App\Livewire\Ipc;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Carbon;
 use App\Shared\Traits\WithAlerts;
 use App\Domains\Ipc\Models\IpcProduct;
 
@@ -58,14 +59,20 @@ class InPrecesControlelList extends Component
     ];
 
     protected $listeners = [
-        'ipc:product_saved' => 'refreshList', // event dari form input
+        'ipc:product_saved' => 'refreshList',
     ];
 
     public function mount(): void
     {
         // Diambil dari konstanta di Model IpcProduct
         $this->lineGroups  = IpcProduct::LINE_GROUPS;
-        $this->subLinesTeh = IpcProduct::SUB_LINES; // sub_line khusus LINE_TEH
+        $this->subLinesTeh = IpcProduct::SUB_LINES;
+
+        // ✅ Default: tampilkan data bulan berjalan jika user belum set filter tanggal
+        if (blank($this->filterDateFrom) && blank($this->filterDateTo)) {
+            $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
+            $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
+        }
     }
 
     public function refreshList(): void
@@ -80,7 +87,6 @@ class InPrecesControlelList extends Component
 
     public function updatingFilterLineGroup(): void
     {
-        // reset subline kalau ganti line group
         $this->filterSubLine = null;
         $this->resetPage();
     }
@@ -123,6 +129,16 @@ class InPrecesControlelList extends Component
         }
     }
 
+    /**
+     * ✅ Optional: tombol "Bulan Ini" (berguna kalau queryString nyangkut bulan lama)
+     */
+    public function resetToCurrentMonth(): void
+    {
+        $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
+        $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
+        $this->resetPage();
+    }
+
     public function delete(int $id): void
     {
         $record = IpcProduct::findOrFail($id);
@@ -134,7 +150,6 @@ class InPrecesControlelList extends Component
 
     public function showDetail(int $id): void
     {
-        // Sesuaikan event ini dengan Form Livewire yang kamu pakai
         $this->dispatch('openIpcProductForm', id: $id);
     }
 
@@ -150,16 +165,22 @@ class InPrecesControlelList extends Component
             })
             ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
             ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
-            ->when($this->filterDateFrom, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
-            ->when($this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+            // ✅ filter tanggal aman untuk DATE/DATETIME
+            ->when($this->filterDateFrom && $this->filterDateTo, function ($q) {
+                $from = $this->filterDateFrom . ' 00:00:00';
+                $to   = $this->filterDateTo   . ' 23:59:59';
+                $q->whereBetween('test_date', [$from, $to]);
+            })
+            // fallback kalau user isi salah satu saja
+            ->when($this->filterDateFrom && ! $this->filterDateTo, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
+            ->when(! $this->filterDateFrom && $this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
 
         // data tabel (pagination + sorting)
         $data = (clone $baseQuery)
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // RINGKASAN UNTUK CHART:
-        // rata-rata parameter per line_group + sub_line di rentang filter
+        // RINGKASAN UNTUK CHART
         $summary = (clone $baseQuery)
             ->selectRaw('
                 line_group,
