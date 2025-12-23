@@ -482,7 +482,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -496,7 +496,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -585,10 +585,10 @@
             if (window.__ipcChartInitialized) return;
             window.__ipcChartInitialized = true;
 
-            window.ipcSummaryBarChart = null;
-            window.ipcSummaryDonutChart = null;
+            let barChart = null;
+            let donutChart = null;
 
-            function getChartPayload() {
+            function getPayload() {
                 const el = document.getElementById('ipcChartData');
                 if (!el) return {
                     labels: [],
@@ -611,18 +611,18 @@
 
                 return {
                     labels: Array.isArray(labels) ? labels : [],
-                    values: Array.isArray(values) ? values : [],
+                    values: Array.isArray(values) ? values : []
                 };
             }
 
             function destroyCharts() {
-                if (window.ipcSummaryBarChart?.destroy) {
-                    window.ipcSummaryBarChart.destroy();
-                    window.ipcSummaryBarChart = null;
+                if (barChart) {
+                    barChart.destroy();
+                    barChart = null;
                 }
-                if (window.ipcSummaryDonutChart?.destroy) {
-                    window.ipcSummaryDonutChart.destroy();
-                    window.ipcSummaryDonutChart = null;
+                if (donutChart) {
+                    donutChart.destroy();
+                    donutChart = null;
                 }
             }
 
@@ -630,7 +630,7 @@
                 const barCanvas = document.getElementById('ipcSummaryBarChart');
                 const donutCanvas = document.getElementById('ipcSummaryDonutChart');
 
-                // kalau empty, canvas tidak ada → destroy
+                // kalau summary kosong, canvas mungkin tidak ada
                 if (!barCanvas && !donutCanvas) {
                     destroyCharts();
                     return;
@@ -639,18 +639,23 @@
                 const {
                     labels,
                     values
-                } = getChartPayload();
+                } = getPayload();
+
+                // kalau payload kosong, destroy
                 if (!labels.length || !values.length) {
                     destroyCharts();
                     return;
                 }
 
-                // BAR
+                // ===== BAR =====
                 if (barCanvas) {
-                    window.ipcSummaryBarChart?.destroy?.();
+                    if (barChart) {
+                        barChart.destroy();
+                        barChart = null;
+                    }
                     const ctx = barCanvas.getContext('2d');
 
-                    window.ipcSummaryBarChart = new Chart(ctx, {
+                    barChart = new Chart(ctx, {
                         type: 'bar',
                         data: {
                             labels,
@@ -698,9 +703,12 @@
                     });
                 }
 
-                // DONUT
+                // ===== DONUT =====
                 if (donutCanvas) {
-                    window.ipcSummaryDonutChart?.destroy?.();
+                    if (donutChart) {
+                        donutChart.destroy();
+                        donutChart = null;
+                    }
                     const ctx = donutCanvas.getContext('2d');
 
                     const baseColors = ['#22c55e', '#3b82f6', '#eab308', '#f97316', '#ef4444', '#a855f7', '#6b7280',
@@ -708,7 +716,7 @@
                     ];
                     const bg = labels.map((_, i) => baseColors[i % baseColors.length]);
 
-                    window.ipcSummaryDonutChart = new Chart(ctx, {
+                    donutChart = new Chart(ctx, {
                         type: 'doughnut',
                         data: {
                             labels,
@@ -732,7 +740,9 @@
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: (c) => `${c.label}: ${c.parsed} data`
+                                        label: function(context) {
+                                            return `${context.label}: ${context.parsed} data`;
+                                        }
                                     }
                                 }
                             }
@@ -741,20 +751,51 @@
                 }
             }
 
-            function boot() {
-                renderCharts();
+            // ✅ jadwalkan render setelah DOM benar-benar update
+            let raf = null;
 
-                // ✅ AUTO reload chart setiap filter berubah / rerender Livewire
-                if (window.Livewire) {
-                    Livewire.hook('message.processed', () => {
-                        requestAnimationFrame(() => renderCharts());
-                    });
-                }
+            function scheduleRender() {
+                if (raf) cancelAnimationFrame(raf);
+                raf = requestAnimationFrame(() => setTimeout(renderCharts, 0));
             }
 
-            document.readyState === 'loading' ?
-                document.addEventListener('DOMContentLoaded', boot) :
+            function bindLivewireHooks() {
+                if (!window.Livewire) return;
+
+                // Livewire v2
+                if (typeof Livewire.hook === 'function') {
+                    try {
+                        Livewire.hook('message.processed', () => scheduleRender());
+                    } catch (e) {}
+                    // Livewire v3
+                    try {
+                        Livewire.hook('commit', ({
+                            succeed
+                        }) => {
+                            succeed(() => scheduleRender());
+                        });
+                    } catch (e) {}
+                }
+
+                // Event manual dari backend (kita dispatch 'ipcChartsRefresh')
+                if (typeof Livewire.on === 'function') {
+                    Livewire.on('ipcChartsRefresh', () => scheduleRender());
+                }
+
+                // fallback event window
+                window.addEventListener('ipcChartsRefresh', () => scheduleRender());
+            }
+
+            function boot() {
+                renderCharts();
+                bindLivewireHooks();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', boot);
+            } else {
                 boot();
+            }
         })();
     </script>
 @endpush
