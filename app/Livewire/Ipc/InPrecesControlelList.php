@@ -25,13 +25,13 @@ class InPrecesControlelList extends Component
     public array $lineGroups = [];
     public array $subLinesTeh = [];
 
-    // ✅ Threshold alert (ubah sesuai standar internal kamu)
+    // ✅ Alert rules (ubah sesuai standar)
     protected array $alertRules = [
-        'avg_ph'            => ['label' => 'pH',        'type' => 'range', 'min' => 5.0,  'max' => 7.5,  'unit' => ''],
-        'avg_tds_ppm'       => ['label' => 'TDS',       'type' => 'max',   'max' => 10.0, 'unit' => ' ppm'],
-        'avg_chlorine'      => ['label' => 'Klorin',    'type' => 'max',   'max' => 0.1,  'unit' => ' mg/L'],
-        'avg_ozone'         => ['label' => 'Ozon',      'type' => 'range', 'min' => 0.05, 'max' => 0.30, 'unit' => ' ppm'],
-        'avg_turbidity_ntu' => ['label' => 'Kekeruhan', 'type' => 'max',   'max' => 1.5,  'unit' => ' NTU'],
+        'avg_ph' => ['label' => 'pH', 'type' => 'range', 'min' => 5.0,  'max' => 7.5,  'unit' => ''],
+        'avg_tds_ppm' => ['label' => 'TDS', 'type' => 'max', 'max' => 10.0, 'unit' => 'ppm'],
+        'avg_chlorine' => ['label' => 'Klorin', 'type' => 'max', 'max' => 0.1, 'unit' => 'mg/L'],
+        'avg_ozone' => ['label' => 'Ozon', 'type' => 'range', 'min' => 0.05, 'max' => 0.30, 'unit' => 'ppm'],
+        'avg_turbidity_ntu' => ['label' => 'Kekeruhan', 'type' => 'max', 'max' => 1.5, 'unit' => 'NTU'],
     ];
 
     protected array $allowedSorts = [
@@ -50,7 +50,7 @@ class InPrecesControlelList extends Component
         'avg_salinity',
     ];
 
-    protected array $allowedPerPage = [10, 25, 50, 100, 250];
+    protected array $allowedPerPage = [10, 25, 50, 100, 250, 500];
 
     protected $queryString = [
         'search'          => ['except' => ''],
@@ -72,43 +72,18 @@ class InPrecesControlelList extends Component
         $this->lineGroups  = IpcProduct::LINE_GROUPS;
         $this->subLinesTeh = IpcProduct::SUB_LINES;
 
-        $this->ensureCurrentMonth();
-    }
-
-    private function ensureCurrentMonth(): void
-    {
-        // ✅ kalau tanggal kosong → pakai bulan berjalan
+        // ✅ Default bulan berjalan (real-time) jika user belum set tanggal
         if (blank($this->filterDateFrom) && blank($this->filterDateTo)) {
-            $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
-            $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
-        }
-
-        // ✅ kalau user isi salah satu saja → lengkapi otomatis (biar konsisten)
-        if (filled($this->filterDateFrom) && blank($this->filterDateTo)) {
-            $this->filterDateTo = Carbon::parse($this->filterDateFrom)->endOfMonth()->toDateString();
-        }
-        if (blank($this->filterDateFrom) && filled($this->filterDateTo)) {
-            $this->filterDateFrom = Carbon::parse($this->filterDateTo)->startOfMonth()->toDateString();
+            $this->filterDateFrom = now()->startOfMonth()->toDateString();
+            $this->filterDateTo   = now()->endOfMonth()->toDateString();
         }
     }
 
+    // ✅ Tombol "Bulan Ini"
     public function resetToCurrentMonth(): void
     {
-        $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
-        $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
-        $this->resetPage();
-    }
-
-    public function resetFilters(): void
-    {
-        // reset filter tapi tetap bulan berjalan
-        $this->search = '';
-        $this->filterLineGroup = null;
-        $this->filterSubLine = null;
-
-        $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
-        $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
-
+        $this->filterDateFrom = now()->startOfMonth()->toDateString();
+        $this->filterDateTo   = now()->endOfMonth()->toDateString();
         $this->resetPage();
     }
 
@@ -117,27 +92,24 @@ class InPrecesControlelList extends Component
         $this->resetPage();
     }
 
+    // reset pagination kalau filter berubah
     public function updatingSearch(): void
     {
         $this->resetPage();
     }
-
     public function updatingFilterLineGroup(): void
     {
-        $this->filterSubLine = null; // reset subline kalau ganti line group
+        $this->filterSubLine = null;
         $this->resetPage();
     }
-
     public function updatingFilterSubLine(): void
     {
         $this->resetPage();
     }
-
     public function updatingFilterDateFrom(): void
     {
         $this->resetPage();
     }
-
     public function updatingFilterDateTo(): void
     {
         $this->resetPage();
@@ -174,8 +146,6 @@ class InPrecesControlelList extends Component
 
     protected function buildBaseQuery()
     {
-        $this->ensureCurrentMonth();
-
         return IpcProduct::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
@@ -183,12 +153,15 @@ class InPrecesControlelList extends Component
             })
             ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
             ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
-            // ✅ Aman untuk DATE/DATETIME
+
+            // ✅ tanggal aman untuk DATETIME juga
             ->when($this->filterDateFrom && $this->filterDateTo, function ($q) {
                 $from = $this->filterDateFrom . ' 00:00:00';
                 $to   = $this->filterDateTo   . ' 23:59:59';
                 $q->whereBetween('test_date', [$from, $to]);
-            });
+            })
+            ->when($this->filterDateFrom && !$this->filterDateTo, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
+            ->when(!$this->filterDateFrom && $this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
     }
 
     protected function buildAlertQuery($baseQuery)
@@ -217,11 +190,12 @@ class InPrecesControlelList extends Component
     {
         $baseQuery = $this->buildBaseQuery();
 
+        // ✅ data tabel: hanya sesuai filter (bulan berjalan default)
         $data = (clone $baseQuery)
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // ✅ Summary untuk chart (hanya data sesuai filter bulan berjalan)
+        // ✅ summary chart: sesuai filter yang sama
         $summary = (clone $baseQuery)
             ->selectRaw('
                 line_group,
@@ -231,7 +205,7 @@ class InPrecesControlelList extends Component
             ->groupBy('line_group', 'sub_line')
             ->get();
 
-        // ✅ Alert dari DB sesuai filter (bukan dari paginator)
+        // ✅ alert DB: sesuai filter yang sama (bukan dari paginator)
         $alertRows = $this->buildAlertQuery($baseQuery)
             ->select([
                 'id',
@@ -263,9 +237,7 @@ class InPrecesControlelList extends Component
                 }
                 $row->violations = $violations;
                 return $row;
-            })
-            ->filter(fn($r) => !empty($r->violations))
-            ->values();
+            });
 
         return view('livewire.ipc.in-preces-controlel-list', [
             'data'      => $data,
