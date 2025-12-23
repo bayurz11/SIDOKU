@@ -26,13 +26,12 @@ class InPrecesControlelList extends Component
     public array $subLinesTeh = [];
 
     // ✅ Threshold alert (ubah sesuai standar internal kamu)
-    // pH: 5.0 - 7.5, TDS < 10, Cl < 0.1, O3 0.05 - 0.30, Turbidity < 1.5
     protected array $alertRules = [
-        'avg_ph' => ['label' => 'pH', 'type' => 'range', 'min' => 5.0,  'max' => 7.5,  'unit' => ''],
-        'avg_tds_ppm' => ['label' => 'TDS', 'type' => 'max', 'max' => 10.0, 'unit' => 'ppm'],
-        'avg_chlorine' => ['label' => 'Klorin', 'type' => 'max', 'max' => 0.1, 'unit' => 'mg/L'],
-        'avg_ozone' => ['label' => 'Ozon', 'type' => 'range', 'min' => 0.05, 'max' => 0.30, 'unit' => 'ppm'],
-        'avg_turbidity_ntu' => ['label' => 'Kekeruhan', 'type' => 'max', 'max' => 1.5, 'unit' => 'NTU'],
+        'avg_ph'            => ['label' => 'pH',        'type' => 'range', 'min' => 5.0,  'max' => 7.5,  'unit' => ''],
+        'avg_tds_ppm'       => ['label' => 'TDS',       'type' => 'max',   'max' => 10.0, 'unit' => ' ppm'],
+        'avg_chlorine'      => ['label' => 'Klorin',    'type' => 'max',   'max' => 0.1,  'unit' => ' mg/L'],
+        'avg_ozone'         => ['label' => 'Ozon',      'type' => 'range', 'min' => 0.05, 'max' => 0.30, 'unit' => ' ppm'],
+        'avg_turbidity_ntu' => ['label' => 'Kekeruhan', 'type' => 'max',   'max' => 1.5,  'unit' => ' NTU'],
     ];
 
     protected array $allowedSorts = [
@@ -73,17 +72,51 @@ class InPrecesControlelList extends Component
         $this->lineGroups  = IpcProduct::LINE_GROUPS;
         $this->subLinesTeh = IpcProduct::SUB_LINES;
 
-        // ✅ Default bulan berjalan (kalau user belum set filter tanggal)
+        $this->ensureCurrentMonth();
+    }
+
+    private function ensureCurrentMonth(): void
+    {
+        // ✅ kalau tanggal kosong → pakai bulan berjalan
         if (blank($this->filterDateFrom) && blank($this->filterDateTo)) {
             $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
             $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
         }
+
+        // ✅ kalau user isi salah satu saja → lengkapi otomatis (biar konsisten)
+        if (filled($this->filterDateFrom) && blank($this->filterDateTo)) {
+            $this->filterDateTo = Carbon::parse($this->filterDateFrom)->endOfMonth()->toDateString();
+        }
+        if (blank($this->filterDateFrom) && filled($this->filterDateTo)) {
+            $this->filterDateFrom = Carbon::parse($this->filterDateTo)->startOfMonth()->toDateString();
+        }
+    }
+
+    public function resetToCurrentMonth(): void
+    {
+        $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
+        $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        // reset filter tapi tetap bulan berjalan
+        $this->search = '';
+        $this->filterLineGroup = null;
+        $this->filterSubLine = null;
+
+        $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
+        $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
+
+        $this->resetPage();
     }
 
     public function refreshList(): void
     {
         $this->resetPage();
     }
+
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -91,7 +124,7 @@ class InPrecesControlelList extends Component
 
     public function updatingFilterLineGroup(): void
     {
-        $this->filterSubLine = null;
+        $this->filterSubLine = null; // reset subline kalau ganti line group
         $this->resetPage();
     }
 
@@ -99,10 +132,12 @@ class InPrecesControlelList extends Component
     {
         $this->resetPage();
     }
+
     public function updatingFilterDateFrom(): void
     {
         $this->resetPage();
     }
+
     public function updatingFilterDateTo(): void
     {
         $this->resetPage();
@@ -110,7 +145,7 @@ class InPrecesControlelList extends Component
 
     public function updatingPerPage(): void
     {
-        if (! in_array($this->perPage, $this->allowedPerPage, true)) {
+        if (!in_array($this->perPage, $this->allowedPerPage, true)) {
             $this->perPage = 10;
         }
         $this->resetPage();
@@ -118,7 +153,7 @@ class InPrecesControlelList extends Component
 
     public function sortBy(string $field): void
     {
-        if (! in_array($field, $this->allowedSorts, true)) return;
+        if (!in_array($field, $this->allowedSorts, true)) return;
 
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -126,14 +161,6 @@ class InPrecesControlelList extends Component
             $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
-    }
-
-    // ✅ Tombol "Bulan Ini"
-    public function resetToCurrentMonth(): void
-    {
-        $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
-        $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
-        $this->resetPage();
     }
 
     public function delete(int $id): void
@@ -145,13 +172,10 @@ class InPrecesControlelList extends Component
         $this->resetPage();
     }
 
-    public function showDetail(int $id): void
-    {
-        $this->dispatch('openIpcProductForm', id: $id);
-    }
-
     protected function buildBaseQuery()
     {
+        $this->ensureCurrentMonth();
+
         return IpcProduct::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
@@ -164,10 +188,7 @@ class InPrecesControlelList extends Component
                 $from = $this->filterDateFrom . ' 00:00:00';
                 $to   = $this->filterDateTo   . ' 23:59:59';
                 $q->whereBetween('test_date', [$from, $to]);
-            })
-            // fallback kalau user isi salah satu
-            ->when($this->filterDateFrom && ! $this->filterDateTo, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
-            ->when(! $this->filterDateFrom && $this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+            });
     }
 
     protected function buildAlertQuery($baseQuery)
@@ -200,20 +221,12 @@ class InPrecesControlelList extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // ✅ Summary untuk chart (ikut filter DB)
+        // ✅ Summary untuk chart (hanya data sesuai filter bulan berjalan)
         $summary = (clone $baseQuery)
             ->selectRaw('
                 line_group,
                 sub_line,
-                AVG(avg_weight_g)      as avg_weight_g,
-                AVG(avg_ph)            as avg_ph,
-                AVG(avg_brix)          as avg_brix,
-                AVG(avg_tds_ppm)       as avg_tds_ppm,
-                AVG(avg_chlorine)      as avg_chlorine,
-                AVG(avg_ozone)         as avg_ozone,
-                AVG(avg_turbidity_ntu) as avg_turbidity_ntu,
-                AVG(avg_salinity)      as avg_salinity,
-                COUNT(*)               as total_samples
+                COUNT(*) as total_samples
             ')
             ->groupBy('line_group', 'sub_line')
             ->get();
@@ -250,7 +263,9 @@ class InPrecesControlelList extends Component
                 }
                 $row->violations = $violations;
                 return $row;
-            });
+            })
+            ->filter(fn($r) => !empty($r->violations))
+            ->values();
 
         return view('livewire.ipc.in-preces-controlel-list', [
             'data'      => $data,
