@@ -1,4 +1,6 @@
 @php
+    use Illuminate\Support\Str;
+
     $lineGroupLabels = \App\Domains\Ipc\Models\IpcProduct::LINE_GROUPS;
     $subLineLabels = \App\Domains\Ipc\Models\IpcProduct::SUB_LINES ?? [];
 
@@ -12,7 +14,6 @@
 
     $chartCounts = $summary->map(fn($row) => (int) ($row->total_samples ?? 0))->values();
 @endphp
-
 
 <div class="space-y-6">
 
@@ -42,32 +43,25 @@
                 </div>
             </div>
         </div>
-
-
         <div class="px-4 py-4 sm:px-6 sm:py-5">
             @if ($summary->isEmpty())
                 <p class="text-sm text-gray-500 italic">
-                    Belum ada data IPC untuk ditampilkan. Atur filter line / tanggal terlebih dahulu.
+                    Belum ada data IPC untuk ditampilkan (bulan berjalan). Atur filter line / tanggal terlebih dahulu.
                 </p>
             @else
-                {{-- ✅ PAYLOAD DI LUAR wire:ignore (supaya ikut update Livewire) --}}
+                {{-- payload chart (ikut update Livewire) --}}
                 <div id="ipcChartData" class="hidden" data-labels='@json($chartLabels)'
                     data-values='@json($chartCounts)'></div>
 
-                {{-- BAR --}}
                 <div class="h-56 sm:h-72 mb-6" wire:ignore>
                     <canvas id="ipcSummaryBarChart"></canvas>
                 </div>
 
-                {{-- DONUT --}}
                 <div class="h-56 sm:h-72" wire:ignore>
                     <canvas id="ipcSummaryDonutChart"></canvas>
                 </div>
             @endif
         </div>
-
-
-
     </div>
 
     {{-- CARD LIST IPC PRODUCT --}}
@@ -217,36 +211,37 @@
             </div>
 
         </div>
-        @if (isset($alertRows) && $alertRows->isNotEmpty())
+        @if (isset($highMoistureItems) && $highMoistureItems->isNotEmpty())
             <div class="mx-6 mb-4 p-4 rounded-2xl border border-red-200 bg-red-50">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <div class="font-bold text-red-800">⚠️ Alert Parameter (sesuai filter)</div>
+                        <div class="font-bold text-red-800">⚠️ Peringatan Kadar Air Tinggi (≥ 10%)</div>
                         <div class="text-sm text-red-700 mt-1">
-                            Ditemukan <span class="font-semibold">{{ $alertRows->count() }}</span> data out of spec.
+                            Terdapat <span class="font-semibold">{{ $highMoistureItems->count() }}</span> data out of
+                            spec
+                            (sesuai filter & bulan berjalan).
                         </div>
                     </div>
-                    <button type="button" class="text-xs font-semibold text-red-700 hover:text-red-900"
-                        onclick="this.closest('div.mx-6').style.display='none'">
-                        Tutup
-                    </button>
                 </div>
 
                 <div class="mt-3 space-y-2">
-                    @foreach ($alertRows->take(8) as $r)
+                    @foreach ($highMoistureItems->take(8) as $r)
                         <div class="p-3 bg-white rounded-xl border border-red-100">
                             <div class="text-sm font-semibold text-gray-900">
                                 {{ optional($r->test_date)->format('d M Y') }} — {{ $r->product_name }}
                             </div>
-                            <div class="text-xs text-gray-600 mt-1">
-                                {!! implode(' • ', array_map('e', $r->violations ?? [])) !!}
+                            <div class="text-xs text-gray-700 mt-1">
+                                {{ $lineGroupLabels[$r->line_group] ?? $r->line_group }}
+                                @if ($r->sub_line)
+                                    • {{ $subLineLabels[$r->sub_line] ?? $r->sub_line }}
+                                @endif
+                                • <span
+                                    class="font-semibold text-red-700">{{ number_format($r->avg_moisture_percent, 2) }}%</span>
                             </div>
                         </div>
                     @endforeach
-                    @if ($alertRows->count() > 8)
-                        <div class="text-xs text-red-700">
-                            +{{ $alertRows->count() - 8 }} data lainnya…
-                        </div>
+                    @if ($highMoistureItems->count() > 8)
+                        <div class="text-xs text-red-700">+{{ $highMoistureItems->count() - 8 }} data lainnya…</div>
                     @endif
                 </div>
             </div>
@@ -487,7 +482,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -501,7 +496,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -582,7 +577,6 @@
     </div>
 
 </div>
-
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -591,10 +585,10 @@
             if (window.__ipcChartInitialized) return;
             window.__ipcChartInitialized = true;
 
-            let barChart = null;
-            let donutChart = null;
+            window.ipcSummaryBarChart = null;
+            window.ipcSummaryDonutChart = null;
 
-            function getPayload() {
+            function getChartPayload() {
                 const el = document.getElementById('ipcChartData');
                 if (!el) return {
                     labels: [],
@@ -603,6 +597,7 @@
 
                 let labels = [];
                 let values = [];
+
                 try {
                     labels = JSON.parse(el.dataset.labels || '[]');
                 } catch (e) {
@@ -621,13 +616,13 @@
             }
 
             function destroyCharts() {
-                if (barChart) {
-                    barChart.destroy();
-                    barChart = null;
+                if (window.ipcSummaryBarChart?.destroy) {
+                    window.ipcSummaryBarChart.destroy();
+                    window.ipcSummaryBarChart = null;
                 }
-                if (donutChart) {
-                    donutChart.destroy();
-                    donutChart = null;
+                if (window.ipcSummaryDonutChart?.destroy) {
+                    window.ipcSummaryDonutChart.destroy();
+                    window.ipcSummaryDonutChart = null;
                 }
             }
 
@@ -635,7 +630,7 @@
                 const barCanvas = document.getElementById('ipcSummaryBarChart');
                 const donutCanvas = document.getElementById('ipcSummaryDonutChart');
 
-                // kalau summary empty, canvas bisa tidak ada
+                // kalau empty, canvas tidak ada → destroy
                 if (!barCanvas && !donutCanvas) {
                     destroyCharts();
                     return;
@@ -644,9 +639,7 @@
                 const {
                     labels,
                     values
-                } = getPayload();
-
-                // payload kosong => destroy
+                } = getChartPayload();
                 if (!labels.length || !values.length) {
                     destroyCharts();
                     return;
@@ -654,12 +647,10 @@
 
                 // BAR
                 if (barCanvas) {
-                    if (barChart) {
-                        barChart.destroy();
-                        barChart = null;
-                    }
+                    window.ipcSummaryBarChart?.destroy?.();
+                    const ctx = barCanvas.getContext('2d');
 
-                    barChart = new Chart(barCanvas.getContext('2d'), {
+                    window.ipcSummaryBarChart = new Chart(ctx, {
                         type: 'bar',
                         data: {
                             labels,
@@ -709,24 +700,22 @@
 
                 // DONUT
                 if (donutCanvas) {
-                    if (donutChart) {
-                        donutChart.destroy();
-                        donutChart = null;
-                    }
+                    window.ipcSummaryDonutChart?.destroy?.();
+                    const ctx = donutCanvas.getContext('2d');
 
                     const baseColors = ['#22c55e', '#3b82f6', '#eab308', '#f97316', '#ef4444', '#a855f7', '#6b7280',
                         '#14b8a6'
                     ];
-                    const backgroundColors = labels.map((_, i) => baseColors[i % baseColors.length]);
+                    const bg = labels.map((_, i) => baseColors[i % baseColors.length]);
 
-                    donutChart = new Chart(donutCanvas.getContext('2d'), {
+                    window.ipcSummaryDonutChart = new Chart(ctx, {
                         type: 'doughnut',
                         data: {
                             labels,
                             datasets: [{
                                 data: values,
-                                backgroundColor: backgroundColors,
-                                borderWidth: 1,
+                                backgroundColor: bg,
+                                borderWidth: 1
                             }]
                         },
                         options: {
@@ -743,7 +732,7 @@
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: (ctx) => `${ctx.label || ''}: ${ctx.parsed || 0} data`
+                                        label: (c) => `${c.label}: ${c.parsed} data`
                                     }
                                 }
                             }
@@ -755,7 +744,7 @@
             function boot() {
                 renderCharts();
 
-                // ✅ setiap filter berubah, Livewire re-render => update payload => render ulang chart
+                // ✅ AUTO reload chart setiap filter berubah / rerender Livewire
                 if (window.Livewire) {
                     Livewire.hook('message.processed', () => {
                         requestAnimationFrame(() => renderCharts());
@@ -763,11 +752,9 @@
                 }
             }
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', boot);
-            } else {
+            document.readyState === 'loading' ?
+                document.addEventListener('DOMContentLoaded', boot) :
                 boot();
-            }
         })();
     </script>
 @endpush

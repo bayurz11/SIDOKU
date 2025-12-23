@@ -25,14 +25,8 @@ class InPrecesControlelList extends Component
     public array $lineGroups = [];
     public array $subLinesTeh = [];
 
-    // ✅ Alert rules (ubah sesuai standar)
-    protected array $alertRules = [
-        'avg_ph' => ['label' => 'pH', 'type' => 'range', 'min' => 5.0,  'max' => 7.5,  'unit' => ''],
-        'avg_tds_ppm' => ['label' => 'TDS', 'type' => 'max', 'max' => 10.0, 'unit' => 'ppm'],
-        'avg_chlorine' => ['label' => 'Klorin', 'type' => 'max', 'max' => 0.1, 'unit' => 'mg/L'],
-        'avg_ozone' => ['label' => 'Ozon', 'type' => 'range', 'min' => 0.05, 'max' => 0.30, 'unit' => 'ppm'],
-        'avg_turbidity_ntu' => ['label' => 'Kekeruhan', 'type' => 'max', 'max' => 1.5, 'unit' => 'NTU'],
-    ];
+    // ✅ contoh alert kadar air (ubah field kalau beda)
+    public float $moistureThreshold = 10.0; // >= 10%
 
     protected array $allowedSorts = [
         'test_date',
@@ -70,21 +64,28 @@ class InPrecesControlelList extends Component
     public function mount(): void
     {
         $this->lineGroups  = IpcProduct::LINE_GROUPS;
-        $this->subLinesTeh = IpcProduct::SUB_LINES;
+        $this->subLinesTeh = IpcProduct::SUB_LINES ?? [];
 
-        // ✅ Default bulan berjalan (real-time) jika user belum set tanggal
+        // ✅ DEFAULT: langsung bulan berjalan (realtime)
+        $this->applyCurrentMonthDefaults();
+    }
+
+    /**
+     * ✅ Pastikan kalau user masuk bulan baru, default ikut bulan baru
+     * (selama user belum set tanggal manual)
+     */
+    public function hydrate(): void
+    {
+        // Jika filter kosong / null, kita set lagi ke bulan berjalan
         if (blank($this->filterDateFrom) && blank($this->filterDateTo)) {
-            $this->filterDateFrom = now()->startOfMonth()->toDateString();
-            $this->filterDateTo   = now()->endOfMonth()->toDateString();
+            $this->applyCurrentMonthDefaults();
         }
     }
 
-    // ✅ Tombol "Bulan Ini"
-    public function resetToCurrentMonth(): void
+    private function applyCurrentMonthDefaults(): void
     {
         $this->filterDateFrom = now()->startOfMonth()->toDateString();
         $this->filterDateTo   = now()->endOfMonth()->toDateString();
-        $this->resetPage();
     }
 
     public function refreshList(): void
@@ -92,7 +93,6 @@ class InPrecesControlelList extends Component
         $this->resetPage();
     }
 
-    // reset pagination kalau filter berubah
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -117,9 +117,7 @@ class InPrecesControlelList extends Component
 
     public function updatingPerPage(): void
     {
-        if (!in_array($this->perPage, $this->allowedPerPage, true)) {
-            $this->perPage = 10;
-        }
+        if (!in_array($this->perPage, $this->allowedPerPage, true)) $this->perPage = 10;
         $this->resetPage();
     }
 
@@ -130,119 +128,90 @@ class InPrecesControlelList extends Component
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField     = $field;
+            $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
+    }
+
+    // ✅ tombol Bulan Ini
+    public function resetToCurrentMonth(): void
+    {
+        $this->applyCurrentMonthDefaults();
+        $this->resetPage();
     }
 
     public function delete(int $id): void
     {
         $record = IpcProduct::findOrFail($id);
         $record->delete();
-
         $this->showSuccessToast('IPC record deleted!');
         $this->resetPage();
     }
 
     protected function buildBaseQuery()
     {
-        return IpcProduct::query()
-            ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
-                $q->where('product_name', 'like', $term);
-            })
-            ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
-            ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
+        $q = IpcProduct::query();
 
-            // ✅ tanggal aman untuk DATETIME juga
-            ->when($this->filterDateFrom && $this->filterDateTo, function ($q) {
-                $from = $this->filterDateFrom . ' 00:00:00';
-                $to   = $this->filterDateTo   . ' 23:59:59';
-                $q->whereBetween('test_date', [$from, $to]);
-            })
-            ->when($this->filterDateFrom && !$this->filterDateTo, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
-            ->when(!$this->filterDateFrom && $this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+        // search
+        if ($this->search) {
+            $term = '%' . $this->search . '%';
+            $q->where('product_name', 'like', $term);
+        }
+
+        // line/subline
+        if ($this->filterLineGroup) $q->where('line_group', $this->filterLineGroup);
+        if ($this->filterSubLine)   $q->where('sub_line', $this->filterSubLine);
+
+        /**
+         * ✅ WAJIB: default bulan berjalan tetap berlaku walau user belum filter
+         * dan aman jika user isi manual.
+         */
+        $from = $this->filterDateFrom ?: now()->startOfMonth()->toDateString();
+        $to   = $this->filterDateTo   ?: now()->endOfMonth()->toDateString();
+
+        $fromDt = Carbon::parse($from)->startOfDay();
+        $toDt   = Carbon::parse($to)->endOfDay();
+
+        $q->whereBetween('test_date', [$fromDt, $toDt]);
+
+        return $q;
     }
 
-    protected function buildAlertQuery($baseQuery)
+    protected function buildHighMoistureAlertQuery($baseQuery)
     {
-        return (clone $baseQuery)->where(function ($q) {
-            foreach ($this->alertRules as $field => $rule) {
-                if ($rule['type'] === 'range') {
-                    $q->orWhere(function ($qq) use ($field, $rule) {
-                        $qq->whereNotNull($field)
-                            ->where(function ($qqq) use ($field, $rule) {
-                                $qqq->where($field, '<', $rule['min'])
-                                    ->orWhere($field, '>', $rule['max']);
-                            });
-                    });
-                } elseif ($rule['type'] === 'max') {
-                    $q->orWhere(function ($qq) use ($field, $rule) {
-                        $qq->whereNotNull($field)
-                            ->where($field, '>', $rule['max']);
-                    });
-                }
-            }
-        });
+        // ✅ FIELD kadar air: sesuaikan jika berbeda
+        // contoh field: avg_moisture_percent
+        return (clone $baseQuery)
+            ->whereNotNull('avg_moisture_percent')
+            ->where('avg_moisture_percent', '>=', $this->moistureThreshold);
     }
 
     public function render()
     {
         $baseQuery = $this->buildBaseQuery();
 
-        // ✅ data tabel: hanya sesuai filter (bulan berjalan default)
+        // ✅ TABLE
         $data = (clone $baseQuery)
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // ✅ summary chart: sesuai filter yang sama
+        // ✅ SUMMARY CHART (ikut filter DB)
         $summary = (clone $baseQuery)
-            ->selectRaw('
-                line_group,
-                sub_line,
-                COUNT(*) as total_samples
-            ')
+            ->selectRaw('line_group, sub_line, COUNT(*) as total_samples')
             ->groupBy('line_group', 'sub_line')
             ->get();
 
-        // ✅ alert DB: sesuai filter yang sama (bukan dari paginator)
-        $alertRows = $this->buildAlertQuery($baseQuery)
-            ->select([
-                'id',
-                'test_date',
-                'line_group',
-                'sub_line',
-                'product_name',
-                'avg_ph',
-                'avg_tds_ppm',
-                'avg_chlorine',
-                'avg_ozone',
-                'avg_turbidity_ntu'
-            ])
+        // ✅ ALERT (ikut filter DB, bukan pagination)
+        $highMoistureItems = $this->buildHighMoistureAlertQuery($baseQuery)
+            ->select(['id', 'test_date', 'line_group', 'sub_line', 'product_name', 'avg_moisture_percent'])
             ->orderByDesc('test_date')
             ->limit(50)
-            ->get()
-            ->map(function ($row) {
-                $violations = [];
-                foreach ($this->alertRules as $field => $rule) {
-                    $val = $row->{$field};
-                    if (is_null($val)) continue;
-
-                    if ($rule['type'] === 'range' && ($val < $rule['min'] || $val > $rule['max'])) {
-                        $violations[] = "{$rule['label']} {$val}{$rule['unit']} (std {$rule['min']}–{$rule['max']})";
-                    }
-                    if ($rule['type'] === 'max' && ($val > $rule['max'])) {
-                        $violations[] = "{$rule['label']} {$val}{$rule['unit']} (max {$rule['max']})";
-                    }
-                }
-                $row->violations = $violations;
-                return $row;
-            });
+            ->get();
 
         return view('livewire.ipc.in-preces-controlel-list', [
-            'data'      => $data,
-            'summary'   => $summary,
-            'alertRows' => $alertRows,
+            'data'              => $data,
+            'summary'           => $summary,
+            'highMoistureItems' => $highMoistureItems,
         ]);
     }
 }
