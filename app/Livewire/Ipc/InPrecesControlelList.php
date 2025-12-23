@@ -25,10 +25,16 @@ class InPrecesControlelList extends Component
     public array $lineGroups = [];
     public array $subLinesTeh = [];
 
-    /**
-     * Kolom yang boleh digunakan untuk sorting.
-     * Disesuaikan dengan struktur tabel ipc_check_product.
-     */
+    // ✅ Threshold alert (ubah sesuai standar internal kamu)
+    // pH: 5.0 - 7.5, TDS < 10, Cl < 0.1, O3 0.05 - 0.30, Turbidity < 1.5
+    protected array $alertRules = [
+        'avg_ph' => ['label' => 'pH', 'type' => 'range', 'min' => 5.0,  'max' => 7.5,  'unit' => ''],
+        'avg_tds_ppm' => ['label' => 'TDS', 'type' => 'max', 'max' => 10.0, 'unit' => 'ppm'],
+        'avg_chlorine' => ['label' => 'Klorin', 'type' => 'max', 'max' => 0.1, 'unit' => 'mg/L'],
+        'avg_ozone' => ['label' => 'Ozon', 'type' => 'range', 'min' => 0.05, 'max' => 0.30, 'unit' => 'ppm'],
+        'avg_turbidity_ntu' => ['label' => 'Kekeruhan', 'type' => 'max', 'max' => 1.5, 'unit' => 'NTU'],
+    ];
+
     protected array $allowedSorts = [
         'test_date',
         'product_name',
@@ -64,11 +70,10 @@ class InPrecesControlelList extends Component
 
     public function mount(): void
     {
-        // Diambil dari konstanta di Model IpcProduct
         $this->lineGroups  = IpcProduct::LINE_GROUPS;
         $this->subLinesTeh = IpcProduct::SUB_LINES;
 
-        // ✅ Default: tampilkan data bulan berjalan jika user belum set filter tanggal
+        // ✅ Default bulan berjalan (kalau user belum set filter tanggal)
         if (blank($this->filterDateFrom) && blank($this->filterDateTo)) {
             $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
             $this->filterDateTo   = Carbon::now()->endOfMonth()->toDateString();
@@ -79,7 +84,6 @@ class InPrecesControlelList extends Component
     {
         $this->resetPage();
     }
-
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -95,12 +99,10 @@ class InPrecesControlelList extends Component
     {
         $this->resetPage();
     }
-
     public function updatingFilterDateFrom(): void
     {
         $this->resetPage();
     }
-
     public function updatingFilterDateTo(): void
     {
         $this->resetPage();
@@ -111,15 +113,12 @@ class InPrecesControlelList extends Component
         if (! in_array($this->perPage, $this->allowedPerPage, true)) {
             $this->perPage = 10;
         }
-
         $this->resetPage();
     }
 
     public function sortBy(string $field): void
     {
-        if (! in_array($field, $this->allowedSorts, true)) {
-            return;
-        }
+        if (! in_array($field, $this->allowedSorts, true)) return;
 
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -129,9 +128,7 @@ class InPrecesControlelList extends Component
         }
     }
 
-    /**
-     * ✅ Optional: tombol "Bulan Ini" (berguna kalau queryString nyangkut bulan lama)
-     */
+    // ✅ Tombol "Bulan Ini"
     public function resetToCurrentMonth(): void
     {
         $this->filterDateFrom = Carbon::now()->startOfMonth()->toDateString();
@@ -153,34 +150,57 @@ class InPrecesControlelList extends Component
         $this->dispatch('openIpcProductForm', id: $id);
     }
 
-    public function render()
+    protected function buildBaseQuery()
     {
-        // base query dengan filter
-        $baseQuery = IpcProduct::query()
+        return IpcProduct::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
-                $q->where(function ($sub) use ($term) {
-                    $sub->where('product_name', 'like', $term);
-                });
+                $q->where('product_name', 'like', $term);
             })
             ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
             ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
-            // ✅ filter tanggal aman untuk DATE/DATETIME
+            // ✅ Aman untuk DATE/DATETIME
             ->when($this->filterDateFrom && $this->filterDateTo, function ($q) {
                 $from = $this->filterDateFrom . ' 00:00:00';
                 $to   = $this->filterDateTo   . ' 23:59:59';
                 $q->whereBetween('test_date', [$from, $to]);
             })
-            // fallback kalau user isi salah satu saja
+            // fallback kalau user isi salah satu
             ->when($this->filterDateFrom && ! $this->filterDateTo, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
             ->when(! $this->filterDateFrom && $this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+    }
 
-        // data tabel (pagination + sorting)
+    protected function buildAlertQuery($baseQuery)
+    {
+        return (clone $baseQuery)->where(function ($q) {
+            foreach ($this->alertRules as $field => $rule) {
+                if ($rule['type'] === 'range') {
+                    $q->orWhere(function ($qq) use ($field, $rule) {
+                        $qq->whereNotNull($field)
+                            ->where(function ($qqq) use ($field, $rule) {
+                                $qqq->where($field, '<', $rule['min'])
+                                    ->orWhere($field, '>', $rule['max']);
+                            });
+                    });
+                } elseif ($rule['type'] === 'max') {
+                    $q->orWhere(function ($qq) use ($field, $rule) {
+                        $qq->whereNotNull($field)
+                            ->where($field, '>', $rule['max']);
+                    });
+                }
+            }
+        });
+    }
+
+    public function render()
+    {
+        $baseQuery = $this->buildBaseQuery();
+
         $data = (clone $baseQuery)
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // RINGKASAN UNTUK CHART
+        // ✅ Summary untuk chart (ikut filter DB)
         $summary = (clone $baseQuery)
             ->selectRaw('
                 line_group,
@@ -198,9 +218,44 @@ class InPrecesControlelList extends Component
             ->groupBy('line_group', 'sub_line')
             ->get();
 
+        // ✅ Alert dari DB sesuai filter (bukan dari paginator)
+        $alertRows = $this->buildAlertQuery($baseQuery)
+            ->select([
+                'id',
+                'test_date',
+                'line_group',
+                'sub_line',
+                'product_name',
+                'avg_ph',
+                'avg_tds_ppm',
+                'avg_chlorine',
+                'avg_ozone',
+                'avg_turbidity_ntu'
+            ])
+            ->orderByDesc('test_date')
+            ->limit(50)
+            ->get()
+            ->map(function ($row) {
+                $violations = [];
+                foreach ($this->alertRules as $field => $rule) {
+                    $val = $row->{$field};
+                    if (is_null($val)) continue;
+
+                    if ($rule['type'] === 'range' && ($val < $rule['min'] || $val > $rule['max'])) {
+                        $violations[] = "{$rule['label']} {$val}{$rule['unit']} (std {$rule['min']}–{$rule['max']})";
+                    }
+                    if ($rule['type'] === 'max' && ($val > $rule['max'])) {
+                        $violations[] = "{$rule['label']} {$val}{$rule['unit']} (max {$rule['max']})";
+                    }
+                }
+                $row->violations = $violations;
+                return $row;
+            });
+
         return view('livewire.ipc.in-preces-controlel-list', [
-            'data'    => $data,
-            'summary' => $summary,
+            'data'      => $data,
+            'summary'   => $summary,
+            'alertRows' => $alertRows,
         ]);
     }
 }

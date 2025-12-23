@@ -57,20 +57,18 @@
                     Belum ada data IPC untuk ditampilkan. Atur filter line / tanggal terlebih dahulu.
                 </p>
             @else
-                {{-- PAYLOAD DATA untuk Chart (ikut ke-update oleh Livewire) --}}
                 <div id="ipcChartData" class="hidden" data-labels='@json($chartLabels ?? [])'
                     data-values='@json($chartCounts ?? [])'></div>
 
-                {{-- BAR CHART --}}
                 <div class="h-56 sm:h-72 mb-6" wire:ignore>
                     <canvas id="ipcSummaryBarChart"></canvas>
                 </div>
 
-                {{-- DOUGHNUT CHART --}}
                 <div class="h-56 sm:h-72" wire:ignore>
                     <canvas id="ipcSummaryDonutChart"></canvas>
                 </div>
             @endif
+
         </div>
 
     </div>
@@ -222,6 +220,40 @@
             </div>
 
         </div>
+        @if (isset($alertRows) && $alertRows->isNotEmpty())
+            <div class="mx-6 mb-4 p-4 rounded-2xl border border-red-200 bg-red-50">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="font-bold text-red-800">⚠️ Alert Parameter (sesuai filter)</div>
+                        <div class="text-sm text-red-700 mt-1">
+                            Ditemukan <span class="font-semibold">{{ $alertRows->count() }}</span> data out of spec.
+                        </div>
+                    </div>
+                    <button type="button" class="text-xs font-semibold text-red-700 hover:text-red-900"
+                        onclick="this.closest('div.mx-6').style.display='none'">
+                        Tutup
+                    </button>
+                </div>
+
+                <div class="mt-3 space-y-2">
+                    @foreach ($alertRows->take(8) as $r)
+                        <div class="p-3 bg-white rounded-xl border border-red-100">
+                            <div class="text-sm font-semibold text-gray-900">
+                                {{ optional($r->test_date)->format('d M Y') }} — {{ $r->product_name }}
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1">
+                                {!! implode(' • ', array_map('e', $r->violations ?? [])) !!}
+                            </div>
+                        </div>
+                    @endforeach
+                    @if ($alertRows->count() > 8)
+                        <div class="text-xs text-red-700">
+                            +{{ $alertRows->count() - 8 }} data lainnya…
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
 
         {{-- TABLE --}}
         <div class="overflow-x-auto">
@@ -458,7 +490,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -472,7 +504,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
