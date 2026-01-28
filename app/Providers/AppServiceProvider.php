@@ -49,13 +49,13 @@ class AppServiceProvider extends ServiceProvider
     // }
     public function boot(): void
     {
-        // DB::listen(function ($query) {
-        //     if (str_contains($query->sql, 'users')) {
-        //         Log::info('USER QUERY', [
-        //             'sql' => $query->sql,
-        //         ]);
-        //     }
-        // });
+        DB::listen(function ($query) {
+            if (str_contains($query->sql, 'users')) {
+                Log::info('USER QUERY', [
+                    'sql' => $query->sql,
+                ]);
+            }
+        });
         // Blade directive for permission checks
         Blade::if('permission', function ($permission) {
             $user = AuthAccess::user();
