@@ -2,51 +2,47 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
     public function register(): void
     {
         //
     }
 
+    /**
+     * Bootstrap any application services.
+     */
     public function boot(): void
     {
-        // Cache auth user once per request
-        view()->composer('*', function ($view) {
-            if (Auth::check()) {
-                $user = Cache::remember(
-                    'auth_user_' . Auth::id(),
-                    now()->addMinutes(30),
-                    fn() => Auth::user()
-                );
+        // DB::listen(function ($query) {
+        //     logger($query->sql);
+        // });
 
-                app()->instance('authUser', $user);
-            }
-        });
-
+        // Blade directive for permission checks
         Blade::if('permission', function ($permission) {
-            $user = app()->bound('authUser') ? app('authUser') : null;
-            return $user && $user->hasPermission($permission);
+            return auth()->check() && auth()->user()->hasPermission($permission);
         });
 
+        // Blade directive for role checks
         Blade::if('role', function ($role) {
-            $user = app()->bound('authUser') ? app('authUser') : null;
-            return $user && $user->hasRole($role);
+            return auth()->check() && auth()->user()->hasRole($role);
         });
 
+        // Blade directive for any role check
         Blade::if('anyrole', function (...$roles) {
-            $user = app()->bound('authUser') ? app('authUser') : null;
-            return $user && $user->hasAnyRole($roles);
+            return auth()->check() && auth()->user()->hasAnyRole($roles);
         });
 
+        // Blade directive for all roles check
         Blade::if('allroles', function (...$roles) {
-            $user = app()->bound('authUser') ? app('authUser') : null;
-            return $user && $user->hasAllRoles($roles);
+            return auth()->check() && auth()->user()->hasAllRoles($roles);
         });
     }
 }
