@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        DB::listen(function ($query) {
+            logger($query->sql);
+        });
+
         // Blade directive for permission checks
         Blade::if('permission', function ($permission) {
             return auth()->check() && auth()->user()->hasPermission($permission);
