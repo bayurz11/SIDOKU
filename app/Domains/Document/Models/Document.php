@@ -2,13 +2,15 @@
 
 namespace App\Domains\Document\Models;
 
+use App\Auditable;
 use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Document extends Model
 {
+    use Auditable;
     protected $fillable = [
         'document_type_id',
         'department_id',

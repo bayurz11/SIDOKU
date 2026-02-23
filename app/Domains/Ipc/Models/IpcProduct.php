@@ -2,12 +2,14 @@
 
 namespace App\Domains\Ipc\Models;
 
+use App\Auditable;
+use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Domains\User\Models\User;
 
 class IpcProduct extends Model
 {
+    use Auditable;
     protected $table = 'ipc_check_product';
 
     protected $fillable = [
