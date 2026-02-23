@@ -56,10 +56,13 @@ class IpcProduct extends Model
             }
         });
 
+        // static::saving(function ($model) {
+        //     if (auth()->check() && $model->exists) {
+        //         $model->updated_by = auth()->id();
+        //     }
+        // });
         static::saving(function ($model) {
-            if (auth()->check() && $model->exists) {
-                $model->updated_by = auth()->id();
-            }
+            dd(auth()->id());
         });
     }
 
