@@ -245,7 +245,7 @@
                             ->where('model_id', $document->id)
                             ->with(['changes', 'user'])
                             ->latest()
-                            ->get();
+                            ->first();
                     @endphp
 
                     @if ($logs->count())
