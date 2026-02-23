@@ -2,8 +2,9 @@
 
 namespace App;
 
+use App\Models\Log;
 use App\Models\LogChange;
-use Illuminate\Support\Facades\Log;
+
 
 trait Auditable
 {
