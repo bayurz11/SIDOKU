@@ -26,6 +26,7 @@ class IpcProduct extends Model
         'avg_salinity',
         'notes',
         'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
