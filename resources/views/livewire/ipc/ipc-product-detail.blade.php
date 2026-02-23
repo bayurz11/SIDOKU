@@ -279,7 +279,7 @@
                         ->where('model_id', $ipc->id)
                         ->with(['changes', 'user'])
                         ->latest()
-                        ->first();
+                        ->get();
                 @endphp
 
                 @if ($logs->count())
