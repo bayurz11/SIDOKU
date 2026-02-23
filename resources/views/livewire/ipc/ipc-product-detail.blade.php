@@ -186,6 +186,23 @@
                                         {{ optional($ipc->created_at)->format('d M Y H:i') ?? '-' }}
                                     </dd>
                                 </div>
+                                {{-- <div class="flex justify-between">
+                                    <dt class="text-gray-500">Diedit oleh</dt>
+                                    <dd class="text-gray-900 font-medium text-right">
+                                        @if (method_exists($ipc, 'createdBy') && $ipc->createdBy)
+                                            {{ $ipc->createdBy->name }}
+                                        @else
+                                            {{ $ipc->created_by ?? '-' }}
+                                        @endif
+                                    </dd>
+                                </div> --}}
+
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-500">Tanggal Update</dt>
+                                    <dd class="text-gray-900 font-medium text-right">
+                                        {{ optional($ipc->updated_at)->format('d M Y H:i') ?? '-' }}
+                                    </dd>
+                                </div>
                             </dl>
                         </div>
                     </div>
