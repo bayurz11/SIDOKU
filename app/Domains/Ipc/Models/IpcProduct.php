@@ -46,7 +46,10 @@ class IpcProduct extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
     /**
      * Konstanta Line Group (ASSOCIATIVE: key = value di DB, value = label)
      */
