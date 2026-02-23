@@ -48,23 +48,7 @@ class IpcProduct extends Model
     |--------------------------------------------------------------------------
     */
 
-    protected static function booted(): void
-    {
-        static::creating(function ($model) {
-            if (auth()->check()) {
-                $model->created_by = auth()->id();
-            }
-        });
 
-        // static::saving(function ($model) {
-        //     if (auth()->check() && $model->exists) {
-        //         $model->updated_by = auth()->id();
-        //     }
-        // });
-        static::saving(function ($model) {
-            dd(auth()->id());
-        });
-    }
 
     /*
     |--------------------------------------------------------------------------
