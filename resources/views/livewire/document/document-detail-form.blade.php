@@ -241,8 +241,8 @@
                         @endif
                     </div>
                     @php
-                        $logs = \App\Models\Log::where('model_type', get_class($ipc))
-                            ->where('model_id', $ipc->id)
+                        $logs = \App\Models\Log::where('model_type', get_class($document))
+                            ->where('model_id', $document->id)
                             ->with(['changes', 'user'])
                             ->latest()
                             ->get();
