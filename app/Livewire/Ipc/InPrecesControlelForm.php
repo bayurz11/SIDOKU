@@ -129,6 +129,49 @@ class InPrecesControlelForm extends Component
         }
     }
 
+    // public function save(): void
+    // {
+    //     $this->validate();
+
+    //     if ($this->line_group === 'LINE_TEH' && ! $this->sub_line) {
+    //         $this->addError('sub_line', 'Sub-line wajib dipilih untuk Line Teh.');
+    //         return;
+    //     }
+
+    //     $payload = [
+    //         'line_group'   => $this->line_group,
+    //         'sub_line'     => $this->line_group === 'LINE_TEH' ? $this->sub_line : null,
+    //         'test_date'    => $this->test_date,
+    //         'product_name' => $this->product_name,
+    //         'shift'        => $this->shift,
+
+    //         'avg_weight_g'      => $this->avg_weight_g,
+    //         'avg_ph'            => $this->avg_ph,
+    //         'avg_brix'          => $this->avg_brix,
+    //         'avg_tds_ppm'       => $this->avg_tds_ppm,
+    //         'avg_chlorine'      => $this->avg_chlorine,
+    //         'avg_ozone'         => $this->avg_ozone,
+    //         'avg_turbidity_ntu' => $this->avg_turbidity_ntu,
+    //         'avg_salinity'      => $this->avg_salinity,
+
+    //         'notes' => $this->notes,
+    //     ];
+
+    //     if ($this->isEditing && $this->ipcId) {
+    //         $record = IpcProduct::findOrFail($this->ipcId);
+    //         $record->update($payload);
+
+    //         $this->showSuccessToast('IPC product updated successfully!');
+    //     } else {
+    //         $payload['created_by'] = auth()->id();
+    //         IpcProduct::create($payload);
+
+    //         $this->showSuccessToast('IPC product created successfully!');
+    //     }
+
+    //     $this->dispatch('ipc:product_saved');
+    //     $this->closeModal();
+    // }
     public function save(): void
     {
         $this->validate();
@@ -159,6 +202,9 @@ class InPrecesControlelForm extends Component
 
         if ($this->isEditing && $this->ipcId) {
             $record = IpcProduct::findOrFail($this->ipcId);
+
+            $payload['updated_by'] = auth()->id(); // 👈 TAMBAHAN
+
             $record->update($payload);
 
             $this->showSuccessToast('IPC product updated successfully!');
