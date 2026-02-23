@@ -84,4 +84,15 @@ class IpcProductCheck extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $model->created_by = auth()->id();
+        });
+
+        static::updating(function ($model) {
+            $model->updated_by = auth()->id();
+        });
+    }
 }

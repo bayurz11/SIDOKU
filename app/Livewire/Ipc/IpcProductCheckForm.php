@@ -244,6 +244,7 @@ class IpcProductCheckForm extends Component
 
 
         if ($this->isEditing && $this->ipcId) {
+            $payload['updated_by'] = auth()->id(); // ✅ Tambahkan ini
             $record = IpcProductCheck::findOrFail($this->ipcId);
             $record->update($payload);
 
