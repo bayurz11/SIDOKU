@@ -274,7 +274,54 @@
                         </div>
                     </div>
                 </div>
+                @php
+                    $logs = \App\Models\Log::where('model_type', get_class($ipc))
+                        ->where('model_id', $ipc->id)
+                        ->with(['changes', 'user'])
+                        ->latest()
+                        ->get();
+                @endphp
 
+                @if ($logs->count())
+                    <div class="space-y-3 mt-4">
+                        <h3 class="text-xs font-semibold uppercase text-gray-500">
+                            Riwayat Perubahan
+                        </h3>
+
+                        @foreach ($logs as $log)
+                            <div class="border rounded-lg p-3 bg-gray-50 text-xs space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="font-semibold text-gray-700">
+                                        {{ ucfirst($log->action) }}
+                                    </span>
+                                    <span class="text-gray-400">
+                                        {{ $log->created_at->format('d M Y H:i') }}
+                                    </span>
+                                </div>
+
+                                <div class="text-gray-500">
+                                    Oleh: {{ $log->user->name ?? 'System' }}
+                                </div>
+
+                                @foreach ($log->changes as $change)
+                                    <div>
+                                        <span class="font-medium">
+                                            {{ ucfirst(str_replace('_', ' ', $change->field)) }}
+                                        </span>
+                                        :
+                                        <span class="text-red-600">
+                                            {{ $change->old_value ?? '-' }}
+                                        </span>
+                                        →
+                                        <span class="text-emerald-600">
+                                            {{ $change->new_value ?? '-' }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
                 {{-- FOOTER BUTTONS --}}
                 <div class="px-5 py-3 sm:px-6 sm:py-4 border-t border-gray-100 bg-gray-50/60">
                     <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 gap-2">

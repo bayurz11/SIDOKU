@@ -2,13 +2,15 @@
 
 namespace App\Domains\Ipc\Models;
 
+use App\Auditable;
 use App\Domains\User\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class IpcProductCheck extends Model
 {
     use HasFactory;
+    use Auditable;
 
     protected $table = 'ipc_product_checks';
 
