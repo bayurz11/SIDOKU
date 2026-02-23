@@ -200,7 +200,7 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Tanggal Update</dt>
                                     <dd class="text-gray-900 font-medium text-right">
-                                        {{ optional($ipc->updated_at)->format('d M Y H:i') ?? '-' }}
+                                        {{ optional($ipc->updated_at)->format('d M Y') ?? '-' }}
                                     </dd>
                                 </div>
                             </dl>
