@@ -57,7 +57,7 @@ class IpcProduct extends Model
         });
 
         static::updating(function ($model) {
-            if (auth()->check() && $model->isDirty()) {
+            if (auth()->check()) {
                 $model->updated_by = auth()->id();
             }
         });
