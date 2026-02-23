@@ -42,17 +42,49 @@ class IpcProduct extends Model
         'avg_salinity'      => 'decimal:3',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | AUTO AUDIT (created_by & updated_by)
+    |--------------------------------------------------------------------------
+    */
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (auth()->check()) {
+                $model->created_by = auth()->id();
+            }
+        });
+
+        static::updating(function ($model) {
+            if (auth()->check() && $model->isDirty()) {
+                $model->updated_by = auth()->id();
+            }
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    public function updater()
+
+    public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
-    /**
-     * Konstanta Line Group (ASSOCIATIVE: key = value di DB, value = label)
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONSTANTS
+    |--------------------------------------------------------------------------
+    */
+
     public const LINE_GROUPS = [
         'LINE_TEH'               => 'Line Teh',
         'LINE_POWDER'            => 'Line Powder',
@@ -61,9 +93,6 @@ class IpcProduct extends Model
         'LINE_CONDIMENTS'        => 'Line Condiments',
     ];
 
-    /**
-     * Konstanta Sub Line Teh (ASSOCIATIVE)
-     */
     public const SUB_LINES = [
         'TEH_ORI'        => 'Teh Ori',
         'TEH_SACHET'     => 'Teh Sachet',

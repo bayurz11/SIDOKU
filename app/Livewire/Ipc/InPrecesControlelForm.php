@@ -201,15 +201,20 @@ class InPrecesControlelForm extends Component
         ];
 
         if ($this->isEditing && $this->ipcId) {
+
             $record = IpcProduct::findOrFail($this->ipcId);
 
-            $payload['updated_by'] = auth()->id(); // 👈 TAMBAHAN
+            $record->fill($payload);
 
-            $record->update($payload);
-
-            $this->showSuccessToast('IPC product updated successfully!');
+            // Update hanya jika ada perubahan
+            if ($record->isDirty()) {
+                $record->save();
+                $this->showSuccessToast('IPC product updated successfully!');
+            } else {
+                $this->showSuccessToast('No changes detected.');
+            }
         } else {
-            $payload['created_by'] = auth()->id();
+
             IpcProduct::create($payload);
 
             $this->showSuccessToast('IPC product created successfully!');
