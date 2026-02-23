@@ -32,6 +32,7 @@ class IpcProductCheck extends Model
 
         'notes',
         'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
