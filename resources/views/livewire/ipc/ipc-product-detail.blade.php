@@ -186,16 +186,16 @@
                                         {{ optional($ipc->created_at)->format('d M Y') ?? '-' }}
                                     </dd>
                                 </div>
-                                {{-- <div class="flex justify-between">
+                                <div class="flex justify-between">
                                     <dt class="text-gray-500">Diedit oleh</dt>
                                     <dd class="text-gray-900 font-medium text-right">
-                                        @if (method_exists($ipc, 'createdBy') && $ipc->createdBy)
-                                            {{ $ipc->createdBy->name }}
+                                        @if (method_exists($ipc, 'updatedBy') && $ipc->updatedBy)
+                                            {{ $ipc->updatedBy->name }}
                                         @else
-                                            {{ $ipc->created_by ?? '-' }}
+                                            {{ $ipc->updated_by ?? '-' }}
                                         @endif
                                     </dd>
-                                </div> --}}
+                                </div>
 
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Tanggal Update</dt>
@@ -268,7 +268,8 @@
                     {{-- Catatan --}}
                     <div class="space-y-1.5">
                         <h3 class="text-[11px] font-semibold text-gray-500 uppercase">Catatan</h3>
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-[11px] text-gray-700">
+                        <div
+                            class="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-[11px] text-gray-700">
                             {{ $ipc->notes ?: 'Tidak ada catatan tambahan.' }}
                         </div>
                     </div>
