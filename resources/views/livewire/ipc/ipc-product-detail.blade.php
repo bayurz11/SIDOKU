@@ -290,7 +290,7 @@
                         </h3>
 
                         {{-- CONTAINER SCROLL --}}
-                        <div class="space-y-2 max-h-30 overflow-y-auto pr-2">
+                        <div class="space-y-2 max-h-25 overflow-y-auto pr-2">
 
                             @foreach ($logs as $log)
                                 <div class="border rounded-lg p-3 bg-gray-50 text-xs space-y-2">
