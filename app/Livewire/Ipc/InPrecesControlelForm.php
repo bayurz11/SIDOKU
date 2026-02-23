@@ -206,11 +206,13 @@ class InPrecesControlelForm extends Component
 
             $record->fill($payload);
 
-            if ($record->isDirty()) {
+            if ($this->isEditing && $this->ipcId) {
 
-                $record->updated_by = auth()->id(); // 🔥 SET LANGSUNG DI SINI
+                $record = IpcProduct::findOrFail($this->ipcId);
 
-                $record->save();
+                $payload['updated_by'] = auth()->id(); // 🔥 MASUKKAN KE PAYLOAD
+
+                $record->update($payload); // langsung update
 
                 $this->showSuccessToast('IPC product updated successfully!');
             } else {
