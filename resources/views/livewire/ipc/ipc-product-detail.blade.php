@@ -283,7 +283,7 @@
                 @endphp
 
                 @if ($logs->count())
-                    <div class="space-y-3 mt-4">
+                    <div class="space-y-1.5 px-5 py-4 sm:px-6 sm:py-5 border-t border-gray-100">
                         <h3 class="text-xs font-semibold uppercase text-gray-500">
                             Riwayat Perubahan
                         </h3>
@@ -295,7 +295,7 @@
                                         {{ ucfirst($log->action) }}
                                     </span>
                                     <span class="text-gray-400">
-                                        {{ $log->created_at->format('d M Y H:i') }}
+                                        {{ $log->created_at->format('d M Y') }}
                                     </span>
                                 </div>
 
