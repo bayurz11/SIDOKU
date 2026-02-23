@@ -103,7 +103,7 @@
                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold
                                        border {{ $ipc->avg_moisture_percent !== null ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-500 border-gray-200' }}">
                                 <span class="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-70"></span>
-                                {{ $ipc->avg_moisture_percent !== null ? 'Moisture terisi' : 'Belum ada nilai moisture' }}
+                                {{ $ipc->avg_moisture_percent !== null ? 'Kadar Air terisi' : 'Belum ada nilai Kadar Air' }}
                             </span>
                         </div>
                     </div>
