@@ -418,7 +418,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -432,7 +432,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -509,7 +509,43 @@
                     data Kadar Air & Berat.
                 </div>
                 <div class="flex-1 flex justify-center md:justify-end">
-                    {{ $data->links() }}
+                    <div class="flex items-center justify-center md:justify-end gap-1 text-sm">
+
+                        {{-- Previous --}}
+                        @if ($data->onFirstPage())
+                            <span class="px-3 py-1 bg-gray-200 text-gray-400 rounded-lg cursor-not-allowed">‹</span>
+                        @else
+                            <a href="{{ $data->previousPageUrl() }}"
+                                class="px-3 py-1 bg-white border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white transition">
+                                ‹
+                            </a>
+                        @endif
+
+                        {{-- Pages --}}
+                        @foreach ($data->getUrlRange(1, $data->lastPage()) as $page => $url)
+                            @if ($page == $data->currentPage())
+                                <span class="px-3 py-1 bg-blue-600 text-white rounded-lg shadow">
+                                    {{ $page }}
+                                </span>
+                            @else
+                                <a href="{{ $url }}"
+                                    class="px-3 py-1 bg-white border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white transition">
+                                    {{ $page }}
+                                </a>
+                            @endif
+                        @endforeach
+
+                        {{-- Next --}}
+                        @if ($data->hasMorePages())
+                            <a href="{{ $data->nextPageUrl() }}"
+                                class="px-3 py-1 bg-white border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white transition">
+                                ›
+                            </a>
+                        @else
+                            <span class="px-3 py-1 bg-gray-200 text-gray-400 rounded-lg cursor-not-allowed">›</span>
+                        @endif
+
+                    </div>
                 </div>
             </div>
         </div>
