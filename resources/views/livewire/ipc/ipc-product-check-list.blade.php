@@ -1,39 +1,63 @@
 @php
     use Illuminate\Support\Str;
+    use App\Domains\Ipc\Models\IpcProductCheck;
 
-    $lineGroupLabels = \App\Domains\Ipc\Models\IpcProductCheck::LINE_GROUPS;
-    $subLineLabels = \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH ?? [];
-    $allData = \App\Domains\Ipc\Models\IpcProductCheck::query()
-        ->when(request('filter'), function ($q) {
-            // kalau ada filter, tambahkan di sini
-        })
-        ->get();
-    // Label & value untuk Chart.js dari summary
+    $lineGroupLabels = IpcProductCheck::LINE_GROUPS;
+    $subLineLabels = IpcProductCheck::SUB_LINES_TEH ?? [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | 1️⃣ Tentukan apakah filter aktif
+    |--------------------------------------------------------------------------
+    | Sesuaikan dengan filter yang kamu pakai
+    */
+
+    $isFiltering =
+        request()->filled('line_group') ||
+        request()->filled('sub_line') ||
+        request()->filled('date_from') ||
+        request()->filled('date_to');
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2️⃣ Ambil dataset
+    |--------------------------------------------------------------------------
+    */
+
+    // Semua data (untuk kondisi awal)
+    $allData = IpcProductCheck::query()->get();
+
+    // Jika filter aktif, gunakan data yang sudah difilter (biasanya dari paginator)
+    $filteredData = isset($data) ? $data->getCollection() : collect();
+
+    // Tentukan source utama
+    $rawCollection = $isFiltering ? $filteredData : $allData;
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3️⃣ Chart Labels & Values (dari moistureSummary)
+    |--------------------------------------------------------------------------
+    */
+
     $chartLabels = $moistureSummary
         ->map(function ($row) use ($lineGroupLabels, $subLineLabels) {
             $lineLabel = $lineGroupLabels[$row->line_group] ?? $row->line_group;
             $subLabel = $row->sub_line ? $subLineLabels[$row->sub_line] ?? $row->sub_line : null;
 
-            return $subLabel ? "{$subLabel}" : $lineLabel;
+            return $subLabel ? $subLabel : $lineLabel;
         })
         ->values();
 
-    $chartValues = $moistureSummary
-        ->map(function ($row) {
-            return round($row->avg_moisture, 2);
-        })
-        ->values();
+    $chartValues = $moistureSummary->map(fn($row) => round($row->avg_moisture, 2))->values();
 
-    // Hitung jumlah data (record) per line + subline dari data asli (tabel IPC)
-    $rawCollection = $allData;
+    /*
+    |--------------------------------------------------------------------------
+    | 4️⃣ Hitung jumlah data per line + subline
+    |--------------------------------------------------------------------------
+    */
 
-    $countsByKey = $rawCollection
-        ->groupBy(function ($row) {
-            return $row->line_group . '|' . ($row->sub_line ?? '');
-        })
-        ->map->count();
+    $countsByKey = $rawCollection->groupBy(fn($row) => $row->line_group . '|' . ($row->sub_line ?? ''))->map->count();
 
-    // Susun chartCounts sesuai urutan $moistureSummary
     $chartCounts = $moistureSummary
         ->map(function ($row) use ($countsByKey) {
             $key = $row->line_group . '|' . ($row->sub_line ?? '');
@@ -41,11 +65,13 @@
         })
         ->values();
 
-    // ALERT kadar air tinggi (>= 10%) – kalau masih dipakai
-    $highMoistureItems = $rawCollection->filter(fn($ipc) => $ipc->avg_moisture_percent >= 10)->map(function ($ipc) {
-        $ipc->avg_moisture = $ipc->avg_moisture_percent;
-        return $ipc;
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | 5️⃣ ALERT Kadar Air ≥ 10%
+    |--------------------------------------------------------------------------
+    */
+
+    $highMoistureItems = $rawCollection->where('avg_moisture_percent', '>=', 10);
 
     $hasHighMoistureAlert = $highMoistureItems->isNotEmpty();
 @endphp
@@ -419,7 +445,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -433,7 +459,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
