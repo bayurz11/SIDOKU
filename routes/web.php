@@ -24,11 +24,28 @@ Route::get('/dashboard', function () {
         ->limit(5)
         ->get();
     // Moisture Summary (untuk chart dashboard)
-    $moistureSummary = IpcProductCheck::query()
+    $baseQuery = IpcProductCheck::query()
+        ->when($this->search, function ($q) {
+            $term = '%' . $this->search . '%';
+            $q->where(function ($sub) use ($term) {
+                $sub->where('product_name', 'like', $term);
+            });
+        })
+        ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
+        ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
+        ->when($this->filterDateFrom, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
+        ->when($this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+
+    // data utama untuk tabel (pakai pagination & sorting)
+    $data = (clone $baseQuery)
+        ->orderBy($this->sortField, $this->sortDirection)
+        ->paginate($this->perPage);
+
+    // RINGKASAN UNTUK CHART:
+    // rata-rata moisture per line_group + sub_line di rentang filter
+    $moistureSummary = (clone $baseQuery)
         ->whereNotNull('avg_moisture_percent')
-        ->selectRaw('line_group, sub_line, 
-            AVG(avg_moisture_percent) as avg_moisture, 
-            COUNT(*) as total_samples')
+        ->selectRaw('line_group, sub_line, AVG(avg_moisture_percent) as avg_moisture, COUNT(*) as total_samples')
         ->groupBy('line_group', 'sub_line')
         ->get();
     return view('dashboard', [
