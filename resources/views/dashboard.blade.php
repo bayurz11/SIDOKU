@@ -434,7 +434,23 @@
             </div>
 
         </div>
+        <!-- Chart -->
+        <div class="grid grid-cols-1 gap-8">
 
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">IPC Summary (Mixed Chart)</h3>
+                    <span class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
+                        Static Demo
+                    </span>
+                </div>
+
+                <div class="h-80">
+                    <canvas id="mixedChart"></canvas>
+                </div>
+            </div>
+
+        </div>
         <!-- Modern Quick Actions & Recent Activity -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Modern Quick Actions -->
@@ -657,22 +673,7 @@
                 </div>
             </div>
         </div>
-        <div class="grid grid-cols-1 gap-8">
 
-            <div class="bg-white p-6 rounded-2xl shadow">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">IPC Summary (Mixed Chart)</h3>
-                    <span class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                        Static Demo
-                    </span>
-                </div>
-
-                <div class="h-80">
-                    <canvas id="mixedChart"></canvas>
-                </div>
-            </div>
-
-        </div>
     </div>
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
