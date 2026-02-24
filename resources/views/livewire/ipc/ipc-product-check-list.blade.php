@@ -132,7 +132,7 @@
                     </div>
                 @endif
 
-                {{-- wrapper BAR CHART --}}
+                {{-- wrapper MIXED CHART (Bar + Line + Limit 10%) --}}
                 <div class="h-56 sm:h-72 mb-6" wire:ignore>
                     <canvas id="ipcMoistureChart"></canvas>
                 </div>
@@ -415,7 +415,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -429,7 +429,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -544,7 +544,7 @@
                     return;
                 }
 
-                // ================= BAR CHART (horizontal) =================
+                // ================= MIXED CHART (Bar + Line + Limit 10%) =================
                 if (barCanvas) {
                     if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
                         window.ipcMoistureChart.destroy();
@@ -553,58 +553,92 @@
 
                     const barCtx = barCanvas.getContext('2d');
 
-                    // Warna per bar:
-                    //   - merah kalau ≥ 10%
-                    //   - hijau kalau < 10%
+                    // Warna bar (merah kalau >=10%)
                     const barBackgroundColors = dataValues.map(v =>
                         v >= 10 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.6)'
                     );
-                    const barBorderColors = dataValues.map(v =>
-                        v >= 10 ? 'rgba(220, 38, 38, 1)' : 'rgba(5, 150, 105, 1)'
-                    );
 
                     window.ipcMoistureChart = new Chart(barCtx, {
-                        type: 'bar',
                         data: {
                             labels: labels,
-                            datasets: [{
-                                label: 'Rata-rata Moisture (%)',
-                                data: dataValues,
-                                backgroundColor: barBackgroundColors,
-                                borderColor: barBorderColors,
-                                borderWidth: 1,
-                                borderRadius: 6,
-                            }]
+                            datasets: [
+                                // ===== BAR (Moisture) =====
+                                {
+                                    type: 'bar',
+                                    label: 'Rata-rata Moisture (%)',
+                                    data: dataValues,
+                                    backgroundColor: barBackgroundColors,
+                                    borderRadius: 6,
+                                    yAxisID: 'y',
+                                },
+
+                                // ===== LINE (Jumlah Data) =====
+                                {
+                                    type: 'line',
+                                    label: 'Jumlah Data',
+                                    data: counts,
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: '#3b82f6',
+                                    tension: 0.3,
+                                    yAxisID: 'y1',
+                                },
+
+                                // ===== LIMIT 10% =====
+                                {
+                                    type: 'line',
+                                    label: 'Batas Maksimum (10%)',
+                                    data: labels.map(() => 10),
+                                    borderColor: 'red',
+                                    borderDash: [6, 6],
+                                    borderWidth: 2,
+                                    pointRadius: 0,
+                                    yAxisID: 'y',
+                                }
+                            ]
                         },
                         options: {
-                            indexAxis: 'y',
                             responsive: true,
                             maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            stacked: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            if (context.dataset.label === 'Jumlah Data') {
+                                                return context.parsed.y + ' data';
+                                            }
+                                            return context.parsed.y.toFixed(2) + ' %';
+                                        }
+                                    }
+                                }
+                            },
                             scales: {
-                                x: {
+                                y: {
+                                    type: 'linear',
+                                    position: 'left',
                                     beginAtZero: true,
-                                    max: 10, // ⬅️ BATAS MAKSIMAL TAMPIL 10%
                                     title: {
                                         display: true,
                                         text: 'Moisture (%)'
                                     }
                                 },
-                                y: {
-                                    ticks: {
-                                        autoSkip: false,
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (ctx) => ctx.parsed.x.toFixed(2) + ' %'
+                                y1: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Jumlah Data'
                                     }
                                 }
                             }
