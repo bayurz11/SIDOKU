@@ -3,9 +3,10 @@
 namespace App\Providers;
 
 use App\Support\AuthAccess;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -76,5 +77,6 @@ class AppServiceProvider extends ServiceProvider
             $user = AuthAccess::user();
             return $user && $user->hasAllRoles($roles);
         });
+        Paginator::defaultView('vendor.pagination.custom');
     }
 }
