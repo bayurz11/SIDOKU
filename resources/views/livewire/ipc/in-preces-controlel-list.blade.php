@@ -56,10 +56,6 @@
                 <div class="h-56 sm:h-72 mb-6" wire:ignore>
                     <canvas id="ipcSummaryBarChart"></canvas>
                 </div>
-
-                <div class="h-56 sm:h-72" wire:ignore>
-                    <canvas id="ipcSummaryDonutChart"></canvas>
-                </div>
             @endif
         </div>
     </div>
@@ -482,7 +478,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -496,7 +492,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -570,7 +566,7 @@
                     data IPC Produk.
                 </div>
                 <div class="flex-1 flex justify-center md:justify-end">
-                    {{ $data->links() }}
+                    {{ $data->links('vendor.pagination.custom') }}
                 </div>
             </div>
         </div>
@@ -647,61 +643,109 @@
                     return;
                 }
 
-                // ===== BAR =====
-                if (barCanvas) {
-                    if (barChart) {
-                        barChart.destroy();
-                        barChart = null;
-                    }
-                    const ctx = barCanvas.getContext('2d');
 
-                    barChart = new Chart(ctx, {
-                        type: 'bar',
+                // ================= MIXED CHART (Bar + Line + Limit 10%) =================
+                if (barCanvas) {
+                    if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
+                        window.ipcMoistureChart.destroy();
+                        window.ipcMoistureChart = null;
+                    }
+
+                    const barCtx = barCanvas.getContext('2d');
+
+                    // Warna bar (merah kalau >=10%)
+                    const barBackgroundColors = dataValues.map(v =>
+                        v >= 10 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.6)'
+                    );
+
+                    window.ipcMoistureChart = new Chart(barCtx, {
                         data: {
-                            labels,
-                            datasets: [{
-                                label: 'Jumlah Sampel IPC',
-                                data: values,
-                                backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                                borderColor: 'rgba(37, 99, 235, 1)',
-                                borderWidth: 1,
-                                borderRadius: 6,
-                            }]
+                            labels: labels,
+                            datasets: [
+                                // ===== BAR (Moisture) =====
+                                {
+                                    type: 'bar',
+                                    label: 'Rata-rata Kadar Air (%)',
+                                    data: dataValues,
+                                    backgroundColor: barBackgroundColors,
+                                    borderRadius: 6,
+                                    yAxisID: 'y',
+                                },
+
+                                // ===== LINE (Jumlah Data) =====
+                                {
+                                    type: 'line',
+                                    label: 'Jumlah Data',
+                                    data: counts,
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: '#3b82f6',
+                                    tension: 0.3,
+                                    yAxisID: 'y1',
+                                },
+
+                                // ===== LIMIT 10% =====
+                                {
+                                    type: 'line',
+                                    label: 'Batas Maksimum (10%)',
+                                    data: labels.map(() => 10),
+                                    borderColor: 'red',
+                                    borderDash: [6, 6],
+                                    borderWidth: 2,
+                                    pointRadius: 0,
+                                    yAxisID: 'y',
+                                }
+                            ]
                         },
                         options: {
-                            indexAxis: 'y',
                             responsive: true,
                             maintainAspectRatio: false,
-                            scales: {
-                                x: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Jumlah Sampel'
-                                    }
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            stacked: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
                                 },
-                                y: {
-                                    ticks: {
-                                        autoSkip: false,
-                                        font: {
-                                            size: 10
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            if (context.dataset.label === 'Jumlah Data') {
+                                                return context.parsed.y + ' data';
+                                            }
+                                            return context.parsed.y.toFixed(2) + ' %';
                                         }
                                     }
                                 }
                             },
-                            plugins: {
-                                legend: {
-                                    display: false
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    position: 'left',
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Moisture (%)'
+                                    }
                                 },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (ctx) => `${ctx.parsed.x} data`
+                                y1: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Jumlah Data'
                                     }
                                 }
                             }
                         }
                     });
                 }
+
 
                 // ===== DONUT =====
                 if (donutCanvas) {
