@@ -77,6 +77,6 @@ class AppServiceProvider extends ServiceProvider
             $user = AuthAccess::user();
             return $user && $user->hasAllRoles($roles);
         });
-        Paginator::defaultView('vendor.pagination.custom');
+        Paginator::defaultView('viwews.vendor.pagination.tailwind');
     }
 }
