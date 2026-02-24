@@ -513,36 +513,69 @@
 
                         {{-- Previous --}}
                         @if ($data->onFirstPage())
-                            <span class="px-3 py-1 bg-gray-200 text-gray-400 rounded-lg cursor-not-allowed">‹</span>
+                            <span class="px-3 py-1 rounded-lg bg-gray-200 text-gray-400 cursor-not-allowed">‹</span>
                         @else
                             <a href="{{ $data->previousPageUrl() }}"
-                                class="px-3 py-1 bg-white border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white transition">
+                                class="px-3 py-1 rounded-lg bg-white border hover:bg-blue-600 hover:text-white transition">
                                 ‹
                             </a>
                         @endif
 
-                        {{-- Pages --}}
-                        @foreach ($data->getUrlRange(1, $data->lastPage()) as $page => $url)
-                            @if ($page == $data->currentPage())
-                                <span class="px-3 py-1 bg-blue-600 text-white rounded-lg shadow">
-                                    {{ $page }}
+
+                        @php
+                            $current = $data->currentPage();
+                            $last = $data->lastPage();
+                        @endphp
+
+                        {{-- First Page --}}
+                        @if ($current > 3)
+                            <a href="{{ $data->url(1) }}"
+                                class="px-3 py-1 rounded-lg bg-white border hover:bg-blue-600 hover:text-white transition">
+                                1
+                            </a>
+
+                            @if ($current > 4)
+                                <span class="px-2 text-gray-400">...</span>
+                            @endif
+                        @endif
+
+
+                        {{-- Middle Pages (sekitar halaman aktif) --}}
+                        @for ($i = max(1, $current - 2); $i <= min($last, $current + 2); $i++)
+                            @if ($i == $current)
+                                <span class="px-3 py-1 rounded-lg bg-blue-600 text-white shadow">
+                                    {{ $i }}
                                 </span>
                             @else
-                                <a href="{{ $url }}"
-                                    class="px-3 py-1 bg-white border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white transition">
-                                    {{ $page }}
+                                <a href="{{ $data->url($i) }}"
+                                    class="px-3 py-1 rounded-lg bg-white border hover:bg-blue-600 hover:text-white transition">
+                                    {{ $i }}
                                 </a>
                             @endif
-                        @endforeach
+                        @endfor
+
+
+                        {{-- Last Page --}}
+                        @if ($current < $last - 2)
+                            @if ($current < $last - 3)
+                                <span class="px-2 text-gray-400">...</span>
+                            @endif
+
+                            <a href="{{ $data->url($last) }}"
+                                class="px-3 py-1 rounded-lg bg-white border hover:bg-blue-600 hover:text-white transition">
+                                {{ $last }}
+                            </a>
+                        @endif
+
 
                         {{-- Next --}}
                         @if ($data->hasMorePages())
                             <a href="{{ $data->nextPageUrl() }}"
-                                class="px-3 py-1 bg-white border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white transition">
+                                class="px-3 py-1 rounded-lg bg-white border hover:bg-blue-600 hover:text-white transition">
                                 ›
                             </a>
                         @else
-                            <span class="px-3 py-1 bg-gray-200 text-gray-400 rounded-lg cursor-not-allowed">›</span>
+                            <span class="px-3 py-1 rounded-lg bg-gray-200 text-gray-400 cursor-not-allowed">›</span>
                         @endif
 
                     </div>
