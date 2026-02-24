@@ -657,8 +657,105 @@
                 </div>
             </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 gap-8">
+
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">IPC Summary (Mixed Chart)</h3>
+                    <span class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
+                        Static Demo
+                    </span>
+                </div>
+
+                <div class="h-80">
+                    <canvas id="mixedChart"></canvas>
+                </div>
+            </div>
 
         </div>
     </div>
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                const labels = ['Line A', 'Line B', 'Line C', 'Line D', 'Line E'];
+                const values = [120, 95, 140, 80, 110];
+
+                // Hitung limit 10%
+                const maxValue = Math.max(...values);
+                const limitValue = maxValue * 0.10;
+
+                new Chart(document.getElementById('mixedChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+
+                            // ===== BAR DATA =====
+                            {
+                                type: 'bar',
+                                label: 'Jumlah Sample',
+                                data: values,
+                                backgroundColor: 'rgba(59,130,246,0.6)',
+                                borderRadius: 8,
+                                order: 2
+                            },
+
+                            // ===== LINE TREND =====
+                            {
+                                type: 'line',
+                                label: 'Trend',
+                                data: values,
+                                borderColor: '#16a34a',
+                                backgroundColor: '#16a34a',
+                                tension: 0.4,
+                                fill: false,
+                                yAxisID: 'y',
+                                order: 1
+                            },
+
+                            // ===== LIMIT 10% =====
+                            {
+                                type: 'line',
+                                label: 'Limit 10%',
+                                data: labels.map(() => limitValue),
+                                borderColor: '#ef4444',
+                                borderDash: [6, 6],
+                                pointRadius: 0,
+                                fill: false,
+                                yAxisID: 'y',
+                                order: 0
+                            }
+
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Sample'
+                                }
+                            }
+                        }
+                    }
+                });
+
+            });
+        </script>
+    @endpush
 @endsection
