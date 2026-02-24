@@ -13,6 +13,14 @@
         ->values();
 
     $chartCounts = $summary->map(fn($row) => (int) ($row->total_samples ?? 0))->values();
+
+    $totalAll = $chartCounts->sum();
+
+    $chartPercentages = $chartCounts
+        ->map(function ($value) use ($totalAll) {
+            return $totalAll > 0 ? round(($value / $totalAll) * 100, 2) : 0;
+        })
+        ->values();
 @endphp
 
 <div class="space-y-6">
@@ -51,10 +59,11 @@
             @else
                 {{-- payload chart (ikut update Livewire) --}}
                 <div id="ipcChartData" class="hidden" data-labels='@json($chartLabels)'
-                    data-values='@json($chartCounts)'></div>
+                    data-values='@json($chartCounts)' data-percentages='@json($chartPercentages)'>
+                </div>
 
-                <div class="h-56 sm:h-72 mb-6" wire:ignore>
-                    <canvas id="ipcSummaryBarChart"></canvas>
+                <div class="h-64 sm:h-80" wire:ignore>
+                    <canvas id="ipcSummaryMixedChart"></canvas>
                 </div>
             @endif
         </div>
@@ -478,7 +487,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                                                 </path>
                                             </svg>
                                             Edit
@@ -492,7 +501,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -578,261 +587,161 @@
 
     <script>
         (function() {
-            if (window.__ipcChartInitialized) return;
-            window.__ipcChartInitialized = true;
 
-            let barChart = null;
-            let donutChart = null;
+            if (window.__ipcMixedChartInitialized) return;
+            window.__ipcMixedChartInitialized = true;
+
+            let mixedChart = null;
 
             function getPayload() {
                 const el = document.getElementById('ipcChartData');
                 if (!el) return {
                     labels: [],
-                    values: []
+                    values: [],
+                    percentages: []
                 };
-
-                let labels = [];
-                let values = [];
-
-                try {
-                    labels = JSON.parse(el.dataset.labels || '[]');
-                } catch (e) {
-                    labels = [];
-                }
-                try {
-                    values = JSON.parse(el.dataset.values || '[]');
-                } catch (e) {
-                    values = [];
-                }
 
                 return {
-                    labels: Array.isArray(labels) ? labels : [],
-                    values: Array.isArray(values) ? values : []
+                    labels: JSON.parse(el.dataset.labels || '[]'),
+                    values: JSON.parse(el.dataset.values || '[]'),
+                    percentages: JSON.parse(el.dataset.percentages || '[]'),
                 };
             }
 
-            function destroyCharts() {
-                if (barChart) {
-                    barChart.destroy();
-                    barChart = null;
-                }
-                if (donutChart) {
-                    donutChart.destroy();
-                    donutChart = null;
-                }
-            }
+            function renderChart() {
 
-            function renderCharts() {
-                const barCanvas = document.getElementById('ipcSummaryBarChart');
-                const donutCanvas = document.getElementById('ipcSummaryDonutChart');
-
-                // kalau summary kosong, canvas mungkin tidak ada
-                if (!barCanvas && !donutCanvas) {
-                    destroyCharts();
-                    return;
-                }
+                const canvas = document.getElementById('ipcSummaryMixedChart');
+                if (!canvas) return;
 
                 const {
                     labels,
-                    values
+                    values,
+                    percentages
                 } = getPayload();
+                if (!labels.length) return;
 
-                // kalau payload kosong, destroy
-                if (!labels.length || !values.length) {
-                    destroyCharts();
-                    return;
+                if (mixedChart) {
+                    mixedChart.destroy();
                 }
 
+                const ctx = canvas.getContext('2d');
 
-                // ================= MIXED CHART (Bar + Line + Limit 10%) =================
-                if (barCanvas) {
-                    if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
-                        window.ipcMoistureChart.destroy();
-                        window.ipcMoistureChart = null;
-                    }
+                mixedChart = new Chart(ctx, {
+                    data: {
+                        labels: labels,
+                        datasets: [
 
-                    const barCtx = barCanvas.getContext('2d');
-
-                    // Warna bar (merah kalau >=10%)
-                    const barBackgroundColors = dataValues.map(v =>
-                        v >= 10 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.6)'
-                    );
-
-                    window.ipcMoistureChart = new Chart(barCtx, {
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                // ===== BAR (Moisture) =====
-                                {
-                                    type: 'bar',
-                                    label: 'Rata-rata Kadar Air (%)',
-                                    data: dataValues,
-                                    backgroundColor: barBackgroundColors,
-                                    borderRadius: 6,
-                                    yAxisID: 'y',
-                                },
-
-                                // ===== LINE (Jumlah Data) =====
-                                {
-                                    type: 'line',
-                                    label: 'Jumlah Data',
-                                    data: counts,
-                                    borderColor: '#3b82f6',
-                                    backgroundColor: '#3b82f6',
-                                    tension: 0.3,
-                                    yAxisID: 'y1',
-                                },
-
-                                // ===== LIMIT 10% =====
-                                {
-                                    type: 'line',
-                                    label: 'Batas Maksimum (10%)',
-                                    data: labels.map(() => 10),
-                                    borderColor: 'red',
-                                    borderDash: [6, 6],
-                                    borderWidth: 2,
-                                    pointRadius: 0,
-                                    yAxisID: 'y',
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: {
-                                mode: 'index',
-                                intersect: false
-                            },
-                            stacked: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top'
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            if (context.dataset.label === 'Jumlah Data') {
-                                                return context.parsed.y + ' data';
-                                            }
-                                            return context.parsed.y.toFixed(2) + ' %';
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    type: 'linear',
-                                    position: 'left',
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Moisture (%)'
-                                    }
-                                },
-                                y1: {
-                                    type: 'linear',
-                                    position: 'right',
-                                    beginAtZero: true,
-                                    grid: {
-                                        drawOnChartArea: false
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Jumlah Data'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-
-                // ===== DONUT =====
-                if (donutCanvas) {
-                    if (donutChart) {
-                        donutChart.destroy();
-                        donutChart = null;
-                    }
-                    const ctx = donutCanvas.getContext('2d');
-
-                    const baseColors = ['#22c55e', '#3b82f6', '#eab308', '#f97316', '#ef4444', '#a855f7', '#6b7280',
-                        '#14b8a6'
-                    ];
-                    const bg = labels.map((_, i) => baseColors[i % baseColors.length]);
-
-                    donutChart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels,
-                            datasets: [{
+                            // ===== BAR (Total Sample)
+                            {
+                                type: 'bar',
+                                label: 'Total Sample',
                                 data: values,
-                                backgroundColor: bg,
-                                borderWidth: 1
-                            }]
+                                backgroundColor: 'rgba(59,130,246,0.6)',
+                                borderRadius: 6,
+                                yAxisID: 'y',
+                            },
+
+                            // ===== LINE (Persentase)
+                            {
+                                type: 'line',
+                                label: 'Persentase (%)',
+                                data: percentages,
+                                borderColor: '#16a34a',
+                                backgroundColor: '#16a34a',
+                                tension: 0.3,
+                                yAxisID: 'y1',
+                            },
+
+                            // ===== LIMIT 10%
+                            {
+                                type: 'line',
+                                label: 'Limit 10%',
+                                data: labels.map(() => 10),
+                                borderColor: '#ef4444',
+                                borderDash: [6, 6],
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                yAxisID: 'y1',
+                            }
+                        ]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '60%',
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        usePointStyle: true,
-                                        boxWidth: 10
-                                    }
+
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Total Sample'
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                max: 100,
+                                grid: {
+                                    drawOnChartArea: false
                                 },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return `${context.label}: ${context.parsed} data`;
+                                title: {
+                                    display: true,
+                                    text: 'Persentase (%)'
+                                }
+                            }
+                        },
+
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (context.dataset.label === 'Persentase (%)') {
+                                            return context.parsed.y + '%';
                                         }
+                                        return context.dataset.label + ': ' + context.parsed.y;
                                     }
                                 }
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
-
-            // ✅ jadwalkan render setelah DOM benar-benar update
-            let raf = null;
 
             function scheduleRender() {
-                if (raf) cancelAnimationFrame(raf);
-                raf = requestAnimationFrame(() => setTimeout(renderCharts, 0));
+                requestAnimationFrame(() => {
+                    setTimeout(renderChart, 0);
+                });
             }
 
-            function bindLivewireHooks() {
+            function bindLivewire() {
                 if (!window.Livewire) return;
 
-                // Livewire v2
-                if (typeof Livewire.hook === 'function') {
-                    try {
-                        Livewire.hook('message.processed', () => scheduleRender());
-                    } catch (e) {}
-                    // Livewire v3
-                    try {
-                        Livewire.hook('commit', ({
-                            succeed
-                        }) => {
-                            succeed(() => scheduleRender());
-                        });
-                    } catch (e) {}
-                }
+                Livewire.hook('message.processed', () => scheduleRender());
 
-                // Event manual dari backend (kita dispatch 'ipcChartsRefresh')
-                if (typeof Livewire.on === 'function') {
-                    Livewire.on('ipcChartsRefresh', () => scheduleRender());
-                }
+                try {
+                    Livewire.hook('commit', ({
+                        succeed
+                    }) => {
+                        succeed(() => scheduleRender());
+                    });
+                } catch (e) {}
 
-                // fallback event window
-                window.addEventListener('ipcChartsRefresh', () => scheduleRender());
+                Livewire.on('ipcChartsRefresh', () => scheduleRender());
             }
 
             function boot() {
-                renderCharts();
-                bindLivewireHooks();
+                renderChart();
+                bindLivewire();
             }
 
             if (document.readyState === 'loading') {
@@ -840,6 +749,7 @@
             } else {
                 boot();
             }
+
         })();
     </script>
 @endpush
