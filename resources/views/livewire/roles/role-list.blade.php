@@ -295,7 +295,7 @@
                     class="font-medium">{{ $roles->total() }}</span> roles
             </div>
             <div class="flex-1 flex justify-center">
-                {{ $roles->links() }}
+                {{ $data->links('vendor.pagination.custom') }}
             </div>
         </div>
     </div>

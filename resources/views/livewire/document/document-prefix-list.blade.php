@@ -253,7 +253,7 @@
                 dari <span class="font-medium">{{ $data->total() }}</span> prefix dokumen
             </div>
             <div class="flex-1 flex justify-center">
-                {{ $data->links() }}
+                {{ $data->links('vendor.pagination.custom') }}
             </div>
         </div>
     </div>

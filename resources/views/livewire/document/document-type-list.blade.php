@@ -224,7 +224,7 @@
                 dari <span class="font-medium">{{ $data->total() }}</span> jenis dokumen
             </div>
             <div class="flex-1 flex justify-center">
-                {{ $data->links() }}
+                {{ $data->links('vendor.pagination.custom') }}
             </div>
         </div>
     </div>

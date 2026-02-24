@@ -329,7 +329,7 @@
                     class="font-medium">{{ $users->total() }}</span> users
             </div>
             <div class="flex-1 flex justify-center">
-                {{ $users->links() }}
+                {{ $data->links('vendor.pagination.custom') }}
             </div>
         </div>
     </div>
