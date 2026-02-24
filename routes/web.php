@@ -1,12 +1,11 @@
 <?php
 
-use App\Domains\Document\Models\Document;
-use App\Domains\Ipc\Models\IpcProductCheck;
-use App\Livewire\Document\DocumentImportTemplateExport;
-use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Route;
+use App\Domains\Document\Models\Document;
+use App\Livewire\Ipc\IpcProductImportTemplateExport;
+use App\Livewire\Document\DocumentImportTemplateExport;
 
 
 Route::get('/', function () {
@@ -17,36 +16,21 @@ Route::get('/', function () {
 });
 
 // Dashboard Route (redirect /home to /dashboard)
-
-
 Route::get('/dashboard', function () {
-
-    // Recent Documents
     $recentDocuments = Document::query()
         ->with(['documentType', 'department', 'updatedBy', 'createdBy'])
         ->orderByDesc('updated_at')
         ->limit(5)
         ->get();
 
-    // Moisture Summary (untuk chart dashboard)
-    $moistureSummary = IpcProductCheck::query()
-        ->whereNotNull('avg_moisture_percent')
-        ->selectRaw('
-            line_group,
-            sub_line,
-            AVG(avg_moisture_percent) as avg_moisture,
-            COUNT(*) as total_samples
-        ')
-        ->groupBy('line_group', 'sub_line')
-        ->get();
-
     return view('dashboard', [
         'stats' => [
             'recent_documents' => $recentDocuments,
-            'moistureSummary'  => $moistureSummary,
+
         ],
     ]);
 })->middleware(['auth'])->name('dashboard');
+
 //  Management Department
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/department', function () {

@@ -677,215 +677,86 @@
     </div>
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
         <script>
-            (function() {
-                if (window.__ipcChartInitialized) return;
-                window.__ipcChartInitialized = true;
+            document.addEventListener('DOMContentLoaded', function() {
 
-                window.ipcMoistureChart = null; // bar chart
-                window.ipcMoistureDonutChart = null; // doughnut chart
+                const labels = ['Line A', 'Line B', 'Line C', 'Line D', 'Line E'];
+                const values = [120, 95, 140, 80, 110];
 
-                function renderIpcMoistureCharts() {
-                    const barCanvas = document.getElementById('ipcMoistureChart');
-                    const donutCanvas = document.getElementById('ipcMoistureDonutChart');
+                // Hitung limit 10%
+                const maxValue = Math.max(...values);
+                const limitValue = maxValue * 0.10;
 
-                    const labels = @json($chartLabels ?? []);
-                    const dataValues = @json($chartValues ?? []);
-                    const counts = @json($chartCounts ?? []);
+                new Chart(document.getElementById('mixedChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
 
-                    // Tidak ada data -> destroy semua chart kalau ada
-                    if (!labels.length || !dataValues.length) {
-                        if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
-                            window.ipcMoistureChart.destroy();
-                            window.ipcMoistureChart = null;
-                        }
-                        if (window.ipcMoistureDonutChart && typeof window.ipcMoistureDonutChart.destroy === 'function') {
-                            window.ipcMoistureDonutChart.destroy();
-                            window.ipcMoistureDonutChart = null;
-                        }
-                        return;
-                    }
-
-                    // ================= MIXED CHART (Bar + Line + Limit 10%) =================
-                    if (barCanvas) {
-                        if (window.ipcMoistureChart && typeof window.ipcMoistureChart.destroy === 'function') {
-                            window.ipcMoistureChart.destroy();
-                            window.ipcMoistureChart = null;
-                        }
-
-                        const barCtx = barCanvas.getContext('2d');
-
-                        // Warna bar (merah kalau >=10%)
-                        const barBackgroundColors = dataValues.map(v =>
-                            v >= 10 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.6)'
-                        );
-
-                        window.ipcMoistureChart = new Chart(barCtx, {
-                            data: {
-                                labels: labels,
-                                datasets: [
-                                    // ===== BAR (Moisture) =====
-                                    {
-                                        type: 'bar',
-                                        label: 'Rata-rata Kadar Air (%)',
-                                        data: dataValues,
-                                        backgroundColor: barBackgroundColors,
-                                        borderRadius: 6,
-                                        yAxisID: 'y',
-                                    },
-
-                                    // ===== LINE (Jumlah Data) =====
-                                    {
-                                        type: 'line',
-                                        label: 'Jumlah Data',
-                                        data: counts,
-                                        borderColor: '#3b82f6',
-                                        backgroundColor: '#3b82f6',
-                                        tension: 0.3,
-                                        yAxisID: 'y1',
-                                    },
-
-                                    // ===== LIMIT 10% =====
-                                    {
-                                        type: 'line',
-                                        label: 'Batas Maksimum (10%)',
-                                        data: labels.map(() => 10),
-                                        borderColor: 'red',
-                                        borderDash: [6, 6],
-                                        borderWidth: 2,
-                                        pointRadius: 0,
-                                        yAxisID: 'y',
-                                    }
-                                ]
+                            // ===== BAR DATA =====
+                            {
+                                type: 'bar',
+                                label: 'Jumlah Sample',
+                                data: values,
+                                backgroundColor: 'rgba(59,130,246,0.6)',
+                                borderRadius: 8,
+                                order: 2
                             },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                interaction: {
-                                    mode: 'index',
-                                    intersect: false
-                                },
-                                stacked: false,
-                                plugins: {
-                                    legend: {
-                                        position: 'top'
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                if (context.dataset.label === 'Jumlah Data') {
-                                                    return context.parsed.y + ' data';
-                                                }
-                                                return context.parsed.y.toFixed(2) + ' %';
-                                            }
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        type: 'linear',
-                                        position: 'left',
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Moisture (%)'
-                                        }
-                                    },
-                                    y1: {
-                                        type: 'linear',
-                                        position: 'right',
-                                        beginAtZero: true,
-                                        grid: {
-                                            drawOnChartArea: false
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: 'Jumlah Data'
-                                        }
-                                    }
+
+                            // ===== LINE TREND =====
+                            {
+                                type: 'line',
+                                label: 'Trend',
+                                data: values,
+                                borderColor: '#16a34a',
+                                backgroundColor: '#16a34a',
+                                tension: 0.4,
+                                fill: false,
+                                yAxisID: 'y',
+                                order: 1
+                            },
+
+                            // ===== LIMIT 10% =====
+                            {
+                                type: 'line',
+                                label: 'Limit 10%',
+                                data: labels.map(() => limitValue),
+                                borderColor: '#ef4444',
+                                borderDash: [6, 6],
+                                pointRadius: 0,
+                                fill: false,
+                                yAxisID: 'y',
+                                order: 0
+                            }
+
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Sample'
                                 }
                             }
-                        });
-                    }
-
-                    // ===== DOUGHNUT CHART =====
-                    if (donutCanvas) {
-                        if (window.ipcMoistureDonutChart && typeof window.ipcMoistureDonutChart.destroy === 'function') {
-                            window.ipcMoistureDonutChart.destroy();
-                            window.ipcMoistureDonutChart = null;
                         }
-
-                        const donutCtx = donutCanvas.getContext('2d');
-
-                        // Palet warna: akan mengulang jika label lebih banyak
-                        const baseColors = [
-                            '#22c55e', // hijau
-                            '#3b82f6', // biru
-                            '#eab308', // kuning
-                            '#f97316', // oranye
-                            '#ef4444', // merah
-                            '#a855f7', // ungu
-                            '#6b7280', // abu
-                            '#14b8a6', // teal
-                            '#ec4899', // pink
-                            '#0ea5e9', // sky blue
-                        ];
-                        const backgroundColors = labels.map((_, i) => baseColors[i % baseColors.length]);
-
-                        window.ipcMoistureDonutChart = new Chart(donutCtx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    data: dataValues,
-                                    backgroundColor: backgroundColors,
-                                    borderWidth: 1,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                cutout: '60%',
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom',
-                                        labels: {
-                                            usePointStyle: true,
-                                            boxWidth: 10,
-                                        }
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                const label = context.label || '';
-                                                const value = context.parsed || 0;
-                                                const count = counts[context.dataIndex] ?? 0;
-                                                return `${label}: ${value.toFixed(2)} % (${count} data)`;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
                     }
-                }
+                });
 
-                function boot() {
-                    renderIpcMoistureCharts();
-
-                    if (window.Livewire) {
-                        Livewire.hook('message.processed', () => {
-                            renderIpcMoistureCharts();
-                        });
-                    }
-                }
-
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', boot);
-                } else {
-                    boot();
-                }
-            })();
+            });
         </script>
     @endpush
 @endsection
