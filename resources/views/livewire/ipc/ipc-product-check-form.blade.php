@@ -157,8 +157,8 @@
                                     <label for="cup_weight" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Berat Cawan (g)
                                     </label>
-                                    <input wire:model.live="cup_weight" type="number" step="0.001" min="0"
-                                        id="cup_weight"
+                                    <input wire:model.debounce.500ms="cup_weight" type="number" step="0.001"
+                                        min="0" id="cup_weight"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                                focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Berat cawan kosong">
@@ -172,8 +172,8 @@
                                     <label for="product_weight" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Berat Produk (g)
                                     </label>
-                                    <input wire:model.live="product_weight" type="number" step="0.001" min="0"
-                                        id="product_weight"
+                                    <input wire:model.debounce.500ms="product_weight" type="number" step="0.001"
+                                        min="0" id="product_weight"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                                focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Berat produk">
@@ -205,8 +205,8 @@
                                     <label for="weighing_1" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Penimbangan 1 (g)
                                     </label>
-                                    <input wire:model.live="weighing_1" type="number" step="0.001" min="0"
-                                        id="weighing_1"
+                                    <input wire:model.debounce.500ms="weighing_1" type="number" step="0.001"
+                                        min="0" id="weighing_1"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Setelah oven 1">
                                     @error('weighing_1')
@@ -219,8 +219,8 @@
                                     <label for="weighing_2" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Penimbangan 2 (g)
                                     </label>
-                                    <input wire:model.live="weighing_2" type="number" step="0.001" min="0"
-                                        id="weighing_2"
+                                    <input wire:model.debounce.500ms="weighing_2" type="number" step="0.001"
+                                        min="0" id="weighing_2"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Setelah oven 2">
                                     @error('weighing_2')
