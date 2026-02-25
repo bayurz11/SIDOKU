@@ -91,36 +91,49 @@ class RoleList extends Component
         $this->showConfirm(
             'Delete Role',
             "Are you sure you want to delete role '{$role->display_name}'? This action cannot be undone.",
-            function () use ($role) {
-
-                // Log sebelum delete
-                LoggerService::logUserAction(
-                    'delete',
-                    'Role',
-                    $role->id,
-                    [
-                        'deleted_role_name' => $role->name,
-                        'deleted_role_display_name' => $role->display_name,
-                        'had_permissions' => $role->permissions->pluck('name')->toArray(),
-                    ],
-                    'warning'
-                );
-
-                // Clear cache
-                CacheService::clearRoleCache($role->id);
-                CacheService::clearAllUserCaches();
-                CacheService::clearDashboardCache();
-
-                // Delete
-                $role->delete();
-
-                $this->resetPage();
-                $this->dispatch('$refresh');
-
-                $this->showSuccessToast('Role deleted successfully!');
-            }
+            'deleteRole',   // panggil method deleteRole
+            $roleId,        // kirim langsung ID (sama seperti IPC)
+            'Yes, delete it!',
+            'Cancel'
         );
     }
+    public function deleteRole(int $roleId): void
+    {
+        $role = Role::findOrFail($roleId);
+
+        if ($role->name === 'super-admin') {
+            $this->showErrorToast('Cannot delete super-admin role.');
+            return;
+        }
+
+        // Optional: Log sebelum delete
+        LoggerService::logUserAction(
+            'delete',
+            'Role',
+            $roleId,
+            [
+                'deleted_role_name' => $role->name,
+                'deleted_role_display_name' => $role->display_name,
+                'had_permissions' => $role->permissions->pluck('name')->toArray(),
+            ],
+            'warning'
+        );
+
+        // Optional: Clear cache
+        CacheService::clearRoleCache($roleId);
+        CacheService::clearAllUserCaches();
+        CacheService::clearDashboardCache();
+
+        // DELETE (inti seperti IPC)
+        $role->delete();
+
+        // Sama seperti IPC
+        $this->showSuccessToast('Role deleted successfully!');
+        $this->resetPage(); // jika pakai pagination
+        $this->dispatch('roleSaved'); // jika ada komponen lain listen
+    }
+
+
 
     public function render()
     {
