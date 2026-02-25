@@ -168,9 +168,17 @@ class RoleForm extends Component
 
             $role->permissions()->sync($this->selectedPermissions);
 
-            dd('SUCCESS');
+            session()->flash(
+                'message',
+                $this->isEditing
+                    ? 'Role updated successfully.'
+                    : 'Role created successfully.'
+            );
+
+            $this->closeModal();
+            $this->dispatch('roleSaved');
         } catch (\Throwable $e) {
-            dd($e->getMessage());
+            session()->flash('error', $e->getMessage());
         }
     }
     public function render()
