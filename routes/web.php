@@ -118,6 +118,17 @@ Route::middleware(['auth', 'permission:ipc_product_checks.view'])
         })->name('index');
     });
 
+// Incoming Material Tahap 1
+Route::middleware(['auth', 'permission:incoming_material.view'])
+    ->prefix('incoming-material-tahap1')
+    ->name('incoming-material-tahap1.')
+    ->group(function () {
+
+        Route::get('/', function () {
+            return view('incoming-material-tahap1.index');
+        })->name('index');
+    });
+
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/users', function () {
