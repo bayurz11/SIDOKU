@@ -285,7 +285,13 @@
                              @permission('incoming_material.view')
                                  <a href="#"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                     Incoming Material List
+                                     Tahap 1
+                                 </a>
+                             @endpermission
+                             @permission('incoming_material.view')
+                                 <a href="#"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Tahap 2
                                  </a>
                              @endpermission
 
