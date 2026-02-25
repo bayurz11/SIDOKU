@@ -92,21 +92,23 @@ class RoleForm extends Component
 
     public function selectAllInGroup($group)
     {
-        // Get permissions for this group from database
-        $groupPermissions = Permission::where('is_active', true)
-            ->where('group', $group)
-            ->get();
-        $groupIds = $groupPermissions->pluck('id')->toArray();
+        $selected = (array) $this->selectedPermissions;
 
-        // Check if all permissions in group are already selected
-        $allSelected = !array_diff($groupIds, $this->selectedPermissions);
+        $groupIds = Permission::where('is_active', true)
+            ->where('group', $group)
+            ->pluck('id')
+            ->toArray();
+
+        $allSelected = !array_diff($groupIds, $selected);
 
         if ($allSelected) {
-            // Remove all permissions in this group
-            $this->selectedPermissions = array_diff($this->selectedPermissions, $groupIds);
+            $this->selectedPermissions = array_values(
+                array_diff($selected, $groupIds)
+            );
         } else {
-            // Add all permissions in this group
-            $this->selectedPermissions = array_unique(array_merge($this->selectedPermissions, $groupIds));
+            $this->selectedPermissions = array_values(
+                array_unique(array_merge($selected, $groupIds))
+            );
         }
     }
 
