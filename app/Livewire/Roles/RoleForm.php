@@ -20,7 +20,6 @@ class RoleForm extends Component
     public $isEditing = false;
     // Remove this property as it causes serialization issues
     // We'll compute it in render method instead
-    protected $listeners = ['openRoleCreateForm' => 'openModal'];
     protected function rules()
     {
         return [
