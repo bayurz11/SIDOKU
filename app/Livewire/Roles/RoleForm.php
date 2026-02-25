@@ -146,35 +146,40 @@ class RoleForm extends Component
     // }
     public function save()
     {
-        $this->validate();
+        try {
+            $this->validate();
 
-        if ($this->isEditing) {
-            $role = Role::findOrFail($this->roleId);
-            $role->update([
-                'name' => $this->name,
-                'display_name' => $this->display_name,
-                'description' => $this->description,
-                'is_active' => $this->is_active,
-            ]);
-        } else {
-            $role = Role::create([
-                'name' => $this->name,
-                'display_name' => $this->display_name,
-                'description' => $this->description,
-                'is_active' => $this->is_active,
-            ]);
+            if ($this->isEditing) {
+                $role = Role::findOrFail($this->roleId);
+                $role->update([
+                    'name' => $this->name,
+                    'display_name' => $this->display_name,
+                    'description' => $this->description,
+                    'is_active' => $this->is_active,
+                ]);
+            } else {
+                $role = Role::create([
+                    'name' => $this->name,
+                    'display_name' => $this->display_name,
+                    'description' => $this->description,
+                    'is_active' => $this->is_active,
+                ]);
+            }
+
+            $role->permissions()->sync($this->selectedPermissions);
+
+            session()->flash(
+                'message',
+                $this->isEditing
+                    ? 'Role updated successfully.'
+                    : 'Role created successfully.'
+            );
+
+            $this->closeModal();
+            $this->dispatch('roleSaved');
+        } catch (\Throwable $e) {
+            session()->flash('error', $e->getMessage());
         }
-
-        $role->permissions()->sync($this->selectedPermissions);
-
-        session()->flash(
-            'message',
-            $this->isEditing
-                ? 'Role updated successfully.'
-                : 'Role created successfully.'
-        );
-
-        return redirect()->to(request()->fullUrl());
     }
     public function render()
     {
