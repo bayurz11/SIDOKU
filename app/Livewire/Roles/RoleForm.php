@@ -191,4 +191,11 @@ class RoleForm extends Component
 
         return view('livewire.roles.role-form', compact('permissionsByGroup'));
     }
+    protected function showSuccessToast(string $message): void
+    {
+        $this->dispatch('toast', [
+            'type' => 'success',
+            'message' => $message,
+        ]);
+    }
 }
