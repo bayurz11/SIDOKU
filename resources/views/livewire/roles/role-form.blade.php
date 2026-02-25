@@ -71,7 +71,7 @@
                                             <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">
                                                 {{ ucfirst($group) }} Permissions</h4>
                                             <button type="button"
-                                                wire:click='selectAllInGroup(@json($group))'
+                                                wire:click="selectAllInGroup(@js($group))"
                                                 class="text-xs text-blue-600 hover:text-blue-800 font-medium">
                                                 @php
                                                     $groupIds = $permissions->pluck('id')->toArray();
