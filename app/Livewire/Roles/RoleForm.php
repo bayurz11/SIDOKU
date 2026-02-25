@@ -144,38 +144,40 @@ class RoleForm extends Component
     //     $this->closeModal();
     //     $this->dispatch('roleSaved');
     // }
-    public function save()
+    public function save(): void
     {
         $this->validate();
 
-        if ($this->isEditing) {
+        if ($this->isEditing && $this->roleId) {
+
             $role = Role::findOrFail($this->roleId);
+
             $role->update([
-                'name' => $this->name,
+                'name'         => $this->name,
                 'display_name' => $this->display_name,
-                'description' => $this->description,
-                'is_active' => $this->is_active,
+                'description'  => $this->description,
+                'is_active'    => $this->is_active,
             ]);
+
+            $role->permissions()->sync($this->selectedPermissions);
+
+            $this->showSuccessToast('Role updated successfully!');
         } else {
+
             $role = Role::create([
-                'name' => $this->name,
+                'name'         => $this->name,
                 'display_name' => $this->display_name,
-                'description' => $this->description,
-                'is_active' => $this->is_active,
+                'description'  => $this->description,
+                'is_active'    => $this->is_active,
             ]);
+
+            $role->permissions()->sync($this->selectedPermissions);
+
+            $this->showSuccessToast('Role created successfully!');
         }
 
-        $role->permissions()->sync($this->selectedPermissions);
-
-        session()->flash(
-            'message',
-            $this->isEditing
-                ? 'Role updated successfully.'
-                : 'Role created successfully.'
-        );
-
-        $this->closeModal();
         $this->dispatch('roleSaved');
+        $this->closeModal();
     }
     public function render()
     {
