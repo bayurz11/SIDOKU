@@ -99,38 +99,7 @@ class RoleList extends Component
     }
     public function deleteRole(int $roleId): void
     {
-        $role = Role::findOrFail($roleId);
-
-        if ($role->name === 'super-admin') {
-            $this->showErrorToast('Cannot delete super-admin role.');
-            return;
-        }
-
-        // Optional: Log sebelum delete
-        LoggerService::logUserAction(
-            'delete',
-            'Role',
-            $roleId,
-            [
-                'deleted_role_name' => $role->name,
-                'deleted_role_display_name' => $role->display_name,
-                'had_permissions' => $role->permissions->pluck('name')->toArray(),
-            ],
-            'warning'
-        );
-
-        // Optional: Clear cache
-        CacheService::clearRoleCache($roleId);
-        CacheService::clearAllUserCaches();
-        CacheService::clearDashboardCache();
-
-        // DELETE (inti seperti IPC)
-        $role->delete();
-
-        // Sama seperti IPC
-        $this->showSuccessToast('Role deleted successfully!');
-        $this->resetPage(); // jika pakai pagination
-        $this->dispatch('roleSaved'); // jika ada komponen lain listen
+        dd('DELETE TERPANGGIL', $roleId);
     }
 
 
