@@ -146,7 +146,29 @@ class RoleForm extends Component
     // }
     public function save()
     {
-        dd($this->roleId);
+        $this->validate();
+
+        if ($this->isEditing) {
+
+            $role = Role::findOrFail($this->roleId);
+
+            dd([
+                'before' => $role->toArray(),
+                'new_data' => [
+                    'name' => $this->name,
+                    'display_name' => $this->display_name,
+                    'description' => $this->description,
+                    'is_active' => $this->is_active,
+                ]
+            ]);
+
+            $role->update([
+                'name' => $this->name,
+                'display_name' => $this->display_name,
+                'description' => $this->description,
+                'is_active' => $this->is_active,
+            ]);
+        }
     }
     public function render()
     {
