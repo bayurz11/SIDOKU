@@ -139,6 +139,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'document_prefix_settings.delete', 'display_name' => 'Delete Document Prefix Settings', 'description' => 'Can delete document prefix settings permanently', 'group' => 'document_prefix_settings',],
             ['name' => 'document_prefix_settings.toggle', 'display_name' => 'Activate/Deactivate Prefix Setting', 'description' => 'Can enable or disable prefix settings', 'group' => 'document_prefix_settings',],
             ['name' => 'document_prefix_settings.generate_preview', 'display_name' => 'Generate Number Preview', 'description' => 'Can generate or preview document numbering pattern outputs', 'group' => 'document_prefix_settings',],
+
+            // Incoming Material permissions
+            ['name' => 'incoming_material.view', 'display_name' => 'View Incoming Material', 'description' => 'Can view incoming material list and details', 'group' => 'incoming_material'],
+            ['name' => 'incoming_material.create', 'display_name' => 'Create Incoming Material', 'description' => 'Can create new incoming material data', 'group' => 'incoming_material'],
+            ['name' => 'incoming_material.edit', 'display_name' => 'Edit Incoming Material', 'description' => 'Can edit existing incoming material data', 'group' => 'incoming_material'],
+            ['name' => 'incoming_material.delete', 'display_name' => 'Delete Incoming Material', 'description' => 'Can delete incoming material data', 'group' => 'incoming_material'],
         ];
 
 
