@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Roles;
 
-use App\Domains\Role\Models\Role;
 use App\Domains\Permission\Models\Permission;
+use App\Domains\Role\Models\Role;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class RoleForm extends Component
@@ -19,7 +20,7 @@ class RoleForm extends Component
     public $isEditing = false;
     // Remove this property as it causes serialization issues
     // We'll compute it in render method instead
-    protected $listeners = ['openRoleCreateForm' => 'openModal'];
+    // protected $listeners = ['openRoleCreateForm' => 'openModal'];
     protected function rules()
     {
         return [
@@ -61,6 +62,8 @@ class RoleForm extends Component
         $this->isEditing = true;
     }
 
+
+    #[On('openRoleCreateForm')]
     public function openModal($roleId = null)
     {
         $this->resetForm();
@@ -112,66 +115,41 @@ class RoleForm extends Component
         }
     }
 
-    // public function save()
-    // {
-    //     $this->validate();
-
-    //     // Prevent editing super-admin role
-    //     if ($this->isEditing && $this->name === 'super-admin') {
-    //         session()->flash('error', 'Cannot modify super-admin role.');
-    //         return;
-    //     }
-
-    //     if ($this->isEditing) {
-    //         $role = Role::findOrFail($this->roleId);
-    //         $role->update([
-    //             'name' => $this->name,
-    //             'display_name' => $this->display_name,
-    //             'description' => $this->description,
-    //             'is_active' => $this->is_active,
-    //         ]);
-    //     } else {
-    //         $role = Role::create([
-    //             'name' => $this->name,
-    //             'display_name' => $this->display_name,
-    //             'description' => $this->description,
-    //             'is_active' => $this->is_active,
-    //         ]);
-    //     }
-
-    //     $role->permissions()->sync($this->selectedPermissions);
-
-    //     session()->flash('message', $this->isEditing ? 'Role updated successfully.' : 'Role created successfully.');
-
-    //     $this->closeModal();
-    //     $this->dispatch('roleSaved');
-    // }
     public function save()
     {
         $this->validate();
 
+        // Prevent editing super-admin role
+        if ($this->isEditing && $this->name === 'super-admin') {
+            session()->flash('error', 'Cannot modify super-admin role.');
+            return;
+        }
+
         if ($this->isEditing) {
-
             $role = Role::findOrFail($this->roleId);
-
-            dd([
-                'before' => $role->toArray(),
-                'new_data' => [
-                    'name' => $this->name,
-                    'display_name' => $this->display_name,
-                    'description' => $this->description,
-                    'is_active' => $this->is_active,
-                ]
-            ]);
-
             $role->update([
                 'name' => $this->name,
                 'display_name' => $this->display_name,
                 'description' => $this->description,
                 'is_active' => $this->is_active,
             ]);
+        } else {
+            $role = Role::create([
+                'name' => $this->name,
+                'display_name' => $this->display_name,
+                'description' => $this->description,
+                'is_active' => $this->is_active,
+            ]);
         }
+
+        $role->permissions()->sync($this->selectedPermissions);
+
+        session()->flash('message', $this->isEditing ? 'Role updated successfully.' : 'Role created successfully.');
+
+        $this->closeModal();
+        $this->dispatch('roleSaved');
     }
+
     public function render()
     {
         // Get permissions grouped by group for the view
