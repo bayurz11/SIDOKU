@@ -110,44 +110,69 @@ class RoleForm extends Component
         }
     }
 
-    public function save()
-    {
-        $this->validate();
-
-        // Prevent editing super-admin role
-        if ($this->isEditing && $this->name === 'super-admin') {
-            session()->flash('error', 'Cannot modify super-admin role.');
-            return;
-        }
-        dd($this->roleId);
-        if ($this->isEditing) {
-            $role = Role::findOrFail($this->roleId);
-            $role->update([
-                'name' => $this->name,
-                'display_name' => $this->display_name,
-                'description' => $this->description,
-                'is_active' => $this->is_active,
-            ]);
-        } else {
-            $role = Role::create([
-                'name' => $this->name,
-                'display_name' => $this->display_name,
-                'description' => $this->description,
-                'is_active' => $this->is_active,
-            ]);
-        }
-
-        $role->permissions()->sync($this->selectedPermissions);
-
-        session()->flash('message', $this->isEditing ? 'Role updated successfully.' : 'Role created successfully.');
-
-        $this->closeModal();
-        $this->dispatch('roleSaved');
-    }
     // public function save()
     // {
-    //     dd($this->roleId);
+    //     $this->validate();
+
+    //     // Prevent editing super-admin role
+    //     if ($this->isEditing && $this->name === 'super-admin') {
+    //         session()->flash('error', 'Cannot modify super-admin role.');
+    //         return;
+    //     }
+
+    //     if ($this->isEditing) {
+    //         $role = Role::findOrFail($this->roleId);
+    //         $role->update([
+    //             'name' => $this->name,
+    //             'display_name' => $this->display_name,
+    //             'description' => $this->description,
+    //             'is_active' => $this->is_active,
+    //         ]);
+    //     } else {
+    //         $role = Role::create([
+    //             'name' => $this->name,
+    //             'display_name' => $this->display_name,
+    //             'description' => $this->description,
+    //             'is_active' => $this->is_active,
+    //         ]);
+    //     }
+
+    //     $role->permissions()->sync($this->selectedPermissions);
+
+    //     session()->flash('message', $this->isEditing ? 'Role updated successfully.' : 'Role created successfully.');
+
+    //     $this->closeModal();
+    //     $this->dispatch('roleSaved');
     // }
+    public function save()
+    {
+        try {
+            $this->validate();
+
+            if ($this->isEditing) {
+                $role = Role::findOrFail($this->roleId);
+                $role->update([
+                    'name' => $this->name,
+                    'display_name' => $this->display_name,
+                    'description' => $this->description,
+                    'is_active' => $this->is_active,
+                ]);
+            } else {
+                $role = Role::create([
+                    'name' => $this->name,
+                    'display_name' => $this->display_name,
+                    'description' => $this->description,
+                    'is_active' => $this->is_active,
+                ]);
+            }
+
+            $role->permissions()->sync($this->selectedPermissions);
+
+            dd('SUCCESS');
+        } catch (\Throwable $e) {
+            dd($e->getMessage());
+        }
+    }
     public function render()
     {
         // Get permissions grouped by group for the view
