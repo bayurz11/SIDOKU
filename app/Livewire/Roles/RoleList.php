@@ -53,9 +53,9 @@ class RoleList extends Component
         $oldStatus = $role->is_active;
         $newStatus = !$role->is_active;
         $status = $oldStatus ? 'deactivated' : 'activated';
-        
+
         $role->update(['is_active' => $newStatus]);
-        
+
         // Log the action
         LoggerService::logUserAction(
             'toggle_status',
@@ -67,28 +67,28 @@ class RoleList extends Component
                 'role_name' => $role->name
             ]
         );
-        
+
         // Clear related caches
         CacheService::clearRoleCache($roleId);
         CacheService::clearAllUserCaches();
         CacheService::clearDashboardCache();
-        
+
         // Refresh the component to show updated data
         $this->dispatch('$refresh');
-        
+
         $this->showSuccessToast("Role {$status} successfully!");
     }
 
     public function confirmDeleteRole($roleId)
     {
         $role = Role::findOrFail($roleId);
-        
+
         // Prevent deletion of super-admin role
         if ($role->name === 'super-admin') {
             $this->showErrorToast('Cannot delete super-admin role.');
             return;
         }
-        
+
         $this->showConfirm(
             'Delete Role',
             "Are you sure you want to delete role '{$role->display_name}'? This action cannot be undone.",
@@ -99,34 +99,18 @@ class RoleList extends Component
         );
     }
 
-    public function deleteRole($params)
+    public function deleteRole(int $roleId): void
     {
-        $roleId = $params['roleId'];
         $role = Role::findOrFail($roleId);
-        
-        // Log the action before deletion
-        LoggerService::logUserAction(
-            'delete',
-            'Role',
-            $roleId,
-            [
-                'deleted_role_name' => $role->name,
-                'deleted_role_display_name' => $role->display_name,
-                'had_permissions' => $role->permissions->pluck('name')->toArray()
-            ],
-            'warning'
-        );
-        
-        // Clear related caches before deletion
-        CacheService::clearRoleCache($roleId);
-        CacheService::clearAllUserCaches();
-        CacheService::clearDashboardCache();
-        
+
+        if ($role->name === 'super-admin') {
+            $this->showErrorToast('Cannot delete super-admin role.');
+            return;
+        }
+
         $role->delete();
-        
-        // Refresh the component to show updated data
+
         $this->dispatch('$refresh');
-        
         $this->showSuccessToast('Role deleted successfully!');
     }
 
@@ -135,14 +119,19 @@ class RoleList extends Component
         // Optimize query with proper select and subqueries for counts
         $roles = Role::query()
             ->select([
-                'id', 'name', 'display_name', 'description', 'is_active', 
-                'created_at', 'updated_at'
+                'id',
+                'name',
+                'display_name',
+                'description',
+                'is_active',
+                'created_at',
+                'updated_at'
             ])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('display_name', 'like', '%' . $this->search . '%')
-                      ->orWhere('description', 'like', '%' . $this->search . '%');
+                        ->orWhere('display_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('description', 'like', '%' . $this->search . '%');
                 });
             })
             ->when(!$this->showInactive, function ($query) {
