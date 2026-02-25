@@ -16,7 +16,7 @@
                         </button>
                     </div>
 
-                    <form wire:submit="save" class="space-y-6">
+                    <form wire:submit.prevent="save" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Role Name
