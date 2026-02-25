@@ -74,8 +74,9 @@
                                                 wire:click="selectAllInGroup(@js($group))"
                                                 class="text-xs text-blue-600 hover:text-blue-800 font-medium">
                                                 @php
+                                                    $selected = (array) $selectedPermissions;
                                                     $groupIds = $permissions->pluck('id')->toArray();
-                                                    $allSelected = !array_diff($groupIds, $this->selectedPermissions);
+                                                    $allSelected = !array_diff($groupIds, $selected);
                                                 @endphp
                                                 {{ $allSelected ? 'Deselect All' : 'Select All' }}
                                             </button>
