@@ -218,7 +218,7 @@
                                         </button>
                                     @endpermission
                                     @permission('roles.delete')
-                                        <button wire:click="confirmDeleteRole({{ $role->id }})"
+                                        <button wire:click.prevent="confirmDeleteRole({{ $role->id }})"
                                             class="group/btn inline-flex items-center px-3 py-2 text-xs font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all duration-200 transform hover:scale-105">
                                             <svg class="w-4 h-4 mr-1.5 group-hover/btn:animate-bounce" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24">
