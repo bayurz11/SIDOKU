@@ -283,7 +283,7 @@
                              class="mt-1 pl-10 space-y-1 overflow-hidden">
 
                              @permission('incoming_material.view')
-                                 <a href="{{ route('incoming-material.index') }}"
+                                 <a href="#"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Incoming Material List
                                  </a>
