@@ -79,31 +79,42 @@ class RoleList extends Component
         $this->showSuccessToast("Role {$status} successfully!");
     }
 
-    public function confirmDeleteRole(int $roleId): void
+    public function deleteRole(int $roleId): void
     {
         $role = Role::findOrFail($roleId);
 
+        // Cegah hapus super-admin
         if ($role->name === 'super-admin') {
             $this->showErrorToast('Cannot delete super-admin role.');
             return;
         }
 
-        $this->showConfirm(
-            'Delete Role',
-            "Are you sure you want to delete role '{$role->display_name}'? This action cannot be undone.",
-            'deleteRole',   // panggil method deleteRole
-            $roleId,        // kirim langsung ID (sama seperti IPC)
-            'Yes, delete it!',
-            'Cancel'
+        // Optional: log sebelum hapus
+        LoggerService::logUserAction(
+            'delete',
+            'Role',
+            $roleId,
+            [
+                'deleted_role_name' => $role->name,
+                'deleted_role_display_name' => $role->display_name,
+                'had_permissions' => $role->permissions->pluck('name')->toArray(),
+            ],
+            'warning'
         );
+
+        // Optional: clear cache
+        CacheService::clearRoleCache($roleId);
+        CacheService::clearAllUserCaches();
+        CacheService::clearDashboardCache();
+
+        // HAPUS DATA
+        $role->delete();
+
+        // Refresh seperti IPC
+        $this->showSuccessToast('Role deleted successfully!');
+        $this->resetPage(); // jika pakai pagination
+        $this->dispatch('roleSaved');
     }
-    public function deleteRole(int $roleId): void
-    {
-        dd('DELETE TERPANGGIL', $roleId);
-    }
-
-
-
     public function render()
     {
         // Optimize query with proper select and subqueries for counts
