@@ -20,7 +20,7 @@ class RoleForm extends Component
     public $isEditing = false;
     // Remove this property as it causes serialization issues
     // We'll compute it in render method instead
-    // protected $listeners = ['openRoleCreateForm' => 'openModal'];
+    protected $listeners = ['openRoleCreateForm' => 'openModal'];
     protected function rules()
     {
         return [
@@ -61,7 +61,6 @@ class RoleForm extends Component
         $this->selectedPermissions = $role->permissions()->pluck('permissions.id')->toArray();
         $this->isEditing = true;
     }
-
 
     #[On('openRoleCreateForm')]
     public function openModal($roleId = null)
