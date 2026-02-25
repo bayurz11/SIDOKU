@@ -28,17 +28,22 @@
              </a>
 
              @php
-                 // ===== ACTIVE ROUTE (UNTUK HIGHLIGHT & AUTO-OPEN) =====
+                 // ===== ACTIVE ROUTE =====
                  $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
+
                  $documentActive = request()->routeIs(
                      'documents.*',
                      'documents.approval-queue',
                      'document_revisions.*',
                  );
+
                  $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*', 'ipc.product.*');
+
+                 $incomingActive = request()->routeIs('incoming-material.*');
+
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
-                 // ===== VISIBILITY (MINIMAL 1 PERMISSION DI GROUP) =====
+                 // ===== VISIBILITY =====
                  $canSeeMasterMenu = auth()
                      ->user()
                      ->hasAnyPermission(['departments.view', 'document_types.view', 'document_prefix_settings.view']);
@@ -56,11 +61,15 @@
                      ->user()
                      ->hasAnyPermission(['ipc_product_checks.view']);
 
+                 $canSeeIncomingMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['incoming_material.view']);
+
                  $canSeeAccountMenu = auth()
                      ->user()
                      ->hasAnyPermission(['users.view', 'roles.view']);
 
-                 // ===== ACTIVE ACCORDION (HANYA JIKA MENU TAMPIL) =====
+                 // ===== ACTIVE ACCORDION =====
                  $activeMenuInitial =
                      $masterActive && $canSeeMasterMenu
                          ? 'master'
@@ -68,9 +77,11 @@
                              ? 'document'
                              : ($ipcActive && $canSeeIpcMenu
                                  ? 'ipc'
-                                 : ($accountActive && $canSeeAccountMenu
-                                     ? 'account'
-                                     : '')));
+                                 : ($incomingActive && $canSeeIncomingMenu
+                                     ? 'incoming'
+                                     : ($accountActive && $canSeeAccountMenu
+                                         ? 'account'
+                                         : ''))));
              @endphp
 
 
@@ -239,6 +250,48 @@
                      </div>
                  @endif
 
+                 {{-- ============== Incoming material ============== --}}
+                 @if ($canSeeIncomingMenu)
+                     <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
+
+                         <button @click="activeMenu = (activeMenu === 'incoming' ? '' : 'incoming')"
+                             aria-controls="menu-incoming" :aria-expanded="(activeMenu === 'incoming').toString()"
+                             class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $incomingActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                             type="button">
+
+                             @if ($incomingActive)
+                                 <span
+                                     class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
+                             @endif
+
+                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M3 7l9-4 9 4M4 10h16M6 10v8m4-8v8m4-8v8m4-8v8" />
+                             </svg>
+
+                             <span>Incoming Material</span>
+
+                             <svg :class="{ 'rotate-180': activeMenu === 'incoming' }"
+                                 class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M19 9l-7 7-7-7" />
+                             </svg>
+                         </button>
+
+                         <div id="menu-incoming" x-show="activeMenu === 'incoming'" x-collapse
+                             class="mt-1 pl-10 space-y-1 overflow-hidden">
+
+                             @permission('incoming_material.view')
+                                 <a href="{{ route('incoming-material.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Incoming Material List
+                                 </a>
+                             @endpermission
+
+                         </div>
+                     </div>
+                 @endif
                  {{-- ACCOUNT --}}
                  @if ($canSeeAccountMenu)
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
