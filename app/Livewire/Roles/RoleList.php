@@ -79,11 +79,10 @@ class RoleList extends Component
         $this->showSuccessToast("Role {$status} successfully!");
     }
 
-    public function confirmDeleteRole($roleId)
+    public function confirmDeleteRole(int $roleId): void
     {
         $role = Role::findOrFail($roleId);
 
-        // Prevent deletion of super-admin role
         if ($role->name === 'super-admin') {
             $this->showErrorToast('Cannot delete super-admin role.');
             return;
@@ -93,7 +92,7 @@ class RoleList extends Component
             'Delete Role',
             "Are you sure you want to delete role '{$role->display_name}'? This action cannot be undone.",
             'deleteRole',
-            ['roleId' => $roleId],
+            $roleId, // ⬅ kirim langsung ID
             'Yes, delete it!',
             'Cancel'
         );
@@ -103,14 +102,37 @@ class RoleList extends Component
     {
         $role = Role::findOrFail($roleId);
 
+        // Prevent deletion of super-admin
         if ($role->name === 'super-admin') {
             $this->showErrorToast('Cannot delete super-admin role.');
             return;
         }
 
+        // Log sebelum delete
+        LoggerService::logUserAction(
+            'delete',
+            'Role',
+            $roleId,
+            [
+                'deleted_role_name' => $role->name,
+                'deleted_role_display_name' => $role->display_name,
+                'had_permissions' => $role->permissions->pluck('name')->toArray(),
+            ],
+            'warning'
+        );
+
+        // Clear cache
+        CacheService::clearRoleCache($roleId);
+        CacheService::clearAllUserCaches();
+        CacheService::clearDashboardCache();
+
+        // Delete
         $role->delete();
 
-        $this->dispatch('$refresh');
+        // Refresh seperti IPC
+        $this->resetPage(); // jika pakai pagination
+        $this->dispatch('roleSaved'); // refresh komponen lain kalau ada
+
         $this->showSuccessToast('Role deleted successfully!');
     }
 
