@@ -119,7 +119,7 @@ class RoleForm extends Component
             session()->flash('error', 'Cannot modify super-admin role.');
             return;
         }
-
+        dd($this->roleId);
         if ($this->isEditing) {
             $role = Role::findOrFail($this->roleId);
             $role->update([
@@ -136,7 +136,7 @@ class RoleForm extends Component
                 'is_active' => $this->is_active,
             ]);
         }
-        dd($this->roleId);
+
         $role->permissions()->sync($this->selectedPermissions);
 
         session()->flash('message', $this->isEditing ? 'Role updated successfully.' : 'Role created successfully.');
