@@ -39,7 +39,7 @@
 
                  $ipcActive = request()->routeIs('ipc.product-checks.*', 'ipc.tiup-botol.*', 'ipc.product.*');
 
-                 $incomingActive = request()->routeIs('incoming-material.*');
+                 $incomingActive = request()->routeIs('incoming-material-tahap1.*', 'incoming-material-tahap2.*');
 
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
