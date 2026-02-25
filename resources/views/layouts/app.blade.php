@@ -226,6 +226,8 @@
                                                             Tiup Botol
                                                         @elseif(request()->routeIs('documents.*'))
                                                             Document
+                                                        @elseif(request()->routeIs('incoming-material-tahap1.*'))
+                                                            Incoming Material Tahap 1
                                                         @else
                                                             {{ ucwords(str_replace(['-', '_'], ' ', request()->route()->getName())) }}
                                                         @endif
