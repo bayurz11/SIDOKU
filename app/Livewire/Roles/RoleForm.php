@@ -174,7 +174,8 @@ class RoleForm extends Component
                 : 'Role created successfully.'
         );
 
-        return redirect()->to(request()->fullUrl());
+        $this->closeModal();
+        $this->dispatch('roleSaved');
     }
     public function render()
     {
