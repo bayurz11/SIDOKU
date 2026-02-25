@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Roles;
 
-use App\Domains\Permission\Models\Permission;
 use App\Domains\Role\Models\Role;
+use App\Domains\Permission\Models\Permission;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class RoleForm extends Component
@@ -20,6 +19,7 @@ class RoleForm extends Component
     public $isEditing = false;
     // Remove this property as it causes serialization issues
     // We'll compute it in render method instead
+    protected $listeners = ['openRoleCreateForm' => 'openModal'];
     protected function rules()
     {
         return [
@@ -61,7 +61,6 @@ class RoleForm extends Component
         $this->isEditing = true;
     }
 
-    #[On('openRoleCreateForm')]
     public function openModal($roleId = null)
     {
         $this->resetForm();
