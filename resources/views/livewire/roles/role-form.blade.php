@@ -129,10 +129,10 @@
     @endif
 </div>
 
-<script>
+{{-- <script>
     document.addEventListener('livewire:init', () => {
         Livewire.on('openRoleForm', (event) => {
             @this.openModal(event.roleId);
         });
     });
-</script>
+</script> --}}
