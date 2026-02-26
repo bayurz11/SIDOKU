@@ -4,7 +4,6 @@ namespace App\Livewire\IncomingMaterial;
 
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -28,26 +27,8 @@ class IncomingMaterialForm extends Component
     public ?float $sample_quantity = null;
     public ?string $vehicle_number = null;
 
-    // ================= DOCUMENT SUITABILITY =================
+    // ================= DOCUMENTS =================
     public array $documents = [];
-
-    // ================= PHOTOS =================
-    public array $photos = [];
-
-    // ================= INSPECTION TABLE =================
-    public array $inspectionItems = [];
-
-    // ================= FINAL DECISION =================
-    public string $inspection_decision = '';
-    public ?string $inspection_notes = null;
-    public $material;
-    public bool $showDetail = false;
-
-    // ================= UI =================
-    public bool $showModal = false;
-    public bool $isEditing = false;
-
-    // ================= DOCUMENT TYPES =================
     public array $documentTypes = [
         'coa' => 'COA',
         'halal' => 'Sertifikat Halal',
@@ -65,10 +46,25 @@ class IncomingMaterialForm extends Component
         'breakdown_composition' => 'Breakdown Composition',
     ];
 
+    // ================= PHOTOS =================
+    public array $photos = [];
+
+    // ================= INSPECTION =================
+    public array $inspectionItems = [];
+    public string $inspection_decision = '';
+    public ?string $inspection_notes = null;
+
+    // ================= DETAIL MODAL =================
+    public $material;
+    public bool $showDetail = false;
+
+    // ================= UI =================
+    public bool $showModal = false;
+    public bool $isEditing = false;
+
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
         'incoming-material:saved' => '$refresh',
-        'showIncomingMaterialDetail' => 'showIncomingMaterialDetail',
     ];
 
     public function mount(): void
@@ -79,7 +75,7 @@ class IncomingMaterialForm extends Component
 
     protected function initializeDocuments(): void
     {
-        $this->documents = []; // pastikan reset ke array
+        $this->documents = [];
         foreach ($this->documentTypes as $key => $label) {
             $this->documents[$key] = [
                 'is_checked' => false,
@@ -103,52 +99,35 @@ class IncomingMaterialForm extends Component
     public function removeInspectionItem($index)
     {
         unset($this->inspectionItems[$index]);
-        $this->inspectionItems = array_values($this->inspectionItems ?? []);
+        $this->inspectionItems = array_values($this->inspectionItems);
         $this->evaluateFinalDecision();
     }
 
     public function updatedInspectionItems()
     {
-        foreach ($this->inspectionItems ?? [] as $i => $item) {
+        foreach ($this->inspectionItems as $i => $item) {
             $this->inspectionItems[$i]['inspection_result'] = match (strtolower($item['test_result'])) {
                 'ok' => 'OK',
                 'not ok' => 'NOT OK',
                 default => '',
             };
         }
-
         $this->evaluateFinalDecision();
     }
 
     protected function evaluateFinalDecision()
     {
-        $hasNotOk = collect($this->inspectionItems ?? [])
+        $hasNotOk = collect($this->inspectionItems)
             ->contains(fn($item) => $item['inspection_result'] === 'NOT OK');
 
         $this->inspection_decision = $hasNotOk ? 'HOLD' : 'APPROVED';
     }
 
-    // ================= FORM CONTROL =================
-    public function openForm(?int $id = null): void
-    {
-        $this->resetValidation();
-        $this->resetErrorBag();
-        $this->initializeDocuments();
-        $this->inspectionItems = $this->inspectionItems ?? [];
-        $this->photos = $this->photos ?? [];
-
-        $this->showModal = true;
-        $this->isEditing = false;
-
-        if ($id) {
-            $this->incomingId = $id;
-            $this->isEditing = true;
-        }
-    }
-
+    // ================= SHOW DETAIL =================
     public function showIncomingMaterialDetail($id)
     {
         $this->material = IncomingMaterial::with('files')->find($id);
+
         if (! $this->material) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
@@ -156,50 +135,20 @@ class IncomingMaterialForm extends Component
             ]);
             return;
         }
+
         $this->showDetail = true;
-    }
-    protected function rules(): array
-    {
-        return [
-            'name_of_goods' => ['required', 'string', 'max:255'],
-            'supplier_name' => ['required', 'string', 'max:255'],
-            'receipt_date'  => ['required', 'date'],
-            'inspection_decision' => ['required'],
-            'photos.*' => ['nullable', 'image', 'max:2048'],
-        ];
-    }
-
-    // ================= FILE UPLOAD =================
-    protected function uploadDocumentFiles(): array
-    {
-        $paths = [];
-
-        foreach ($this->documents ?? [] as $key => $doc) {
-            if (!empty($doc['file'])) {
-                $filename = Str::random(20) . '.' . $doc['file']->getClientOriginalExtension();
-                $paths[$key] = $doc['file']->storeAs('incoming-material/documents', $filename, 'public');
-            }
-        }
-
-        return $paths;
-    }
-
-    protected function uploadPhotos(): array
-    {
-        $photoPaths = [];
-
-        foreach ($this->photos ?? [] as $photo) {
-            $filename = Str::random(20) . '.' . $photo->getClientOriginalExtension();
-            $photoPaths[] = $photo->storeAs('incoming-material/photos', $filename, 'public');
-        }
-
-        return $photoPaths;
     }
 
     // ================= SAVE =================
     public function save(): void
     {
-        $this->validate();
+        $this->validate([
+            'name_of_goods' => ['required', 'string', 'max:255'],
+            'supplier_name' => ['required', 'string', 'max:255'],
+            'receipt_date'  => ['required', 'date'],
+            'inspection_decision' => ['required'],
+            'photos.*' => ['nullable', 'image', 'max:2048'],
+        ]);
 
         DB::beginTransaction();
 
@@ -219,8 +168,8 @@ class IncomingMaterialForm extends Component
                 'created_by'      => auth()->id(),
             ]);
 
-            // Upload Dokumen
-            foreach ($this->documents ?? [] as $key => $doc) {
+            // Upload Documents
+            foreach ($this->documents as $key => $doc) {
                 if (!empty($doc['file'])) {
                     $file = $doc['file'];
                     $path = $file->store('incoming-material/' . date('Y'), 'public');
@@ -234,8 +183,8 @@ class IncomingMaterialForm extends Component
                 }
             }
 
-            // Upload Foto
-            foreach ($this->photos ?? [] as $file) {
+            // Upload Photos
+            foreach ($this->photos as $file) {
                 $path = $file->store('incoming-material/' . date('Y'), 'public');
                 $material->files()->create([
                     'file_name' => $file->getClientOriginalName(),
@@ -259,7 +208,6 @@ class IncomingMaterialForm extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
-
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'title' => 'Gagal menyimpan data!'
@@ -267,15 +215,15 @@ class IncomingMaterialForm extends Component
         }
     }
 
+    // ================= MODAL CONTROL =================
     public function closeModal(): void
     {
         $this->reset();
         $this->initializeDocuments();
-        $this->addInspectionItem();
+        $this->inspectionItems = [];
+        $this->photos = [];
         $this->showModal = false;
         $this->isEditing = false;
-        $this->photos = [];
-        $this->inspectionItems = [];
     }
 
     public function render()
