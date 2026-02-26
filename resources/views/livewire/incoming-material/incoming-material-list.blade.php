@@ -331,7 +331,40 @@
                                             Detail
                                         </button>
                                     @endpermission
+                                    {{-- VIEW DOKUMEN --}}
+                                    @permission('incoming_material.view')
+                                        <a href="#" target="_blank"
+                                            class="inline-flex items-center px-3 py-2 text-xs font-semibold
+              text-purple-600 bg-purple-50 rounded-lg
+              hover:bg-purple-100 hover:text-purple-700
+              transition-all duration-200">
 
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24" stroke-width="1.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M12 16v-4m0 0l-3 3m3-3l3 3M6 20h12a2 2 0 002-2V8l-6-6H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            </svg>
+                                            Dokumen
+                                        </a>
+                                    @endpermission
+
+
+                                    {{-- PRINT DOKUMEN --}}
+                                    @permission('incoming_material.view')
+                                        <a href="#" target="_blank"
+                                            class="inline-flex items-center px-3 py-2 text-xs font-semibold
+              text-gray-600 bg-gray-100 rounded-lg
+              hover:bg-gray-200 hover:text-gray-800
+              transition-all duration-200">
+
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-8 0h4m-4 0v4m4-4v4" />
+                                            </svg>
+                                            Print
+                                        </a>
+                                    @endpermission
 
                                     {{-- EDIT --}}
                                     @permission('incoming_material.edit')
@@ -346,7 +379,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                     a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                                 a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             Edit
                                         </button>
@@ -366,7 +399,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                     m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                 m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
