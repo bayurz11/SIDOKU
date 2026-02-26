@@ -240,7 +240,7 @@
                                 <select wire:model.defer="inspection_decision"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                                     <option value="">-- Pilih --</option>
-                                    <option value="ACCEPTED_STAGE_2">Accepted to Stage 2</option>
+                                    <option value="ACCEPTED">Accepted to Stage 2</option>
                                     <option value="HOLD">Hold</option>
                                     <option value="REJECTED">Rejected</option>
                                 </select>
