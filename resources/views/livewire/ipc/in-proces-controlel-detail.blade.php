@@ -83,22 +83,21 @@
                                 {{ optional($ipc->creator)->name ?? '-' }}
                             </p>
                         </div>
-                        <div class="flex justify-between">
-                            <dt class="text-gray-500">Diedit oleh</dt>
-                            <dd class="text-gray-900 font-medium text-right">
+                        <div>
+                            <p class="text-gray-500">Diedit oleh</p>
+                            <p class="font-semibold">
                                 @if (method_exists($ipc, 'updatedBy') && $ipc->updatedBy)
                                     {{ $ipc->updatedBy->name }}
                                 @else
                                     {{ $ipc->updated_by ?? '-' }}
                                 @endif
-                            </dd>
+                            </p>
                         </div>
-
-                        <div class="flex justify-between">
-                            <dt class="text-gray-500">Tanggal Update</dt>
-                            <dd class="text-gray-900 font-medium text-right">
+                        <div>
+                            <p class="text-gray-500">Tanggal Update</p>
+                            <p class="font-semibold">
                                 {{ optional($ipc->updated_at)->format('d M Y') ?? '-' }}
-                            </dd>
+                            </p>
                         </div>
                     </div>
 
