@@ -48,7 +48,7 @@
                                     Line Group <span class="text-red-500">*</span>
                                 </label>
                                 {{-- 🧠 wire + Alpine sinkron --}}
-                                <select wire:model="line_group" x-model="lineGroup" id="line_group"
+                                <select wire:model.live="line_group" x-model="lineGroup" id="line_group"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
                                     <option value="">-- Pilih Line --</option>
@@ -65,7 +65,7 @@
                                 <label for="sub_line" class="block text-sm font-medium text-gray-700 mb-2">
                                     Sub Line (Teh)
                                 </label>
-                                <select wire:model="sub_line" id="sub_line"
+                                <select wire:model.live="sub_line" id="sub_line"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm
                                            @if ($line_group !== 'LINE_TEH') bg-gray-100 @endif"
