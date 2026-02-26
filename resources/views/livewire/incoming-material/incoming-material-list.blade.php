@@ -79,10 +79,35 @@
 
         {{-- HEADER --}}
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-6 border-b border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900">Incoming Material</h2>
-            <p class="text-sm text-gray-600 mt-1">
-                Monitoring hasil inspeksi penerimaan material tahap 1.
-            </p>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Incoming Material</h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Monitoring hasil inspeksi penerimaan material tahap 1.
+                    </p>
+                </div>
+
+                {{-- BUTTON TAMBAH DATA --}}
+                <div class="flex justify-start md:justify-end">
+                    <button wire:click="$dispatch('openIncomingMaterialForm')"
+                        class="group bg-gradient-to-r from-green-600 to-emerald-600
+                       hover:from-green-700 hover:to-emerald-700
+                       text-white px-5 py-3 rounded-xl text-sm font-semibold
+                       inline-flex items-center shadow-lg hover:shadow-xl
+                       transition-all duration-300 transform hover:scale-105">
+
+                        <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+
+                        + Data Barang
+                    </button>
+                    --}}
+                </div>
+
+            </div>
         </div>
 
         {{-- TABLE --}}
