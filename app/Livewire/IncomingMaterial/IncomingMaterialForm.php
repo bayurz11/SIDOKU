@@ -271,19 +271,24 @@ class IncomingMaterialForm extends Component
 
             DB::commit();
 
-            // ✅ TOAST SUKSES
-            $this->showSuccessToast('Document created successfully!');
+            // ✅ SUCCESS TOAST (pakai sistem kamu)
+            $this->dispatch('show-toast', [
+                'type' => 'success',
+                'title' => 'Data Incoming Material berhasil disimpan!'
+            ]);
 
             $this->dispatch('incoming-material:saved');
             $this->closeModal();
         } catch (\Throwable $e) {
 
             DB::rollBack();
+            report($e);
 
-            // ❌ TOAST ERROR
-            $this->showErrorToast('Failed to create document. Please try again.');
-
-            report($e); // tetap log error
+            // ❌ ERROR TOAST
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'Gagal menyimpan data!'
+            ]);
         }
     }
 
