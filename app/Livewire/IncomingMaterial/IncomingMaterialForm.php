@@ -209,31 +209,36 @@ class IncomingMaterialForm extends Component
 
             // 1️⃣ Simpan data utama
             $material = IncomingMaterial::create([
-                'name_of_goods'      => $this->name_of_goods,
-                'supplier_name'      => $this->supplier_name,
-                'receipt_date'       => $this->receipt_date,
-                'inspection_items'   => $this->inspectionItems, // pastikan cast array
-                'inspection_decision' => $this->inspection_decision,
-                'inspection_notes'   => $this->inspection_notes,
-                'created_by'         => auth()->id(),
+                'date'          => $this->receipt_date,
+                'supplier'      => $this->supplier_name,
+                'material_name' => $this->name_of_goods,
+                'batch_number'  => $this->batch_number,
+                'quantity'      => $this->quantity,
+                'status'        => $this->inspection_decision,
+                'notes'         => $this->inspection_notes,
+                'created_by'    => auth()->id(),
             ]);
 
             // 2️⃣ Upload Dokumen
             if (!empty($this->documents)) {
-                foreach ($this->documents as $file) {
+                foreach ($this->documents as $key => $doc) {
+                    if (!empty($doc['file'])) {
 
-                    $path = $file->store(
-                        'incoming-material/' . date('Y'),
-                        'public'
-                    );
+                        $file = $doc['file'];
 
-                    $material->files()->create([
-                        'file_name'   => $file->getClientOriginalName(),
-                        'file_path'   => $path,
-                        'file_type'   => $file->extension(),
-                        'category'    => 'document',
-                        'uploaded_by' => auth()->id(),
-                    ]);
+                        $path = $file->store(
+                            'incoming-material/' . date('Y'),
+                            'public'
+                        );
+
+                        $material->files()->create([
+                            'file_name'   => $file->getClientOriginalName(),
+                            'file_path'   => $path,
+                            'file_type'   => $file->extension(),
+                            'category'    => $key,
+                            'uploaded_by' => auth()->id(),
+                        ]);
+                    }
                 }
             }
 
