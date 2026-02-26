@@ -158,7 +158,6 @@ class IncomingMaterialForm extends Component
         }
         $this->showDetail = true;
     }
-
     protected function rules(): array
     {
         return [

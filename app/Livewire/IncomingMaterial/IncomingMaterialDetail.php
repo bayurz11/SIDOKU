@@ -14,25 +14,15 @@ class IncomingMaterialDetail extends Component
 
     public function showIncomingMaterialDetail($id)
     {
-        try {
-            $this->material = IncomingMaterial::with('files')->find($id); // gunakan find() bukan findOrFail
-
-            if (! $this->material) {
-                $this->dispatch('show-toast', [
-                    'type' => 'error',
-                    'title' => 'Data tidak ditemukan!'
-                ]);
-                return;
-            }
-
-            $this->showDetail = true;
-        } catch (\Throwable $e) {
-            report($e); // log error ke laravel.log
+        $this->material = IncomingMaterial::with('files')->find($id);
+        if (! $this->material) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
-                'title' => 'Terjadi error saat menampilkan detail!'
+                'title' => 'Data tidak ditemukan!',
             ]);
+            return;
         }
+        $this->showDetail = true;
     }
 
     public function closeModal()
