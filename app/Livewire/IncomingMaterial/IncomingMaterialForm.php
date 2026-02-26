@@ -65,6 +65,7 @@ class IncomingMaterialForm extends Component
 
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
+        'incoming-material:saved' => '$refresh',
     ];
 
     protected function rules(): array
@@ -228,31 +229,10 @@ class IncomingMaterialForm extends Component
             ]);
 
             // 2️⃣ Upload Dokumen
-            if (!empty($this->documents)) {
-                foreach ($this->documents as $key => $doc) {
-                    if (!empty($doc['file'])) {
+            foreach ($this->documents as $key => $doc) {
+                if (!empty($doc['file'])) {
 
-                        $file = $doc['file'];
-
-                        $path = $file->store(
-                            'incoming-material/' . date('Y'),
-                            'public'
-                        );
-
-                        $material->files()->create([
-                            'file_name'   => $file->getClientOriginalName(),
-                            'file_path'   => $path,
-                            'file_type'   => $file->extension(),
-                            'category'    => $key,
-                            'uploaded_by' => auth()->id(),
-                        ]);
-                    }
-                }
-            }
-
-            // 3️⃣ Upload Foto
-            if (!empty($this->photos)) {
-                foreach ($this->photos as $file) {
+                    $file = $doc['file'];
 
                     $path = $file->store(
                         'incoming-material/' . date('Y'),
@@ -263,35 +243,53 @@ class IncomingMaterialForm extends Component
                         'file_name'   => $file->getClientOriginalName(),
                         'file_path'   => $path,
                         'file_type'   => $file->extension(),
-                        'category'    => 'photo',
+                        'category'    => $key,
                         'uploaded_by' => auth()->id(),
                     ]);
                 }
             }
 
+            // 3️⃣ Upload Foto
+            foreach ($this->photos ?? [] as $file) {
+
+                $path = $file->store(
+                    'incoming-material/' . date('Y'),
+                    'public'
+                );
+
+                $material->files()->create([
+                    'file_name'   => $file->getClientOriginalName(),
+                    'file_path'   => $path,
+                    'file_type'   => $file->extension(),
+                    'category'    => 'photo',
+                    'uploaded_by' => auth()->id(),
+                ]);
+            }
+
             DB::commit();
 
-            // ✅ SUCCESS TOAST (pakai sistem kamu)
+            // ✅ Toast Success
             $this->dispatch('show-toast', [
                 'type' => 'success',
                 'title' => 'Data Incoming Material berhasil disimpan!'
             ]);
 
+            // ✅ Refresh table component
             $this->dispatch('incoming-material:saved');
+
+            // ✅ Tutup modal
             $this->closeModal();
         } catch (\Throwable $e) {
 
             DB::rollBack();
             report($e);
 
-            // ❌ ERROR TOAST
+            // ❌ Toast Error
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'title' => 'Gagal menyimpan data!'
             ]);
         }
-        $this->dispatch('document:saved');
-        $this->closeModal();
     }
 
     public function closeModal(): void
