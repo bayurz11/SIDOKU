@@ -40,7 +40,8 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                             <div>
-                                <label class="text-sm font-medium">Nama Barang *</label>
+                                <label class="text-sm font-medium">Nama Barang <span
+                                        class="text-red-500">*</span></label>
                                 <input type="text" wire:model.defer="name_of_goods"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                                 @error('name_of_goods')
@@ -49,13 +50,17 @@
                             </div>
 
                             <div>
-                                <label class="text-sm font-medium">Supplier *</label>
+                                <label class="text-sm font-medium">Supplier <span class="text-red-500">*</span></label>
                                 <input type="text" wire:model.defer="supplier_name"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
+                                @error('supplier_name')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
 
                             <div>
-                                <label class="text-sm font-medium">Tanggal Terima *</label>
+                                <label class="text-sm font-medium">Tanggal Terima <span
+                                        class="text-red-500">*</span></label>
                                 <input type="date" wire:model.defer="receipt_date"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                             </div>
@@ -76,6 +81,9 @@
                                 <label class="text-sm font-medium">Quantity</label>
                                 <input type="number" wire:model.defer="quantity" min="0" step="any"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
+                                @error('quantity')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
 
                         </div>
@@ -144,7 +152,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             <div>
-                                <label class="text-sm font-medium">Keputusan *</label>
+                                <label class="text-sm font-medium">Keputusan <span class="text-red-500">*</span></label>
                                 <select wire:model.defer="inspection_decision"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                                     <option value="">-- Pilih --</option>
