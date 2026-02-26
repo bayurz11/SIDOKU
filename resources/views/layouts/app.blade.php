@@ -224,6 +224,8 @@
                                                             Kadar Air Produk
                                                         @elseif(request()->routeIs('ipc.tiup-botol.*'))
                                                             Tiup Botol
+                                                        @elseif(request()->routeIs('ipc.product.*'))
+                                                            Produk
                                                         @elseif(request()->routeIs('documents.*'))
                                                             Document
                                                         @elseif(request()->routeIs('incoming-material-tahap1.*'))
