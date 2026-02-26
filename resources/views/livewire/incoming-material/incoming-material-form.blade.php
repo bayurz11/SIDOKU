@@ -39,9 +39,11 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
+                            {{-- Nama Barang --}}
                             <div>
-                                <label class="text-sm font-medium">Nama Barang <span
-                                        class="text-red-500">*</span></label>
+                                <label class="text-sm font-medium">
+                                    Nama Barang <span class="text-red-500">*</span>
+                                </label>
                                 <input type="text" wire:model.defer="name_of_goods"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                                 @error('name_of_goods')
@@ -49,8 +51,11 @@
                                 @enderror
                             </div>
 
+                            {{-- Supplier --}}
                             <div>
-                                <label class="text-sm font-medium">Supplier <span class="text-red-500">*</span></label>
+                                <label class="text-sm font-medium">
+                                    Supplier <span class="text-red-500">*</span>
+                                </label>
                                 <input type="text" wire:model.defer="supplier_name"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                                 @error('supplier_name')
@@ -58,25 +63,39 @@
                                 @enderror
                             </div>
 
+                            {{-- Tanggal Terima --}}
                             <div>
-                                <label class="text-sm font-medium">Tanggal Terima <span
-                                        class="text-red-500">*</span></label>
+                                <label class="text-sm font-medium">
+                                    Tanggal Terima <span class="text-red-500">*</span>
+                                </label>
                                 <input type="date" wire:model.defer="receipt_date"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                             </div>
 
+                            {{-- Waktu Penerimaan --}}
+                            <div>
+                                <label class="text-sm font-medium">
+                                    Waktu Penerimaan
+                                </label>
+                                <input type="time" wire:model.defer="receipt_time"
+                                    class="w-full mt-1 border rounded-md p-2 text-sm">
+                            </div>
+
+                            {{-- Batch Number --}}
                             <div>
                                 <label class="text-sm font-medium">Batch Number</label>
                                 <input type="text" wire:model.defer="batch_number"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                             </div>
 
+                            {{-- Expired Date --}}
                             <div>
                                 <label class="text-sm font-medium">Expired Date</label>
                                 <input type="date" wire:model.defer="expired_date"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                             </div>
 
+                            {{-- Quantity --}}
                             <div>
                                 <label class="text-sm font-medium">Quantity</label>
                                 <input type="number" wire:model.defer="quantity" min="0" step="any"
@@ -84,6 +103,40 @@
                                 @error('quantity')
                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                 @enderror
+                            </div>
+
+                            {{-- Satuan Quantity --}}
+                            <div>
+                                <label class="text-sm font-medium">Satuan</label>
+                                <select wire:model.defer="quantity_unit"
+                                    class="w-full mt-1 border rounded-md p-2 text-sm bg-white">
+                                    <option value="">-- Pilih Satuan --</option>
+                                    <option value="PACK">Pack</option>
+                                    <option value="BOX">Box</option>
+                                    <option value="BOTOL">Botol</option>
+                                    <option value="DUS">Dus</option>
+                                    <option value="SAK">Sak</option>
+                                    <option value="KG">Kg</option>
+                                    <option value="LITER">Liter</option>
+                                </select>
+                            </div>
+
+                            {{-- Jumlah Sampel --}}
+                            <div>
+                                <label class="text-sm font-medium">
+                                    Jumlah Sampel
+                                </label>
+                                <input type="number" wire:model.defer="sample_quantity" min="0"
+                                    class="w-full mt-1 border rounded-md p-2 text-sm">
+                            </div>
+
+                            {{-- Nomor Kendaraan --}}
+                            <div>
+                                <label class="text-sm font-medium">
+                                    Nomor Kendaraan
+                                </label>
+                                <input type="text" wire:model.defer="vehicle_number" placeholder="Contoh: BG 1234 XX"
+                                    class="w-full mt-1 border rounded-md p-2 text-sm uppercase">
                             </div>
 
                         </div>

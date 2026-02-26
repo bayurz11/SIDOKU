@@ -23,6 +23,10 @@ class IncomingMaterialForm extends Component
     public ?string $expired_date = null;
     public string $batch_number = '';
     public ?int $quantity = null;
+    public ?string $receipt_time = null;
+    public ?string $quantity_unit = null;
+    public ?float $sample_quantity = null;
+    public ?string $vehicle_number = null;
 
     // ================= DOCUMENT SUITABILITY =================
     public array $documents = [];
@@ -209,14 +213,18 @@ class IncomingMaterialForm extends Component
 
             // 1️⃣ Simpan data utama
             $material = IncomingMaterial::create([
-                'date'          => $this->receipt_date,
-                'supplier'      => $this->supplier_name,
-                'material_name' => $this->name_of_goods,
-                'batch_number'  => $this->batch_number,
-                'quantity'      => $this->quantity,
-                'status'        => $this->inspection_decision,
-                'notes'         => $this->inspection_notes,
-                'created_by'    => auth()->id(),
+                'date'            => $this->receipt_date,
+                'receipt_time'    => $this->receipt_time ?? null,
+                'supplier'        => $this->supplier_name,
+                'material_name'   => $this->name_of_goods,
+                'batch_number'    => $this->batch_number,
+                'quantity'        => $this->quantity,
+                'quantity_unit'   => $this->quantity_unit ?? null,
+                'sample_quantity' => $this->sample_quantity ?? null,
+                'vehicle_number'  => $this->vehicle_number ?? null,
+                'status'          => $this->inspection_decision,
+                'notes'           => $this->inspection_notes,
+                'created_by'      => auth()->id(),
             ]);
 
             // 2️⃣ Upload Dokumen
@@ -263,11 +271,19 @@ class IncomingMaterialForm extends Component
 
             DB::commit();
 
+            // ✅ TOAST SUKSES
+            $this->showSuccessToast('Document created successfully!');
+
             $this->dispatch('incoming-material:saved');
             $this->closeModal();
         } catch (\Throwable $e) {
+
             DB::rollBack();
-            throw $e;
+
+            // ❌ TOAST ERROR
+            $this->showErrorToast('Failed to create document. Please try again.');
+
+            report($e); // tetap log error
         }
     }
 
