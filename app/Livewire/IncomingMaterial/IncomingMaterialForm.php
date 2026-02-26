@@ -2,10 +2,12 @@
 
 namespace App\Livewire\IncomingMaterial;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class IncomingMaterialForm extends Component
 {
@@ -196,30 +198,72 @@ class IncomingMaterialForm extends Component
 
     // ================= SAVE =================
 
+
     public function save(): void
     {
         $this->validate();
 
-        $documentFiles = $this->uploadDocumentFiles();
-        $photoFiles = $this->uploadPhotos();
+        DB::beginTransaction();
 
-        /*
-        SIMPAN KE DATABASE
+        try {
 
-        IncomingMaterial::create([
-            'name_of_goods' => $this->name_of_goods,
-            'supplier_name' => $this->supplier_name,
-            'receipt_date' => $this->receipt_date,
-            'inspection_items' => json_encode($this->inspectionItems),
-            'documents' => json_encode($documentFiles),
-            'photos' => json_encode($photoFiles),
-            'inspection_decision' => $this->inspection_decision,
-            'inspection_notes' => $this->inspection_notes,
-        ]);
-        */
+            // 1️⃣ Simpan data utama
+            $material = IncomingMaterial::create([
+                'name_of_goods'      => $this->name_of_goods,
+                'supplier_name'      => $this->supplier_name,
+                'receipt_date'       => $this->receipt_date,
+                'inspection_items'   => $this->inspectionItems, // pastikan cast array
+                'inspection_decision' => $this->inspection_decision,
+                'inspection_notes'   => $this->inspection_notes,
+                'created_by'         => auth()->id(),
+            ]);
 
-        $this->dispatch('incoming-material:saved');
-        $this->closeModal();
+            // 2️⃣ Upload Dokumen
+            if (!empty($this->documents)) {
+                foreach ($this->documents as $file) {
+
+                    $path = $file->store(
+                        'incoming-material/' . date('Y'),
+                        'public'
+                    );
+
+                    $material->files()->create([
+                        'file_name'   => $file->getClientOriginalName(),
+                        'file_path'   => $path,
+                        'file_type'   => $file->extension(),
+                        'category'    => 'document',
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            // 3️⃣ Upload Foto
+            if (!empty($this->photos)) {
+                foreach ($this->photos as $file) {
+
+                    $path = $file->store(
+                        'incoming-material/' . date('Y'),
+                        'public'
+                    );
+
+                    $material->files()->create([
+                        'file_name'   => $file->getClientOriginalName(),
+                        'file_path'   => $path,
+                        'file_type'   => $file->extension(),
+                        'category'    => 'photo',
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            $this->dispatch('incoming-material:saved');
+            $this->closeModal();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     public function closeModal(): void
