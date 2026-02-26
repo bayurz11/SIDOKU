@@ -74,7 +74,7 @@
 
                             <div>
                                 <label class="text-sm font-medium">Quantity</label>
-                                <input type="number" wire:model.defer="quantity"
+                                <input type="number" wire:model.defer="quantity" min="0" step="any"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                             </div>
 
