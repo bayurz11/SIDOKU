@@ -2,6 +2,23 @@
     // ===============================
     // STATIC DATA - INCOMING MATERIAL
     // ===============================
+    use Carbon\Carbon;
+
+    $currentMonth = Carbon::now()->month;
+    $currentYear = Carbon::now()->year;
+
+    $monthlyData = $incomingData->filter(function ($row) use ($currentMonth, $currentYear) {
+        $date = Carbon::parse($row->date);
+        return $date->month == $currentMonth && $date->year == $currentYear;
+    });
+
+    $monthlyTotal = $monthlyData->count();
+    $monthlyAccepted = $monthlyData->where('status', 'ACCEPTED')->count();
+    $monthlyHold = $monthlyData->where('status', 'HOLD')->count();
+    $monthlyRejected = $monthlyData->where('status', 'REJECTED')->count();
+
+    $monthlyRate = $monthlyTotal > 0 ? round(($monthlyAccepted / $monthlyTotal) * 100, 1) : 0;
+
     $incomingData = collect([
         (object) [
             'id' => 1,
@@ -75,6 +92,53 @@
             </div>
 
         </div>
+    </div>
+    {{-- ================= MONTHLY SUMMARY ================= --}}
+    <div class="border-t border-gray-200 bg-gray-50 px-6 py-6">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <h3 class="text-md font-bold text-gray-800">
+                Summary Bulan {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}
+            </h3>
+
+            <div class="text-sm text-gray-500">
+                Acceptance Rate:
+                <span class="font-semibold text-green-600">
+                    {{ $monthlyRate }}%
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+            <div class="bg-white p-4 rounded-xl border shadow-sm">
+                <div class="text-xs text-gray-500">Total Bulan Ini</div>
+                <div class="text-2xl font-bold mt-1">{{ $monthlyTotal }}</div>
+            </div>
+
+            <div class="bg-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+                <div class="text-xs text-green-700">Accepted</div>
+                <div class="text-2xl font-bold text-green-800 mt-1">
+                    {{ $monthlyAccepted }}
+                </div>
+            </div>
+
+            <div class="bg-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
+                <div class="text-xs text-yellow-700">Hold</div>
+                <div class="text-2xl font-bold text-yellow-800 mt-1">
+                    {{ $monthlyHold }}
+                </div>
+            </div>
+
+            <div class="bg-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
+                <div class="text-xs text-red-700">Rejected</div>
+                <div class="text-2xl font-bold text-red-800 mt-1">
+                    {{ $monthlyRejected }}
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
     {{-- ================= LIST TABLE ================= --}}
@@ -200,7 +264,7 @@
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                     a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                         a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             Edit
                                         </button>
@@ -219,7 +283,7 @@
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                     m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                         m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
