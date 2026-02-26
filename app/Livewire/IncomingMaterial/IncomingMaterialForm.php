@@ -32,7 +32,7 @@ class IncomingMaterialForm extends Component
     public array $documents = [];
 
     // ================= PHOTOS =================
-    public $photos = [];
+    public array $photos = [];
 
     // ================= INSPECTION TABLE =================
     public array $inspectionItems = [];
@@ -41,7 +41,8 @@ class IncomingMaterialForm extends Component
     public string $inspection_decision = '';
     public ?string $inspection_notes = null;
     public $material;
-    public $showDetail = false;
+    public bool $showDetail = false;
+
     // ================= UI =================
     public bool $showModal = false;
     public bool $isEditing = false;
@@ -69,21 +70,6 @@ class IncomingMaterialForm extends Component
         'incoming-material:saved' => '$refresh',
         'showIncomingMaterialDetail' => 'showIncomingMaterialDetail',
     ];
-    public function showIncomingMaterialDetail($id)
-    {
-        $this->material = IncomingMaterial::with('files')->findOrFail($id);
-        $this->showDetail = true;
-    }
-    protected function rules(): array
-    {
-        return [
-            'name_of_goods' => ['required', 'string', 'max:255'],
-            'supplier_name' => ['required', 'string', 'max:255'],
-            'receipt_date'  => ['required', 'date'],
-            'inspection_decision' => ['required'],
-            'photos.*' => ['nullable', 'image', 'max:2048'],
-        ];
-    }
 
     public function mount(): void
     {
@@ -93,6 +79,7 @@ class IncomingMaterialForm extends Component
 
     protected function initializeDocuments(): void
     {
+        $this->documents = []; // pastikan reset ke array
         foreach ($this->documentTypes as $key => $label) {
             $this->documents[$key] = [
                 'is_checked' => false,
@@ -103,7 +90,6 @@ class IncomingMaterialForm extends Component
     }
 
     // ================= INSPECTION METHODS =================
-
     public function addInspectionItem()
     {
         $this->inspectionItems[] = [
@@ -117,21 +103,18 @@ class IncomingMaterialForm extends Component
     public function removeInspectionItem($index)
     {
         unset($this->inspectionItems[$index]);
-        $this->inspectionItems = array_values($this->inspectionItems);
+        $this->inspectionItems = array_values($this->inspectionItems ?? []);
         $this->evaluateFinalDecision();
     }
 
     public function updatedInspectionItems()
     {
-        foreach ($this->inspectionItems as $i => $item) {
-
-            if (strtolower($item['test_result']) === 'ok') {
-                $this->inspectionItems[$i]['inspection_result'] = 'OK';
-            } elseif (strtolower($item['test_result']) === 'not ok') {
-                $this->inspectionItems[$i]['inspection_result'] = 'NOT OK';
-            } else {
-                $this->inspectionItems[$i]['inspection_result'] = '';
-            }
+        foreach ($this->inspectionItems ?? [] as $i => $item) {
+            $this->inspectionItems[$i]['inspection_result'] = match (strtolower($item['test_result'])) {
+                'ok' => 'OK',
+                'not ok' => 'NOT OK',
+                default => '',
+            };
         }
 
         $this->evaluateFinalDecision();
@@ -139,19 +122,20 @@ class IncomingMaterialForm extends Component
 
     protected function evaluateFinalDecision()
     {
-        $hasNotOk = collect($this->inspectionItems)
+        $hasNotOk = collect($this->inspectionItems ?? [])
             ->contains(fn($item) => $item['inspection_result'] === 'NOT OK');
 
         $this->inspection_decision = $hasNotOk ? 'HOLD' : 'APPROVED';
     }
 
     // ================= FORM CONTROL =================
-
     public function openForm(?int $id = null): void
     {
         $this->resetValidation();
         $this->resetErrorBag();
         $this->initializeDocuments();
+        $this->inspectionItems = $this->inspectionItems ?? [];
+        $this->photos = $this->photos ?? [];
 
         $this->showModal = true;
         $this->isEditing = false;
@@ -162,25 +146,32 @@ class IncomingMaterialForm extends Component
         }
     }
 
-    // ================= FILE UPLOAD =================
+    public function showIncomingMaterialDetail($id)
+    {
+        $this->material = IncomingMaterial::with('files')->findOrFail($id);
+        $this->showDetail = true;
+    }
 
+    protected function rules(): array
+    {
+        return [
+            'name_of_goods' => ['required', 'string', 'max:255'],
+            'supplier_name' => ['required', 'string', 'max:255'],
+            'receipt_date'  => ['required', 'date'],
+            'inspection_decision' => ['required'],
+            'photos.*' => ['nullable', 'image', 'max:2048'],
+        ];
+    }
+
+    // ================= FILE UPLOAD =================
     protected function uploadDocumentFiles(): array
     {
         $paths = [];
 
-        foreach ($this->documents as $key => $doc) {
+        foreach ($this->documents ?? [] as $key => $doc) {
             if (!empty($doc['file'])) {
-
-                $filename = Str::random(20) . '.' .
-                    $doc['file']->getClientOriginalExtension();
-
-                $path = $doc['file']->storeAs(
-                    'incoming-material/documents',
-                    $filename,
-                    'public'
-                );
-
-                $paths[$key] = $path;
+                $filename = Str::random(20) . '.' . $doc['file']->getClientOriginalExtension();
+                $paths[$key] = $doc['file']->storeAs('incoming-material/documents', $filename, 'public');
             }
         }
 
@@ -192,24 +183,14 @@ class IncomingMaterialForm extends Component
         $photoPaths = [];
 
         foreach ($this->photos ?? [] as $photo) {
-            $filename = Str::random(20) . '.' .
-                $photo->getClientOriginalExtension();
-
-            $path = $photo->storeAs(
-                'incoming-material/photos',
-                $filename,
-                'public'
-            );
-
-            $photoPaths[] = $path;
+            $filename = Str::random(20) . '.' . $photo->getClientOriginalExtension();
+            $photoPaths[] = $photo->storeAs('incoming-material/photos', $filename, 'public');
         }
 
         return $photoPaths;
     }
 
     // ================= SAVE =================
-
-
     public function save(): void
     {
         $this->validate();
@@ -217,8 +198,6 @@ class IncomingMaterialForm extends Component
         DB::beginTransaction();
 
         try {
-
-            // 1️⃣ Simpan data utama
             $material = IncomingMaterial::create([
                 'date'            => $this->receipt_date,
                 'receipt_time'    => $this->receipt_time ?? null,
@@ -234,63 +213,47 @@ class IncomingMaterialForm extends Component
                 'created_by'      => auth()->id(),
             ]);
 
-            // 2️⃣ Upload Dokumen
-            foreach ($this->documents as $key => $doc) {
+            // Upload Dokumen
+            foreach ($this->documents ?? [] as $key => $doc) {
                 if (!empty($doc['file'])) {
-
                     $file = $doc['file'];
-
-                    $path = $file->store(
-                        'incoming-material/' . date('Y'),
-                        'public'
-                    );
-
+                    $path = $file->store('incoming-material/' . date('Y'), 'public');
                     $material->files()->create([
-                        'file_name'   => $file->getClientOriginalName(),
-                        'file_path'   => $path,
-                        'file_type'   => $file->extension(),
-                        'category'    => $key,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->extension(),
+                        'category'  => $key,
                         'uploaded_by' => auth()->id(),
                     ]);
                 }
             }
 
-            // 3️⃣ Upload Foto
+            // Upload Foto
             foreach ($this->photos ?? [] as $file) {
-
-                $path = $file->store(
-                    'incoming-material/' . date('Y'),
-                    'public'
-                );
-
+                $path = $file->store('incoming-material/' . date('Y'), 'public');
                 $material->files()->create([
-                    'file_name'   => $file->getClientOriginalName(),
-                    'file_path'   => $path,
-                    'file_type'   => $file->extension(),
-                    'category'    => 'photo',
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'file_type' => $file->extension(),
+                    'category'  => 'photo',
                     'uploaded_by' => auth()->id(),
                 ]);
             }
 
             DB::commit();
 
-            // ✅ Toast Success
             $this->dispatch('show-toast', [
                 'type' => 'success',
                 'title' => 'Data Incoming Material berhasil disimpan!'
             ]);
 
-            // ✅ Refresh table component
             $this->dispatch('incoming-material:saved');
 
-            // ✅ Tutup modal
             $this->closeModal();
         } catch (\Throwable $e) {
-
             DB::rollBack();
             report($e);
 
-            // ❌ Toast Error
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'title' => 'Gagal menyimpan data!'
@@ -305,6 +268,8 @@ class IncomingMaterialForm extends Component
         $this->addInspectionItem();
         $this->showModal = false;
         $this->isEditing = false;
+        $this->photos = [];
+        $this->inspectionItems = [];
     }
 
     public function render()
