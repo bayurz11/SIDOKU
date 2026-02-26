@@ -1,38 +1,11 @@
 @php
     use Carbon\Carbon;
+    use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 
     // ===============================
-    // STATIC DATA - INCOMING MATERIAL
+    // GET DATA FROM DATABASE
     // ===============================
-    $incomingData = collect([
-        (object) [
-            'id' => 1,
-            'date' => '2026-02-01',
-            'supplier' => 'PT Sumber Pangan',
-            'material_name' => 'Gula Kristal',
-            'batch_number' => 'GL-2201',
-            'quantity' => 500,
-            'status' => 'ACCEPTED',
-        ],
-        (object) [
-            'id' => 2,
-            'date' => '2026-02-03',
-            'supplier' => 'PT Indo Ingredient',
-            'material_name' => 'Essence Lemon',
-            'batch_number' => 'EL-8891',
-            'quantity' => 120,
-            'status' => 'HOLD',
-        ],
-        (object) [
-            'id' => 3,
-            'date' => '2026-02-05',
-            'supplier' => 'CV Makmur Jaya',
-            'material_name' => 'Botol PET',
-            'batch_number' => 'BP-7744',
-            'quantity' => 1000,
-            'status' => 'REJECTED',
-        ],
-    ]);
+    $incomingData = IncomingMaterial::query()->latest('date')->get();
 
     // ===============================
     // TOTAL ALL TIME
@@ -53,16 +26,16 @@
     // FILTER CURRENT MONTH
     // ===============================
     $monthlyData = $incomingData->filter(function ($row) use ($currentDate) {
-        $date = Carbon::parse($row->date);
-        return $date->month == $currentDate->month && $date->year == $currentDate->year;
+        return Carbon::parse($row->date)->month == $currentDate->month &&
+            Carbon::parse($row->date)->year == $currentDate->year;
     });
 
     // ===============================
     // FILTER PREVIOUS MONTH
     // ===============================
     $previousMonthData = $incomingData->filter(function ($row) use ($previousDate) {
-        $date = Carbon::parse($row->date);
-        return $date->month == $previousDate->month && $date->year == $previousDate->year;
+        return Carbon::parse($row->date)->month == $previousDate->month &&
+            Carbon::parse($row->date)->year == $previousDate->year;
     });
 
     // ===============================
@@ -367,7 +340,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                     a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                                                                         a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             Edit
                                         </button>
@@ -384,7 +357,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                     m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                         m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
