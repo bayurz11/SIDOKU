@@ -91,8 +91,8 @@
                 {{-- BUTTON TAMBAH DATA --}}
                 <div class="flex justify-start md:justify-end">
                     <button wire:click="$dispatch('openIncomingMaterialForm')"
-                        class="group bg-gradient-to-r from-green-600 to-emerald-600
-                       hover:from-green-700 hover:to-emerald-700
+                        class="group bg-gradient-to-r from-green-600 to-green-600
+                       hover:from-green-700 hover:to-green-700
                        text-white px-5 py-3 rounded-xl text-sm font-semibold
                        inline-flex items-center shadow-lg hover:shadow-xl
                        transition-all duration-300 transform hover:scale-105">
@@ -102,9 +102,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
 
-                        + Data Barang
+                        Data Barang
                     </button>
-                    --}}
+
                 </div>
 
             </div>
