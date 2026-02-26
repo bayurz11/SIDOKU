@@ -2,6 +2,7 @@
 
 namespace App\Models\Domains\IncomingMaterial\Models;
 
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 use Illuminate\Database\Eloquent\Model;
 
 class IncomingMaterial extends Model
@@ -21,4 +22,9 @@ class IncomingMaterial extends Model
         'inspection_items' => 'array',
         'receipt_date'     => 'date',
     ];
+
+    public function files()
+    {
+        return $this->hasMany(IncomingMaterialFile::class);
+    }
 }
