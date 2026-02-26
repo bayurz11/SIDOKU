@@ -290,6 +290,8 @@ class IncomingMaterialForm extends Component
                 'title' => 'Gagal menyimpan data!'
             ]);
         }
+        $this->dispatch('document:saved');
+        $this->closeModal();
     }
 
     public function closeModal(): void
