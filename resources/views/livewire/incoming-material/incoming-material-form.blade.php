@@ -230,7 +230,7 @@
                             Kesesuaian Dokumen (Document Suitability)
                         </h4>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                             @foreach ($documentTypes as $key => $label)
                                 <div class="bg-white border rounded-lg p-4 space-y-2">
