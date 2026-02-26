@@ -88,7 +88,89 @@
 
                         </div>
                     </div>
+                    {{-- ================= SPESIFIKASI YANG DIPERIKSA ================= --}}
+                    <div class="bg-white shadow rounded-xl border mt-6">
 
+                        <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                            <h3 class="text-sm font-semibold text-gray-700">
+                                Spesifikasi yang Diperiksa
+                            </h3>
+
+                            <button type="button" wire:click="addInspectionItem"
+                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs">
+                                + Tambah Parameter
+                            </button>
+                        </div>
+
+                        <div class="p-6 overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200">
+                                <thead class="bg-gray-100">
+                                    <tr class="text-left">
+                                        <th class="px-3 py-2 border">No</th>
+                                        <th class="px-3 py-2 border">Parameter Uji</th>
+                                        <th class="px-3 py-2 border">Standar (Kondisi Fisik)</th>
+                                        <th class="px-3 py-2 border">Hasil Uji</th>
+                                        <th class="px-3 py-2 border">Hasil Inspeksi</th>
+                                        <th class="px-3 py-2 border text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($inspectionItems as $index => $item)
+                                        <tr>
+                                            <td class="px-3 py-2 border text-center">
+                                                {{ $loop->iteration }}
+                                            </td>
+
+                                            {{-- Parameter --}}
+                                            <td class="px-3 py-2 border">
+                                                <input type="text"
+                                                    wire:model.defer="inspectionItems.{{ $index }}.parameter"
+                                                    class="w-full border rounded-md p-1 text-sm"
+                                                    placeholder="Contoh: Warna, Bau, Tekstur">
+                                            </td>
+
+                                            {{-- Standard --}}
+                                            <td class="px-3 py-2 border">
+                                                <input type="text"
+                                                    wire:model.defer="inspectionItems.{{ $index }}.standard"
+                                                    class="w-full border rounded-md p-1 text-sm"
+                                                    placeholder="Contoh: Putih bersih, Tidak berbau">
+                                            </td>
+
+                                            {{-- Test Result --}}
+                                            <td class="px-3 py-2 border">
+                                                <select wire:model="inspectionItems.{{ $index }}.test_result"
+                                                    class="w-full border rounded-md p-1 text-sm">
+                                                    <option value="">-- Pilih --</option>
+                                                    <option value="ok">OK</option>
+                                                    <option value="not ok">NOT OK</option>
+                                                </select>
+                                            </td>
+
+                                            {{-- Inspection Result --}}
+                                            <td class="px-3 py-2 border text-center font-semibold">
+                                                @if ($item['inspection_result'] === 'OK')
+                                                    <span class="text-green-600">OK</span>
+                                                @elseif($item['inspection_result'] === 'NOT OK')
+                                                    <span class="text-red-600">NOT OK</span>
+                                                @endif
+                                            </td>
+
+                                            {{-- Delete --}}
+                                            <td class="px-3 py-2 border text-center">
+                                                <button type="button"
+                                                    wire:click="removeInspectionItem({{ $index }})"
+                                                    class="text-red-600 hover:text-red-800 text-xs">
+                                                    Hapus
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
                     {{-- ================= DOCUMENT SUITABILITY ================= --}}
                     <div class="border border-blue-200 rounded-xl p-6 bg-blue-50/30">
                         <h4 class="text-sm font-semibold text-gray-800 mb-4">
@@ -130,7 +212,8 @@
                             Upload Foto Material
                         </h4>
 
-                        <input type="file" wire:model="photos" multiple class="w-full border rounded-md p-2 text-sm">
+                        <input type="file" wire:model="photos" multiple
+                            class="w-full border rounded-md p-2 text-sm">
 
                         @if ($photos)
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -152,7 +235,8 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             <div>
-                                <label class="text-sm font-medium">Keputusan <span class="text-red-500">*</span></label>
+                                <label class="text-sm font-medium">Keputusan <span
+                                        class="text-red-500">*</span></label>
                                 <select wire:model.defer="inspection_decision"
                                     class="w-full mt-1 border rounded-md p-2 text-sm">
                                     <option value="">-- Pilih --</option>

@@ -28,7 +28,10 @@ class IncomingMaterialForm extends Component
     // ================= PHOTOS =================
     public $photos = [];
 
-    // ================= INSPECTION =================
+    // ================= INSPECTION TABLE =================
+    public array $inspectionItems = [];
+
+    // ================= FINAL DECISION =================
     public string $inspection_decision = '';
     public ?string $inspection_notes = null;
 
@@ -72,6 +75,7 @@ class IncomingMaterialForm extends Component
     public function mount(): void
     {
         $this->initializeDocuments();
+        $this->addInspectionItem();
     }
 
     protected function initializeDocuments(): void
@@ -85,6 +89,51 @@ class IncomingMaterialForm extends Component
         }
     }
 
+    // ================= INSPECTION METHODS =================
+
+    public function addInspectionItem()
+    {
+        $this->inspectionItems[] = [
+            'parameter' => '',
+            'standard' => '',
+            'test_result' => '',
+            'inspection_result' => '',
+        ];
+    }
+
+    public function removeInspectionItem($index)
+    {
+        unset($this->inspectionItems[$index]);
+        $this->inspectionItems = array_values($this->inspectionItems);
+        $this->evaluateFinalDecision();
+    }
+
+    public function updatedInspectionItems()
+    {
+        foreach ($this->inspectionItems as $i => $item) {
+
+            if (strtolower($item['test_result']) === 'ok') {
+                $this->inspectionItems[$i]['inspection_result'] = 'OK';
+            } elseif (strtolower($item['test_result']) === 'not ok') {
+                $this->inspectionItems[$i]['inspection_result'] = 'NOT OK';
+            } else {
+                $this->inspectionItems[$i]['inspection_result'] = '';
+            }
+        }
+
+        $this->evaluateFinalDecision();
+    }
+
+    protected function evaluateFinalDecision()
+    {
+        $hasNotOk = collect($this->inspectionItems)
+            ->contains(fn($item) => $item['inspection_result'] === 'NOT OK');
+
+        $this->inspection_decision = $hasNotOk ? 'HOLD' : 'APPROVED';
+    }
+
+    // ================= FORM CONTROL =================
+
     public function openForm(?int $id = null): void
     {
         $this->resetValidation();
@@ -95,11 +144,12 @@ class IncomingMaterialForm extends Component
         $this->isEditing = false;
 
         if ($id) {
-            // nanti bisa load dari DB
             $this->incomingId = $id;
             $this->isEditing = true;
         }
     }
+
+    // ================= FILE UPLOAD =================
 
     protected function uploadDocumentFiles(): array
     {
@@ -128,46 +178,47 @@ class IncomingMaterialForm extends Component
     {
         $photoPaths = [];
 
-        if ($this->photos) {
-            foreach ($this->photos as $photo) {
-                $filename = Str::random(20) . '.' .
-                    $photo->getClientOriginalExtension();
+        foreach ($this->photos ?? [] as $photo) {
+            $filename = Str::random(20) . '.' .
+                $photo->getClientOriginalExtension();
 
-                $path = $photo->storeAs(
-                    'incoming-material/photos',
-                    $filename,
-                    'public'
-                );
+            $path = $photo->storeAs(
+                'incoming-material/photos',
+                $filename,
+                'public'
+            );
 
-                $photoPaths[] = $path;
-            }
+            $photoPaths[] = $path;
         }
 
         return $photoPaths;
     }
 
+    // ================= SAVE =================
+
     public function save(): void
     {
         $this->validate();
 
-        // Upload dokumen
         $documentFiles = $this->uploadDocumentFiles();
-
-        // Upload foto
         $photoFiles = $this->uploadPhotos();
 
         /*
-        NANTI SIMPAN KE DATABASE
-        contoh:
+        SIMPAN KE DATABASE
+
         IncomingMaterial::create([
-            ...
+            'name_of_goods' => $this->name_of_goods,
+            'supplier_name' => $this->supplier_name,
+            'receipt_date' => $this->receipt_date,
+            'inspection_items' => json_encode($this->inspectionItems),
             'documents' => json_encode($documentFiles),
             'photos' => json_encode($photoFiles),
+            'inspection_decision' => $this->inspection_decision,
+            'inspection_notes' => $this->inspection_notes,
         ]);
         */
 
         $this->dispatch('incoming-material:saved');
-
         $this->closeModal();
     }
 
@@ -175,6 +226,7 @@ class IncomingMaterialForm extends Component
     {
         $this->reset();
         $this->initializeDocuments();
+        $this->addInspectionItem();
         $this->showModal = false;
         $this->isEditing = false;
     }
