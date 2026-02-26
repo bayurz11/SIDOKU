@@ -8,19 +8,20 @@ use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 class IncomingMaterialDetail extends Component
 {
     public $material;
-    public $showModal = false;
+    public $showDetail = false; // ← WAJIB ADA
 
-    protected $listeners = ['openIncomingMaterialDetail'];
+    protected $listeners = ['showIncomingMaterialDetail'];
 
-    public function openIncomingMaterialDetail($id)
+    public function showIncomingMaterialDetail($id)
     {
         $this->material = IncomingMaterial::with('files')->findOrFail($id);
-        $this->showModal = true;
+        $this->showDetail = true;
     }
 
     public function closeModal()
     {
-        $this->reset(['material', 'showModal']);
+        $this->reset(['material']);
+        $this->showDetail = false;
     }
 
     public function render()

@@ -40,7 +40,8 @@ class IncomingMaterialForm extends Component
     // ================= FINAL DECISION =================
     public string $inspection_decision = '';
     public ?string $inspection_notes = null;
-
+    public $material;
+    public $showDetail = false;
     // ================= UI =================
     public bool $showModal = false;
     public bool $isEditing = false;
@@ -66,8 +67,13 @@ class IncomingMaterialForm extends Component
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
         'incoming-material:saved' => '$refresh',
+        'showIncomingMaterialDetail' => 'showIncomingMaterialDetail',
     ];
-
+    public function showIncomingMaterialDetail($id)
+    {
+        $this->material = IncomingMaterial::with('files')->findOrFail($id);
+        $this->showDetail = true;
+    }
     protected function rules(): array
     {
         return [
