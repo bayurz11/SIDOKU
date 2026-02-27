@@ -155,18 +155,22 @@
                                     @foreach ($inspectionItems as $index => $item)
                                         <tr>
                                             <td class="px-3 py-2 border text-center">{{ $loop->iteration }}</td>
+
+                                            {{-- Parameter --}}
                                             <td class="px-3 py-2 border">
-                                                <input type="text"
-                                                    wire:model.defer="inspectionItems.{{ $index }}.parameter"
-                                                    class="w-full border rounded-md p-1 text-sm"
-                                                    placeholder="Contoh: Warna, Bau, Tekstur">
+                                                <span class="text-gray-900 text-sm">
+                                                    {{ $item['parameter'] ?? '-' }}
+                                                </span>
                                             </td>
+
+                                            {{-- Standard --}}
                                             <td class="px-3 py-2 border">
-                                                <input type="text"
-                                                    wire:model.defer="inspectionItems.{{ $index }}.standard"
-                                                    class="w-full border rounded-md p-1 text-sm"
-                                                    placeholder="Contoh: Putih bersih, Tidak berbau">
+                                                <span class="text-gray-900 text-sm">
+                                                    {{ $item['standard'] ?? '-' }}
+                                                </span>
                                             </td>
+
+                                            {{-- Test Result --}}
                                             <td class="px-3 py-2 border text-center font-semibold">
                                                 @if (strtolower($item['test_result'] ?? '') === 'ok')
                                                     <span class="text-green-600">OK</span>
@@ -176,14 +180,17 @@
                                                     <span class="text-gray-400">-</span>
                                                 @endif
                                             </td>
+
+                                            {{-- Inspection Result --}}
                                             <td class="px-3 py-2 border text-center font-semibold">
-                                                @if ($item['inspection_result'] === 'OK')
+                                                @if (strtoupper($item['inspection_result'] ?? '') === 'OK')
                                                     <span class="text-green-600">OK</span>
-                                                @elseif($item['inspection_result'] === 'NOT OK')
+                                                @elseif (strtoupper($item['inspection_result'] ?? '') === 'NOT OK')
                                                     <span class="text-red-600">NOT OK</span>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
                                                 @endif
                                             </td>
-
                                         </tr>
                                     @endforeach
                                 </tbody>
