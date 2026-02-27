@@ -153,7 +153,7 @@
                             Dokumen & Foto
                         </h3>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                             @forelse($material->files ?? [] as $file)
                                 <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-1">
