@@ -152,7 +152,29 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Nama Staf</dt>
                                     <dd class="font-medium text-gray-900 text-right uppercase">
-                                        {{ $material->created_by->name ?? '-' }}
+                                        @if (method_exists($material, 'createdBy') && $material->createdBy)
+                                            {{ $material->createdBy->name }}
+                                        @else
+                                            {{ $material->created_by ?? '-' }}
+                                        @endif
+                                    </dd>
+                                </div>
+
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-500">Tanggal Input</dt>
+                                    <dd class="text-gray-900 font-medium text-right">
+                                        {{ optional($material->created_at)->format('d M Y') ?? '-' }}
+                                    </dd>
+                                </div>
+
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-500">Diedit oleh</dt>
+                                    <dd class="text-gray-900 font-medium text-right">
+                                        @if (method_exists($material, 'updatedBy') && $material->updatedBy)
+                                            {{ $material->updatedBy->name }}
+                                        @else
+                                            {{ $material->updated_by ?? '-' }}
+                                        @endif
                                     </dd>
                                 </div>
 
