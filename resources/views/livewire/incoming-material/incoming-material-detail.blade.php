@@ -182,7 +182,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($material as $index => $item)
+                                    @foreach ($inspectionItems as $index => $item)
                                         <tr>
                                             <td class="px-3 py-2 border text-center">{{ $loop->iteration }}</td>
                                             <td class="px-3 py-2 border">
