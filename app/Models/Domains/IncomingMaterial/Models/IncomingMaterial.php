@@ -3,6 +3,7 @@
 namespace App\Models\Domains\IncomingMaterial\Models;
 
 
+use App\Domains\User\Models\User;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialInspection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,5 +61,14 @@ class IncomingMaterial extends Model
             IncomingMaterialFile::class,
             'incoming_material_id'
         );
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }
