@@ -85,43 +85,59 @@ class IncomingMaterialForm extends Component
         }
     }
     // ================= OPEN FORM =================
-    public function openForm($data = null): void
+    public function openForm(?int $id = null): void
     {
-        $this->resetValidation();
         $this->resetErrorBag();
-        $this->reset();
-        $this->initializeDocuments();
+        $this->resetValidation();
+
+        // reset field manual (JANGAN reset total)
+        $this->incomingId = null;
+        $this->isEditing = false;
+
+        $this->name_of_goods = '';
+        $this->supplier_name = '';
+        $this->receipt_date = null;
+        $this->expired_date = null;
+        $this->batch_number = '';
+        $this->quantity = null;
+        $this->receipt_time = null;
+        $this->quantity_unit = null;
+        $this->sample_quantity = null;
+        $this->vehicle_number = null;
+        $this->inspection_decision = '';
+        $this->inspection_notes = null;
+
+        $this->photos = [];
         $this->inspectionItems = [];
         $this->addInspectionItem();
-
-        $id = $data['id'] ?? null;
+        $this->initializeDocuments();
 
         if ($id) {
-            $material = IncomingMaterial::with('files')->find($id);
-
-            if (!$material) {
-                $this->dispatch('show-toast', [
-                    'type' => 'error',
-                    'title' => 'Data tidak ditemukan!'
-                ]);
-                return;
-            }
+            $material = IncomingMaterial::with('files')->findOrFail($id);
 
             $this->incomingId = $material->id;
             $this->isEditing = true;
 
-            $this->name_of_goods    = $material->material_name ?? '';
-            $this->supplier_name    = $material->supplier ?? '';
-            $this->receipt_date     = $material->date?->format('Y-m-d');
-            $this->expired_date     = $material->expired_date?->format('Y-m-d');
-            $this->receipt_time     = $material->receipt_time ?? null;
-            $this->batch_number     = $material->batch_number ?? '';
-            $this->quantity         = $material->quantity ?? null;
-            $this->quantity_unit    = $material->quantity_unit ?? null;
-            $this->sample_quantity  = $material->sample_quantity ?? null;
-            $this->vehicle_number   = $material->vehicle_number ?? null;
-            $this->inspection_decision = $material->status ?? '';
-            $this->inspection_notes    = $material->notes ?? null;
+            $this->name_of_goods    = $material->material_name;
+            $this->supplier_name    = $material->supplier;
+            $this->receipt_date     = optional($material->date)?->format('Y-m-d');
+            $this->expired_date     = optional($material->expired_date)?->format('Y-m-d');
+            $this->receipt_time     = $material->receipt_time;
+            $this->batch_number     = $material->batch_number;
+            $this->quantity         = $material->quantity;
+            $this->quantity_unit    = $material->quantity_unit;
+            $this->sample_quantity  = $material->sample_quantity;
+            $this->vehicle_number   = $material->vehicle_number;
+            $this->inspection_decision = $material->status;
+            $this->inspection_notes    = $material->notes;
+
+            // kalau mau load dokumen lama juga
+            foreach ($material->files as $file) {
+                if (isset($this->documents[$file->category])) {
+                    $this->documents[$file->category]['existing_path'] = $file->file_path;
+                    $this->documents[$file->category]['is_checked'] = true;
+                }
+            }
         }
 
         $this->showModal = true;
