@@ -85,16 +85,16 @@ class IncomingMaterialForm extends Component
         }
     }
     // ================= OPEN FORM =================
-    public function openForm($data = null): void
+    public function openForm($id = null): void
     {
         $this->resetValidation();
         $this->initializeDocuments();
         $this->inspectionItems = [];
         $this->addInspectionItem();
 
-        if (isset($data['id'])) {
+        if ($id) {
 
-            $material = IncomingMaterial::with('files')->find($data['id']);
+            $material = IncomingMaterial::with('files')->find($id);
 
             if (!$material) {
                 $this->dispatch('show-toast', [
@@ -107,7 +107,6 @@ class IncomingMaterialForm extends Component
             $this->incomingId = $material->id;
             $this->isEditing = true;
 
-            // Fill form
             $this->name_of_goods = $material->material_name;
             $this->supplier_name = $material->supplier;
             $this->receipt_date  = $material->date?->format('Y-m-d');
@@ -194,9 +193,11 @@ class IncomingMaterialForm extends Component
         DB::beginTransaction();
 
         try {
-            $material = IncomingMaterial::updateOrCreate(
-                ['id' => $this->incomingId],
-                [
+            if ($this->incomingId) {
+
+                $material = IncomingMaterial::findOrFail($this->incomingId);
+
+                $material->update([
                     'date'            => $this->receipt_date,
                     'receipt_time'    => $this->receipt_time ?? null,
                     'supplier'        => $this->supplier_name,
@@ -209,9 +210,24 @@ class IncomingMaterialForm extends Component
                     'status'          => $this->inspection_decision,
                     'notes'           => $this->inspection_notes,
                     'updated_by'      => auth()->id(),
-                    'created_by'      => $this->incomingId ? $material->created_by ?? auth()->id() : auth()->id(),
-                ]
-            );
+                ]);
+            } else {
+
+                $material = IncomingMaterial::create([
+                    'date'            => $this->receipt_date,
+                    'receipt_time'    => $this->receipt_time ?? null,
+                    'supplier'        => $this->supplier_name,
+                    'material_name'   => $this->name_of_goods,
+                    'batch_number'    => $this->batch_number,
+                    'quantity'        => $this->quantity,
+                    'quantity_unit'   => $this->quantity_unit ?? null,
+                    'sample_quantity' => $this->sample_quantity ?? null,
+                    'vehicle_number'  => $this->vehicle_number ?? null,
+                    'status'          => $this->inspection_decision,
+                    'notes'           => $this->inspection_notes,
+                    'created_by'      => auth()->id(),
+                ]);
+            }
 
             // Upload Documents
             foreach ($this->documents as $key => $doc) {
