@@ -17,4 +17,8 @@ class LogChange extends Model
     {
         return $this->belongsTo(Log::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(\App\Domains\User\Models\User::class, 'user_id');
+    }
 }
