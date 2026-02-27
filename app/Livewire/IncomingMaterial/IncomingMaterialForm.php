@@ -84,7 +84,19 @@ class IncomingMaterialForm extends Component
             ];
         }
     }
+    // ================= OPEN FORM =================
+    public function openForm(): void
+    {
+        $this->resetValidation();
 
+        $this->incomingId = null;
+        $this->isEditing = false;
+        $this->showModal = true;
+
+        $this->initializeDocuments();
+        $this->inspectionItems = [];
+        $this->addInspectionItem();
+    }
     // ================= INSPECTION METHODS =================
     public function addInspectionItem()
     {
