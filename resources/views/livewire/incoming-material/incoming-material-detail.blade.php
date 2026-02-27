@@ -166,8 +166,8 @@
                                         Kategori: {{ strtoupper($file->category ?? '-') }}
                                     </div>
 
-                                    <a href="{{ asset(str_replace('storage/app/public/', $file->file_path)) }}"
-                                        target="_blank" class="inline-block text-blue-600 hover:underline">
+                                    <a href="{{ Storage::url($file->file_path) }}" target="_blank"
+                                        class="inline-block text-blue-600 hover:underline">
                                         Lihat File
                                     </a>
                                 </div>
