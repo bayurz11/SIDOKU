@@ -56,6 +56,7 @@ class IncomingMaterialForm extends Component
 
     // ================= DETAIL MODAL =================
     public $material;
+
     public bool $showDetail = false;
 
     // ================= UI =================

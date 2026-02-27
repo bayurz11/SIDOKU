@@ -9,7 +9,7 @@ class IncomingMaterialDetail extends Component
 {
     public $showDetail = false;
     public $material = null;
-
+    public $inspectionItems = [];
     protected $listeners = [
         'openIncomingMaterialDetail' => 'loadData'
     ];
