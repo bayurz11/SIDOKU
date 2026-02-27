@@ -83,12 +83,7 @@
                                     </dd>
                                 </div>
 
-                                <div class="flex justify-between">
-                                    <dt class="text-gray-500">No Kendaraan</dt>
-                                    <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->vehicle_number ?? '-' }}
-                                    </dd>
-                                </div>
+
 
                             </dl>
                         </div>
@@ -127,6 +122,23 @@
                                     <dt class="text-gray-500">Tanggal Input</dt>
                                     <dd class="font-medium text-gray-900 text-right">
                                         {{ $material->created_at?->format('d M Y') ?? '-' }}
+                                    </dd>
+                                </div>
+
+                            </dl>
+                        </div>
+                        {{-- INFORMASI Kendaraan --}}
+                        <div class="space-y-3">
+                            <h3 class="text-xs font-semibold uppercase text-gray-500">
+                                Informasi Kendaraan
+                            </h3>
+
+                            <dl class="space-y-2">
+
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-500">No Kendaraan</dt>
+                                    <dd class="font-medium text-gray-900 text-right">
+                                        {{ $material->vehicle_number ?? '-' }}
                                     </dd>
                                 </div>
 
