@@ -85,17 +85,46 @@ class IncomingMaterialForm extends Component
         }
     }
     // ================= OPEN FORM =================
-    public function openForm(): void
+    public function openForm($data = null): void
     {
         $this->resetValidation();
-
-        $this->incomingId = null;
-        $this->isEditing = false;
-        $this->showModal = true;
-
         $this->initializeDocuments();
         $this->inspectionItems = [];
         $this->addInspectionItem();
+
+        if (isset($data['id'])) {
+
+            $material = IncomingMaterial::with('files')->find($data['id']);
+
+            if (!$material) {
+                $this->dispatch('show-toast', [
+                    'type' => 'error',
+                    'title' => 'Data tidak ditemukan!'
+                ]);
+                return;
+            }
+
+            $this->incomingId = $material->id;
+            $this->isEditing = true;
+
+            // Fill form
+            $this->name_of_goods = $material->material_name;
+            $this->supplier_name = $material->supplier;
+            $this->receipt_date  = $material->date?->format('Y-m-d');
+            $this->receipt_time  = $material->receipt_time;
+            $this->batch_number  = $material->batch_number;
+            $this->quantity      = $material->quantity;
+            $this->quantity_unit = $material->quantity_unit;
+            $this->sample_quantity = $material->sample_quantity;
+            $this->vehicle_number  = $material->vehicle_number;
+            $this->inspection_decision = $material->status;
+            $this->inspection_notes    = $material->notes;
+        } else {
+            $this->incomingId = null;
+            $this->isEditing = false;
+        }
+
+        $this->showModal = true;
     }
     // ================= INSPECTION METHODS =================
     public function addInspectionItem()
@@ -165,20 +194,24 @@ class IncomingMaterialForm extends Component
         DB::beginTransaction();
 
         try {
-            $material = IncomingMaterial::create([
-                'date'            => $this->receipt_date,
-                'receipt_time'    => $this->receipt_time ?? null,
-                'supplier'        => $this->supplier_name,
-                'material_name'   => $this->name_of_goods,
-                'batch_number'    => $this->batch_number,
-                'quantity'        => $this->quantity,
-                'quantity_unit'   => $this->quantity_unit ?? null,
-                'sample_quantity' => $this->sample_quantity ?? null,
-                'vehicle_number'  => $this->vehicle_number ?? null,
-                'status'          => $this->inspection_decision,
-                'notes'           => $this->inspection_notes,
-                'created_by'      => auth()->id(),
-            ]);
+            $material = IncomingMaterial::updateOrCreate(
+                ['id' => $this->incomingId],
+                [
+                    'date'            => $this->receipt_date,
+                    'receipt_time'    => $this->receipt_time ?? null,
+                    'supplier'        => $this->supplier_name,
+                    'material_name'   => $this->name_of_goods,
+                    'batch_number'    => $this->batch_number,
+                    'quantity'        => $this->quantity,
+                    'quantity_unit'   => $this->quantity_unit ?? null,
+                    'sample_quantity' => $this->sample_quantity ?? null,
+                    'vehicle_number'  => $this->vehicle_number ?? null,
+                    'status'          => $this->inspection_decision,
+                    'notes'           => $this->inspection_notes,
+                    'updated_by'      => auth()->id(),
+                    'created_by'      => $this->incomingId ? $material->created_by ?? auth()->id() : auth()->id(),
+                ]
+            );
 
             // Upload Documents
             foreach ($this->documents as $key => $doc) {
