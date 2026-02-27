@@ -134,33 +134,6 @@
                             </dl>
                         </div>
                     </div>
-
-                    {{-- DOKUMEN & FOTO --}}
-                    <div>
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Dokumen & Foto</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            @forelse($material->files ?? [] as $file)
-                                <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-1">
-                                    <div class="font-medium text-gray-800">{{ $file->file_name ?? '-' }}</div>
-                                    <div class="text-gray-500">Kategori: {{ strtoupper($file->category ?? '-') }}</div>
-                                    <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
-                                        target="_blank" class="inline-block text-blue-600 hover:underline">Lihat
-                                        File</a>
-                                </div>
-                            @empty
-                                <div class="text-gray-500 text-xs">Tidak ada dokumen atau foto.</div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    {{-- CATATAN --}}
-                    <div>
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">Catatan</h3>
-                        <div class="border rounded-lg p-4 bg-gray-50 text-xs text-gray-700">
-                            {{ $material->notes ?? 'Tidak ada catatan.' }}
-                        </div>
-                    </div>
-
                     {{-- ================= SPESIFIKASI YANG DIPERIKSA ================= --}}
                     <div class="bg-white shadow rounded-xl border mt-6">
                         <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
@@ -214,6 +187,31 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    {{-- DOKUMEN & FOTO --}}
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Dokumen & Foto</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @forelse($material->files ?? [] as $file)
+                                <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-1">
+                                    <div class="font-medium text-gray-800">{{ $file->file_name ?? '-' }}</div>
+                                    <div class="text-gray-500">Kategori: {{ strtoupper($file->category ?? '-') }}</div>
+                                    <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                        target="_blank" class="inline-block text-blue-600 hover:underline">Lihat
+                                        File</a>
+                                </div>
+                            @empty
+                                <div class="text-gray-500 text-xs">Tidak ada dokumen atau foto.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    {{-- CATATAN --}}
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">Catatan</h3>
+                        <div class="border rounded-lg p-4 bg-gray-50 text-xs text-gray-700">
+                            {{ $material->notes ?? 'Tidak ada catatan.' }}
                         </div>
                     </div>
 
