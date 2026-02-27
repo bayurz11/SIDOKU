@@ -2,59 +2,41 @@
     use Carbon\Carbon;
     use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 
-    // ===============================
-    // GET DATA FROM DATABASE
-    // ===============================
-    $incomingData = IncomingMaterial::query()->latest('date')->get();
-
-    // ===============================
-    // TOTAL ALL TIME
-    // ===============================
-    $totalAll = $incomingData->count();
-    $totalAccepted = $incomingData->where('status', 'ACCEPTED')->count();
-    $totalHold = $incomingData->where('status', 'HOLD')->count();
-    $totalRejected = $incomingData->where('status', 'REJECTED')->count();
-
-    // ===============================
-    // MONTH SELECTION
-    // ===============================
+    // Bulan yang dipilih, default bulan ini
     $selectedMonth = request('month') ?? Carbon::now()->format('Y-m');
     $currentDate = Carbon::createFromFormat('Y-m', $selectedMonth);
+
+    // Data seluruhnya (all time)
+    $allData = IncomingMaterial::latest('date')->get();
+    $totalAll = $allData->count();
+    $totalAccepted = $allData->where('status', 'ACCEPTED')->count();
+    $totalHold = $allData->where('status', 'HOLD')->count();
+    $totalRejected = $allData->where('status', 'REJECTED')->count();
+
+    // Data bulan terpilih
+    $incomingData = IncomingMaterial::whereYear('date', $currentDate->year)
+        ->whereMonth('date', $currentDate->month)
+        ->latest('date')
+        ->get();
+
+    // Previous month
     $previousDate = $currentDate->copy()->subMonth();
+    $previousMonthData = IncomingMaterial::whereYear('date', $previousDate->year)
+        ->whereMonth('date', $previousDate->month)
+        ->get();
 
-    // ===============================
-    // FILTER CURRENT MONTH
-    // ===============================
-    $monthlyData = $incomingData->filter(function ($row) use ($currentDate) {
-        return Carbon::parse($row->date)->month == $currentDate->month &&
-            Carbon::parse($row->date)->year == $currentDate->year;
-    });
-
-    // ===============================
-    // FILTER PREVIOUS MONTH
-    // ===============================
-    $previousMonthData = $incomingData->filter(function ($row) use ($previousDate) {
-        return Carbon::parse($row->date)->month == $previousDate->month &&
-            Carbon::parse($row->date)->year == $previousDate->year;
-    });
-
-    // ===============================
-    // MONTHLY CALCULATION
-    // ===============================
-    $monthlyTotal = $monthlyData->count();
-    $monthlyAccepted = $monthlyData->where('status', 'ACCEPTED')->count();
-    $monthlyHold = $monthlyData->where('status', 'HOLD')->count();
-    $monthlyRejected = $monthlyData->where('status', 'REJECTED')->count();
+    // Perhitungan monthly
+    $monthlyTotal = $incomingData->count();
+    $monthlyAccepted = $incomingData->where('status', 'ACCEPTED')->count();
+    $monthlyHold = $incomingData->where('status', 'HOLD')->count();
+    $monthlyRejected = $incomingData->where('status', 'REJECTED')->count();
 
     $monthlyRate = $monthlyTotal > 0 ? round(($monthlyAccepted / $monthlyTotal) * 100, 1) : 0;
-
     $previousRate =
         $previousMonthData->count() > 0
             ? round(($previousMonthData->where('status', 'ACCEPTED')->count() / $previousMonthData->count()) * 100, 1)
             : 0;
-
     $trend = round($monthlyRate - $previousRate, 1);
-
     $rejectRate = $monthlyTotal > 0 ? round(($monthlyRejected / $monthlyTotal) * 100, 1) : 0;
 @endphp
 
@@ -270,17 +252,11 @@
                                 @endphp
 
                                 @if ($row->status === 'ACCEPTED')
-                                    <span class="{{ $baseClass }} bg-green-100 text-green-700">
-                                        Accepted
-                                    </span>
+                                    <span class="{{ $baseClass }} bg-green-100 text-green-700">Accepted</span>
                                 @elseif($row->status === 'HOLD')
-                                    <span class="{{ $baseClass }} bg-yellow-100 text-yellow-700">
-                                        Hold
-                                    </span>
+                                    <span class="{{ $baseClass }} bg-yellow-100 text-yellow-700">Hold</span>
                                 @else
-                                    <span class="{{ $baseClass }} bg-red-100 text-red-700">
-                                        Rejected
-                                    </span>
+                                    <span class="{{ $baseClass }} bg-red-100 text-red-700">Rejected</span>
                                 @endif
                             </td>
                             {{-- Aksi --}}
@@ -342,7 +318,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                     a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                                                                                                                                                                                                             a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             Edit
                                         </button>
