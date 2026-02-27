@@ -7,28 +7,23 @@ use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 
 class IncomingMaterialDetail extends Component
 {
-    public $material;
-    public $showDetail = false; // ← WAJIB ADA
+    public $showDetail = false;
+    public $material = null;
 
-    protected $listeners = ['showIncomingMaterialDetail'];
+    protected $listeners = [
+        'openIncomingMaterialDetail' => 'loadData'
+    ];
 
-    public function showIncomingMaterialDetail($id)
+    public function loadData($id)
     {
         $this->material = IncomingMaterial::with('files')->find($id);
-        if (! $this->material) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'title' => 'Data tidak ditemukan!',
-            ]);
-            return;
-        }
         $this->showDetail = true;
     }
 
-    public function closeModal()
+    public function closeDetail()
     {
-        $this->reset(['material']);
         $this->showDetail = false;
+        $this->material = null;
     }
 
     public function render()

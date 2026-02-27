@@ -4,5 +4,6 @@
     <div class="space-y-6">
         <livewire:incoming-material.incoming-material-list />
         <livewire:incoming-material.incoming-material-form />
+        <livewire:incoming-material.incoming-material-detail />
     </div>
 @endsection
