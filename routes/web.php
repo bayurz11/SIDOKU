@@ -1,11 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Route;
 use App\Domains\Document\Models\Document;
-use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use App\Livewire\Document\DocumentImportTemplateExport;
+use App\Livewire\Ipc\IpcProductImportTemplateExport;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 Route::get('/', function () {
@@ -128,15 +129,19 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
             return view('incoming-material-tahap1.index');
         })->name('index');
     });
-Route::get('/incoming-material/file/{filename}', function ($filename) {
+Route::get('/incoming-material/file/{id}', function ($id) {
 
-    $path = storage_path('app/public/incoming-material/2026/' . $filename);
+    $file = IncomingMaterialFile::findOrFail($id); // ganti model sesuai milikmu
+
+    $path = storage_path('app/public/' . $file->file_path);
 
     if (!file_exists($path)) {
         abort(404);
     }
 
-    return response()->file($path);
+    return response()->file($path, [
+        'Content-Disposition' => 'inline; filename="' . $file->file_name . '"'
+    ]);
 })->name('incoming-material.file');
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
