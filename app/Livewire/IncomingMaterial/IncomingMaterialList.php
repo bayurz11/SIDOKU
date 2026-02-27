@@ -10,20 +10,32 @@ class IncomingMaterialList extends Component
     public $material = null;
     public bool $showDetail = false;
 
+    protected $listeners = [
+        'incoming-material:saved' => '$refresh',
+    ];
+
     public function showIncomingMaterialDetail($id)
     {
         $this->material = IncomingMaterial::with('files')->find($id);
+
+        if (!$this->material) {
+            return;
+        }
+
         $this->showDetail = true;
     }
 
     public function closeDetail()
     {
-        $this->showDetail = false;
-        $this->material = null;
+        $this->reset(['showDetail', 'material']);
     }
 
     public function render()
     {
-        return view('livewire.incoming-material.incoming-material-list');
+        $materials = IncomingMaterial::latest()->get();
+
+        return view('livewire.incoming-material.incoming-material-list', [
+            'materials' => $materials
+        ]);
     }
 }
