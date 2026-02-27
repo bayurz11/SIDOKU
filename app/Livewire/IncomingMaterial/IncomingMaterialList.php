@@ -7,21 +7,12 @@ use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 
 class IncomingMaterialList extends Component
 {
-    public $material;
+    public $material = null;
     public bool $showDetail = false;
 
     public function showIncomingMaterialDetail($id)
     {
         $this->material = IncomingMaterial::with('files')->find($id);
-
-        if (! $this->material) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'title' => 'Data tidak ditemukan!',
-            ]);
-            return;
-        }
-
         $this->showDetail = true;
     }
 
