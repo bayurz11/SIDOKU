@@ -632,7 +632,32 @@
                 }
             });
         }
+
+        function enableBlur() {
+            const page = document.getElementById('page-content');
+            if (page) {
+                page.classList.add('blur-sm', 'transition', 'duration-200');
+            }
+        }
+
+        function disableBlur() {
+            const page = document.getElementById('page-content');
+            if (page) {
+                page.classList.remove('blur-sm');
+            }
+        }
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('modal-opened', () => {
+                enableBlur();
+            });
+
+            Livewire.on('modal-closed', () => {
+                disableBlur();
+            });
+        });
     </script>
+
 
 </body>
 
