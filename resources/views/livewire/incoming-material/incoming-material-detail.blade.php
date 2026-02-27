@@ -106,7 +106,7 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Quantity</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->quantity ?? 0 }}
+                                        {{ rtrim(rtrim(number_format($material->quantity, 2), '0'), '.') }}
                                         {{ $material->quantity_unit ?? '' }}
                                     </dd>
                                 </div>
