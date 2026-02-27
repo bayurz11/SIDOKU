@@ -113,7 +113,7 @@ class IncomingMaterialForm extends Component
         $this->initializeDocuments();
 
         if ($id) {
-            $material = IncomingMaterial::with('files')->findOrFail($id);
+            $material = IncomingMaterial::with(['files', 'inspections'])->findOrFail($id);
 
             $this->incomingId = $material->id;
             $this->isEditing = true;
@@ -131,7 +131,32 @@ class IncomingMaterialForm extends Component
             $this->inspection_decision = $material->status;
             $this->inspection_notes    = $material->notes;
 
-            // kalau mau load dokumen lama juga
+            /*
+    ================================
+    LOAD INSPECTION ITEMS
+    ================================
+    */
+            $this->inspectionItems = [];
+
+            foreach ($material->inspections as $inspection) {
+                $this->inspectionItems[] = [
+                    'parameter'         => $inspection->parameter,
+                    'standard'          => $inspection->standard,
+                    'test_result'       => $inspection->test_result,
+                    'inspection_result' => $inspection->inspection_result,
+                ];
+            }
+
+            // Kalau tidak ada data lama
+            if (empty($this->inspectionItems)) {
+                $this->addInspectionItem();
+            }
+
+            /*
+    ================================
+    LOAD DOCUMENTS LAMA
+    ================================
+    */
             foreach ($material->files as $file) {
                 if (isset($this->documents[$file->category])) {
                     $this->documents[$file->category]['existing_path'] = $file->file_path;
@@ -197,7 +222,6 @@ class IncomingMaterialForm extends Component
         $this->showDetail = true;
     }
 
-    // ================= SAVE =================
     public function save(): void
     {
         $this->validate([
@@ -205,12 +229,16 @@ class IncomingMaterialForm extends Component
             'supplier_name' => ['required', 'string', 'max:255'],
             'receipt_date'  => ['required', 'date'],
             'inspection_decision' => ['required'],
+            'inspectionItems.*.parameter' => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.standard' => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.test_result' => ['nullable', 'string'],
             'photos.*' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
 
         try {
+
             if ($this->incomingId) {
 
                 $material = IncomingMaterial::findOrFail($this->incomingId);
@@ -230,6 +258,9 @@ class IncomingMaterialForm extends Component
                     'notes'           => $this->inspection_notes,
                     'updated_by'      => auth()->id(),
                 ]);
+
+                // HAPUS inspection lama (biar tidak dobel)
+                $material->inspections()->delete();
             } else {
 
                 $material = IncomingMaterial::create([
@@ -249,29 +280,66 @@ class IncomingMaterialForm extends Component
                 ]);
             }
 
-            // Upload Documents
+            /*
+        ================================
+        SIMPAN INSPECTION ITEMS
+        ================================
+        */
+            foreach ($this->inspectionItems as $item) {
+
+                // Skip kalau kosong semua
+                if (
+                    empty($item['parameter']) &&
+                    empty($item['standard']) &&
+                    empty($item['test_result'])
+                ) {
+                    continue;
+                }
+
+                $material->inspections()->create([
+                    'parameter'         => $item['parameter'],
+                    'standard'          => $item['standard'],
+                    'test_result'       => $item['test_result'],
+                    'inspection_result' => $item['inspection_result'],
+                    'created_by'        => auth()->id(),
+                ]);
+            }
+
+            /*
+        ================================
+        UPLOAD DOCUMENTS
+        ================================
+        */
             foreach ($this->documents as $key => $doc) {
                 if (!empty($doc['file'])) {
+
                     $file = $doc['file'];
                     $path = $file->store('incoming-material/' . date('Y'), 'public');
+
                     $material->files()->create([
-                        'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'file_type' => $file->extension(),
-                        'category'  => $key,
+                        'file_name'   => $file->getClientOriginalName(),
+                        'file_path'   => $path,
+                        'file_type'   => $file->extension(),
+                        'category'    => $key,
                         'uploaded_by' => auth()->id(),
                     ]);
                 }
             }
 
-            // Upload Photos
+            /*
+        ================================
+        UPLOAD PHOTOS
+        ================================
+        */
             foreach ($this->photos as $file) {
+
                 $path = $file->store('incoming-material/' . date('Y'), 'public');
+
                 $material->files()->create([
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_type' => $file->extension(),
-                    'category'  => 'photo',
+                    'file_name'   => $file->getClientOriginalName(),
+                    'file_path'   => $path,
+                    'file_type'   => $file->extension(),
+                    'category'    => 'photo',
                     'uploaded_by' => auth()->id(),
                 ]);
             }
@@ -287,8 +355,10 @@ class IncomingMaterialForm extends Component
 
             $this->closeModal();
         } catch (\Throwable $e) {
+
             DB::rollBack();
             report($e);
+
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'title' => 'Gagal menyimpan data!'

@@ -5,19 +5,19 @@ namespace App\Models\Domains\IncomingMaterial\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class IncomingMaterialFile extends Model
+class IncomingMaterialInspection extends Model
 {
     use HasFactory;
 
-    protected $table = 'incoming_material_files';
+    protected $table = 'incoming_material_inspections';
 
     protected $fillable = [
         'incoming_material_id',
-        'file_name',
-        'file_path',
-        'file_type',
-        'category',
-        'uploaded_by',
+        'parameter',
+        'standard',
+        'test_result',
+        'inspection_result',
+        'created_by',
     ];
 
     /*

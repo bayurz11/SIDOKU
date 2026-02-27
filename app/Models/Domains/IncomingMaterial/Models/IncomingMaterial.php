@@ -2,15 +2,22 @@
 
 namespace App\Models\Domains\IncomingMaterial\Models;
 
+
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialInspection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class IncomingMaterial extends Model
 {
+    use HasFactory;
+
     protected $table = 'incoming_materials';
 
     protected $fillable = [
         'date',
+        'expired_date',
         'receipt_time',
         'supplier',
         'material_name',
@@ -21,15 +28,14 @@ class IncomingMaterial extends Model
         'vehicle_number',
         'status',
         'notes',
-        'inspection_items',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'expired_date' => 'date',
         'receipt_time' => 'datetime:H:i',
-        'inspection_items' => 'array',
         'quantity' => 'decimal:2',
         'sample_quantity' => 'decimal:2',
     ];
@@ -40,8 +46,19 @@ class IncomingMaterial extends Model
     |--------------------------------------------------------------------------
     */
 
+    public function inspections(): HasMany
+    {
+        return $this->hasMany(
+            IncomingMaterialInspection::class,
+            'incoming_material_id'
+        );
+    }
+
     public function files(): HasMany
     {
-        return $this->hasMany(IncomingMaterialFile::class);
+        return $this->hasMany(
+            IncomingMaterialFile::class,
+            'incoming_material_id'
+        );
     }
 }
