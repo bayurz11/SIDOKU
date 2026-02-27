@@ -1,15 +1,15 @@
 <div>
     @if ($showDetail && $material)
 
-        <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+        <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center py-10 px-4"
             wire:click.self="closeDetail">
 
             <div
-                class="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl
-                        max-h-[90vh] overflow-y-auto border border-gray-100">
+                class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl
+                       max-h-[90vh] overflow-y-auto border border-gray-100">
 
-                {{-- HEADER --}}
-                <div class="px-6 py-5 border-b border-gray-100">
+                {{-- ================= HEADER ================= --}}
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 rounded-t-2xl">
                     <div class="flex justify-between items-start gap-4">
 
                         <div class="flex items-start gap-3">
@@ -31,14 +31,14 @@
                             </div>
                         </div>
 
-                        <button wire:click="closeDetail" class="text-gray-400 hover:text-gray-600">
+                        <button wire:click="closeDetail" class="text-gray-400 hover:text-gray-600 text-lg">
                             ✕
                         </button>
                     </div>
                 </div>
 
-                {{-- BODY --}}
-                <div class="px-6 py-5 space-y-6 text-sm">
+                {{-- ================= BODY ================= --}}
+                <div class="px-6 py-6 space-y-6 text-sm">
 
                     {{-- STATUS BADGE --}}
                     @php
@@ -56,10 +56,10 @@
                     </span>
 
                     {{-- INFORMASI GRID --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                         {{-- INFORMASI UMUM --}}
-                        <div class="space-y-2">
+                        <div class="space-y-3">
                             <h3 class="text-xs font-semibold uppercase text-gray-500">
                                 Informasi Umum
                             </h3>
@@ -105,7 +105,7 @@
                         </div>
 
                         {{-- INFORMASI KUANTITAS --}}
-                        <div class="space-y-2">
+                        <div class="space-y-3">
                             <h3 class="text-xs font-semibold uppercase text-gray-500">
                                 Informasi Kuantitas
                             </h3>
@@ -146,32 +146,33 @@
 
                     </div>
 
-                    {{-- DOKUMEN --}}
+                    {{-- DOKUMEN & FOTO --}}
                     <div>
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">
+                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">
                             Dokumen & Foto
                         </h3>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             @forelse($material->files ?? [] as $file)
-                                <div class="border rounded-lg p-3 bg-gray-50 text-xs">
+                                <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-1">
+
                                     <div class="font-medium text-gray-800">
                                         {{ $file->file_name ?? '-' }}
                                     </div>
 
                                     <div class="text-gray-500">
-                                        Kategori: {{ $file->category ?? '-' }}
+                                        Kategori: {{ strtoupper($file->category ?? '-') }}
                                     </div>
 
                                     <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank"
-                                        class="text-blue-600 hover:underline text-xs">
+                                        class="inline-block text-blue-600 hover:underline">
                                         Lihat File
                                     </a>
                                 </div>
                             @empty
                                 <div class="text-gray-500 text-xs">
-                                    Tidak ada dokumen.
+                                    Tidak ada dokumen atau foto.
                                 </div>
                             @endforelse
 
@@ -183,15 +184,16 @@
                         <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">
                             Catatan
                         </h3>
-                        <div class="border rounded-lg p-3 bg-gray-50 text-xs text-gray-700">
+
+                        <div class="border rounded-lg p-4 bg-gray-50 text-xs text-gray-700">
                             {{ $material->notes ?? 'Tidak ada catatan.' }}
                         </div>
                     </div>
 
                 </div>
 
-                {{-- FOOTER --}}
-                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end">
+                {{-- ================= FOOTER ================= --}}
+                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end rounded-b-2xl">
                     <button wire:click="closeDetail" class="px-4 py-2 text-xs rounded-xl bg-gray-100 hover:bg-gray-200">
                         Tutup
                     </button>
