@@ -3,6 +3,7 @@
 namespace App\Models\Domains\IncomingMaterial\Models;
 
 
+use App\Auditable;
 use App\Domains\User\Models\User;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialInspection;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class IncomingMaterial extends Model
 {
     use HasFactory;
+    use Auditable;
 
     protected $table = 'incoming_materials';
 
