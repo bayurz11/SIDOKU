@@ -87,16 +87,16 @@ class IncomingMaterialForm extends Component
     // ================= OPEN FORM =================
     public function openForm($data = null): void
     {
-        $id = $data['id'] ?? null;
-
         $this->resetValidation();
         $this->resetErrorBag();
+        $this->reset();
         $this->initializeDocuments();
         $this->inspectionItems = [];
         $this->addInspectionItem();
 
-        if ($id) {
+        $id = $data['id'] ?? null;
 
+        if ($id) {
             $material = IncomingMaterial::with('files')->find($id);
 
             if (!$material) {
@@ -110,15 +110,16 @@ class IncomingMaterialForm extends Component
             $this->incomingId = $material->id;
             $this->isEditing = true;
 
-            $this->name_of_goods = $material->material_name ?? '';
-            $this->supplier_name = $material->supplier ?? '';
-            $this->receipt_date  = $material->date?->format('Y-m-d');
-            $this->receipt_time  = $material->receipt_time ?? null;
-            $this->batch_number  = $material->batch_number ?? '';
-            $this->quantity      = $material->quantity ?? null;
-            $this->quantity_unit = $material->quantity_unit ?? null;
-            $this->sample_quantity = $material->sample_quantity ?? null;
-            $this->vehicle_number  = $material->vehicle_number ?? null;
+            $this->name_of_goods    = $material->material_name ?? '';
+            $this->supplier_name    = $material->supplier ?? '';
+            $this->receipt_date     = $material->date?->format('Y-m-d');
+            $this->expired_date     = $material->expired_date?->format('Y-m-d');
+            $this->receipt_time     = $material->receipt_time ?? null;
+            $this->batch_number     = $material->batch_number ?? '';
+            $this->quantity         = $material->quantity ?? null;
+            $this->quantity_unit    = $material->quantity_unit ?? null;
+            $this->sample_quantity  = $material->sample_quantity ?? null;
+            $this->vehicle_number   = $material->vehicle_number ?? null;
             $this->inspection_decision = $material->status ?? '';
             $this->inspection_notes    = $material->notes ?? null;
         }
@@ -161,7 +162,7 @@ class IncomingMaterialForm extends Component
         $hasNotOk = collect($this->inspectionItems)
             ->contains(fn($item) => $item['inspection_result'] === 'NOT OK');
 
-        $this->inspection_decision = $hasNotOk ? 'HOLD' : 'APPROVED';
+        $this->inspection_decision = $hasNotOk ? 'HOLD' : 'ACCEPTED';
     }
 
     // ================= SHOW DETAIL =================
@@ -200,6 +201,7 @@ class IncomingMaterialForm extends Component
 
                 $material->update([
                     'date'            => $this->receipt_date,
+                    'expired_date'    => $this->expired_date,
                     'receipt_time'    => $this->receipt_time ?? null,
                     'supplier'        => $this->supplier_name,
                     'material_name'   => $this->name_of_goods,
@@ -216,6 +218,7 @@ class IncomingMaterialForm extends Component
 
                 $material = IncomingMaterial::create([
                     'date'            => $this->receipt_date,
+                    'expired_date'    => $this->expired_date,
                     'receipt_time'    => $this->receipt_time ?? null,
                     'supplier'        => $this->supplier_name,
                     'material_name'   => $this->name_of_goods,
