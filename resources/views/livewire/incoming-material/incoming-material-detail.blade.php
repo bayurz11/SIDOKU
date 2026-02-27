@@ -222,7 +222,7 @@
 
                 </div>
                 @php
-                    $logs = \App\Models\Log::where('model_type', get_class($ipc))
+                    $logs = \App\Models\Log::where('model_type', get_class($material))
                         ->where('model_id', $material->id)
                         ->with(['changes', 'user'])
                         ->latest()
