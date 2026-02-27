@@ -137,7 +137,7 @@
 
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">No Kendaraan</dt>
-                                    <dd class="font-medium text-gray-900 text-right">
+                                    <dd class="font-medium text-gray-900 text-right uppercase">
                                         {{ $material->vehicle_number ?? '-' }}
                                     </dd>
                                 </div>
