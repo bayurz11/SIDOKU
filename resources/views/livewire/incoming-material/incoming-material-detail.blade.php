@@ -2,7 +2,7 @@
     @if ($showDetail && $material)
 
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center"
-            wire:click.self="closeModal">
+            wire:click.self="closeDetail">
 
             <div class="relative top-8 mx-auto p-6 border w-full max-w-6xl shadow-lg rounded-2xl bg-white"
                 x-data="{}">
