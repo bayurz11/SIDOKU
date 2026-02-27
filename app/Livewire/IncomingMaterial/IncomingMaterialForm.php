@@ -88,6 +88,8 @@ class IncomingMaterialForm extends Component
     public function openForm($id = null): void
     {
         $this->resetValidation();
+        $this->resetErrorBag();
+
         $this->initializeDocuments();
         $this->inspectionItems = [];
         $this->addInspectionItem();
@@ -107,24 +109,31 @@ class IncomingMaterialForm extends Component
             $this->incomingId = $material->id;
             $this->isEditing = true;
 
-            $this->name_of_goods = $material->material_name;
-            $this->supplier_name = $material->supplier;
+            // Fill Form
+            $this->name_of_goods = $material->material_name ?? '';
+            $this->supplier_name = $material->supplier ?? '';
             $this->receipt_date  = $material->date?->format('Y-m-d');
-            $this->receipt_time  = $material->receipt_time;
-            $this->batch_number  = $material->batch_number;
-            $this->quantity      = $material->quantity;
-            $this->quantity_unit = $material->quantity_unit;
-            $this->sample_quantity = $material->sample_quantity;
-            $this->vehicle_number  = $material->vehicle_number;
-            $this->inspection_decision = $material->status;
-            $this->inspection_notes    = $material->notes;
+            $this->receipt_time  = $material->receipt_time ?? null;
+            $this->batch_number  = $material->batch_number ?? '';
+            $this->quantity      = $material->quantity ?? null;
+            $this->quantity_unit = $material->quantity_unit ?? null;
+            $this->sample_quantity = $material->sample_quantity ?? null;
+            $this->vehicle_number  = $material->vehicle_number ?? null;
+            $this->inspection_decision = $material->status ?? '';
+            $this->inspection_notes    = $material->notes ?? null;
         } else {
+
+            $this->reset();
+            $this->initializeDocuments();
+            $this->addInspectionItem();
+
             $this->incomingId = null;
             $this->isEditing = false;
         }
 
         $this->showModal = true;
     }
+
     // ================= INSPECTION METHODS =================
     public function addInspectionItem()
     {

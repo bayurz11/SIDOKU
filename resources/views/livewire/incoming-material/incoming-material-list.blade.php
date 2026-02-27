@@ -334,7 +334,7 @@
 
                                     {{-- EDIT --}}
                                     @permission('incoming_material.edit')
-                                        <button wire:click="openForm({{ $row->id }})"
+                                        <button wire:click="$dispatch('openIncomingMaterialForm', {{ $row->id }})"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200">
 
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
