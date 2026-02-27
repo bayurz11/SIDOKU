@@ -224,6 +224,9 @@ class IncomingMaterialForm extends Component
 
     public function save(): void
     {
+        // Pastikan decision dihitung dulu
+        $this->evaluateFinalDecision();
+
         $this->validate([
             'name_of_goods' => ['required', 'string', 'max:255'],
             'supplier_name' => ['required', 'string', 'max:255'],
@@ -239,55 +242,45 @@ class IncomingMaterialForm extends Component
 
         try {
 
+            $data = [
+                'date'            => $this->receipt_date,
+                'expired_date'    => $this->expired_date,
+                'receipt_time'    => $this->receipt_time ?? null,
+                'supplier'        => $this->supplier_name,
+                'material_name'   => $this->name_of_goods,
+                'batch_number'    => $this->batch_number,
+                'quantity'        => $this->quantity,
+                'quantity_unit'   => $this->quantity_unit ?? null,
+                'sample_quantity' => $this->sample_quantity ?? null,
+                'vehicle_number'  => $this->vehicle_number ?? null,
+                'status'          => $this->inspection_decision,
+                'notes'           => $this->inspection_notes,
+            ];
+
             if ($this->incomingId) {
 
                 $material = IncomingMaterial::findOrFail($this->incomingId);
 
-                $material->update([
-                    'date'            => $this->receipt_date,
-                    'expired_date'    => $this->expired_date,
-                    'receipt_time'    => $this->receipt_time ?? null,
-                    'supplier'        => $this->supplier_name,
-                    'material_name'   => $this->name_of_goods,
-                    'batch_number'    => $this->batch_number,
-                    'quantity'        => $this->quantity,
-                    'quantity_unit'   => $this->quantity_unit ?? null,
-                    'sample_quantity' => $this->sample_quantity ?? null,
-                    'vehicle_number'  => $this->vehicle_number ?? null,
-                    'status'          => $this->inspection_decision,
-                    'notes'           => $this->inspection_notes,
-                    'updated_by'      => auth()->id(),
-                ]);
+                $data['updated_by'] = auth()->id();
 
-                // HAPUS inspection lama (biar tidak dobel)
+                $material->update($data);
+
+                // Hapus inspection lama
                 $material->inspections()->delete();
             } else {
 
-                $material = IncomingMaterial::create([
-                    'date'            => $this->receipt_date,
-                    'expired_date'    => $this->expired_date,
-                    'receipt_time'    => $this->receipt_time ?? null,
-                    'supplier'        => $this->supplier_name,
-                    'material_name'   => $this->name_of_goods,
-                    'batch_number'    => $this->batch_number,
-                    'quantity'        => $this->quantity,
-                    'quantity_unit'   => $this->quantity_unit ?? null,
-                    'sample_quantity' => $this->sample_quantity ?? null,
-                    'vehicle_number'  => $this->vehicle_number ?? null,
-                    'status'          => $this->inspection_decision,
-                    'notes'           => $this->inspection_notes,
-                    'created_by'      => auth()->id(),
-                ]);
+                $data['created_by'] = auth()->id();
+
+                $material = IncomingMaterial::create($data);
             }
 
             /*
-        ================================
-        SIMPAN INSPECTION ITEMS
-        ================================
+        ======================================
+        SIMPAN INSPECTION
+        ======================================
         */
             foreach ($this->inspectionItems as $item) {
 
-                // Skip kalau kosong semua
                 if (
                     empty($item['parameter']) &&
                     empty($item['standard']) &&
@@ -306,15 +299,20 @@ class IncomingMaterialForm extends Component
             }
 
             /*
-        ================================
-        UPLOAD DOCUMENTS
-        ================================
+        ======================================
+        UPLOAD FILE
+        ======================================
         */
             foreach ($this->documents as $key => $doc) {
+
                 if (!empty($doc['file'])) {
 
                     $file = $doc['file'];
-                    $path = $file->store('incoming-material/' . date('Y'), 'public');
+
+                    $path = $file->store(
+                        'incoming-material/' . date('Y'),
+                        'public'
+                    );
 
                     $material->files()->create([
                         'file_name'   => $file->getClientOriginalName(),
@@ -326,14 +324,12 @@ class IncomingMaterialForm extends Component
                 }
             }
 
-            /*
-        ================================
-        UPLOAD PHOTOS
-        ================================
-        */
             foreach ($this->photos as $file) {
 
-                $path = $file->store('incoming-material/' . date('Y'), 'public');
+                $path = $file->store(
+                    'incoming-material/' . date('Y'),
+                    'public'
+                );
 
                 $material->files()->create([
                     'file_name'   => $file->getClientOriginalName(),
@@ -357,12 +353,9 @@ class IncomingMaterialForm extends Component
         } catch (\Throwable $e) {
 
             DB::rollBack();
-            report($e);
 
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'title' => 'Gagal menyimpan data!'
-            ]);
+            // Tampilkan error asli saat development
+            throw $e;
         }
     }
 
