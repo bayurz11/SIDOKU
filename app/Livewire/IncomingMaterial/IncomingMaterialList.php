@@ -14,7 +14,15 @@ class IncomingMaterialList extends Component
     {
         $this->material = IncomingMaterial::with('files')->find($id);
 
-        dd($this->material);
+        if (! $this->material) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'Data tidak ditemukan!',
+            ]);
+            return;
+        }
+
+        $this->showDetail = true;
     }
 
     public function closeDetail()

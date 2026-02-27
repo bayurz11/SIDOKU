@@ -40,24 +40,22 @@
                 {{-- BODY --}}
                 <div class="px-6 py-5 space-y-6 text-sm">
 
-                    {{-- BADGE STATUS --}}
-                    <div>
-                        @php
-                            $statusClass = match ($material->status) {
-                                'ACCEPTED' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                'HOLD' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                'REJECTED' => 'bg-red-50 text-red-700 border-red-200',
-                                default => 'bg-gray-50 text-gray-700 border-gray-200',
-                            };
-                        @endphp
+                    {{-- STATUS BADGE --}}
+                    @php
+                        $statusClass = match ($material->status) {
+                            'APPROVED', 'ACCEPTED' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                            'HOLD' => 'bg-amber-50 text-amber-700 border-amber-200',
+                            'REJECTED' => 'bg-red-50 text-red-700 border-red-200',
+                            default => 'bg-gray-50 text-gray-700 border-gray-200',
+                        };
+                    @endphp
 
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border {{ $statusClass }}">
-                            {{ $material->status }}
-                        </span>
-                    </div>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border {{ $statusClass }}">
+                        {{ $material->status ?? '-' }}
+                    </span>
 
-                    {{-- GRID INFORMASI --}}
+                    {{-- INFORMASI GRID --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {{-- INFORMASI UMUM --}}
@@ -71,21 +69,21 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Nama Barang</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->material_name }}
+                                        {{ $material->material_name ?? '-' }}
                                     </dd>
                                 </div>
 
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Supplier</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->supplier }}
+                                        {{ $material->supplier ?? '-' }}
                                     </dd>
                                 </div>
 
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Tanggal Terima</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ optional($material->date)->format('d M Y') }}
+                                        {{ $material->date?->format('d M Y') ?? '-' }}
                                     </dd>
                                 </div>
 
@@ -106,7 +104,7 @@
                             </dl>
                         </div>
 
-                        {{-- KUANTITAS --}}
+                        {{-- INFORMASI KUANTITAS --}}
                         <div class="space-y-2">
                             <h3 class="text-xs font-semibold uppercase text-gray-500">
                                 Informasi Kuantitas
@@ -117,15 +115,15 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Batch Number</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->batch_number }}
+                                        {{ $material->batch_number ?? '-' }}
                                     </dd>
                                 </div>
 
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Quantity</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->quantity }}
-                                        {{ $material->quantity_unit }}
+                                        {{ $material->quantity ?? 0 }}
+                                        {{ $material->quantity_unit ?? '' }}
                                     </dd>
                                 </div>
 
@@ -139,7 +137,7 @@
                                 <div class="flex justify-between">
                                     <dt class="text-gray-500">Tanggal Input</dt>
                                     <dd class="font-medium text-gray-900 text-right">
-                                        {{ optional($material->created_at)->format('d M Y') }}
+                                        {{ $material->created_at?->format('d M Y') ?? '-' }}
                                     </dd>
                                 </div>
 
@@ -156,17 +154,17 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-                            @forelse($material->files as $file)
+                            @forelse($material->files ?? [] as $file)
                                 <div class="border rounded-lg p-3 bg-gray-50 text-xs">
                                     <div class="font-medium text-gray-800">
-                                        {{ $file->file_name }}
+                                        {{ $file->file_name ?? '-' }}
                                     </div>
 
                                     <div class="text-gray-500">
-                                        Kategori: {{ $file->category }}
+                                        Kategori: {{ $file->category ?? '-' }}
                                     </div>
 
-                                    <a href="{{ Storage::url($file->file_path) }}" target="_blank"
+                                    <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank"
                                         class="text-blue-600 hover:underline text-xs">
                                         Lihat File
                                     </a>
@@ -201,5 +199,6 @@
 
             </div>
         </div>
+
     @endif
 </div>
