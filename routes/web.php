@@ -128,7 +128,16 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
             return view('incoming-material-tahap1.index');
         })->name('index');
     });
+Route::get('/incoming-material/file/{filename}', function ($filename) {
 
+    $path = storage_path('app/public/incoming-material/2026/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->name('incoming-material.file');
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/users', function () {
