@@ -85,11 +85,12 @@ class IncomingMaterialForm extends Component
         }
     }
     // ================= OPEN FORM =================
-    public function openForm($id = null): void
+    public function openForm($data = null): void
     {
+        $id = $data['id'] ?? null;
+
         $this->resetValidation();
         $this->resetErrorBag();
-
         $this->initializeDocuments();
         $this->inspectionItems = [];
         $this->addInspectionItem();
@@ -109,7 +110,6 @@ class IncomingMaterialForm extends Component
             $this->incomingId = $material->id;
             $this->isEditing = true;
 
-            // Fill Form
             $this->name_of_goods = $material->material_name ?? '';
             $this->supplier_name = $material->supplier ?? '';
             $this->receipt_date  = $material->date?->format('Y-m-d');
@@ -121,14 +121,6 @@ class IncomingMaterialForm extends Component
             $this->vehicle_number  = $material->vehicle_number ?? null;
             $this->inspection_decision = $material->status ?? '';
             $this->inspection_notes    = $material->notes ?? null;
-        } else {
-
-            $this->reset();
-            $this->initializeDocuments();
-            $this->addInspectionItem();
-
-            $this->incomingId = null;
-            $this->isEditing = false;
         }
 
         $this->showModal = true;
