@@ -167,13 +167,14 @@
                                                     class="w-full border rounded-md p-1 text-sm"
                                                     placeholder="Contoh: Putih bersih, Tidak berbau">
                                             </td>
-                                            <td class="px-3 py-2 border">
-                                                <select wire:model="inspectionItems.{{ $index }}.test_result"
-                                                    class="w-full border rounded-md p-1 text-sm">
-                                                    <option value="">-- Pilih --</option>
-                                                    <option value="ok">OK</option>
-                                                    <option value="not ok">NOT OK</option>
-                                                </select>
+                                            <td class="px-3 py-2 border text-center font-semibold">
+                                                @if (strtolower($item['test_result'] ?? '') === 'ok')
+                                                    <span class="text-green-600">OK</span>
+                                                @elseif (strtolower($item['test_result'] ?? '') === 'not ok')
+                                                    <span class="text-red-600">NOT OK</span>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
+                                                @endif
                                             </td>
                                             <td class="px-3 py-2 border text-center font-semibold">
                                                 @if ($item['inspection_result'] === 'OK')
