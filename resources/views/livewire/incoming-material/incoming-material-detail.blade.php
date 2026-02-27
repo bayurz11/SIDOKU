@@ -143,6 +143,20 @@
                                 </div>
 
                             </dl>
+                            <h3 class="text-xs font-semibold uppercase text-gray-500">
+                                Staf Penerima
+                            </h3>
+
+                            <dl class="space-y-2">
+
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-500">Nama Staf</dt>
+                                    <dd class="font-medium text-gray-900 text-right uppercase">
+                                        {{ $material->created_by->name ?? '-' }}
+                                    </dd>
+                                </div>
+
+                            </dl>
                         </div>
 
                     </div>
