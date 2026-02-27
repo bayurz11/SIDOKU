@@ -165,9 +165,7 @@
                     <div class="bg-white shadow rounded-xl border mt-6">
                         <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
                             <h3 class="text-sm font-semibold text-gray-700">Spesifikasi yang Diperiksa</h3>
-                            <button type="button" wire:click="addInspectionItem"
-                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs">+ Tambah
-                                Parameter</button>
+
                         </div>
                         <div class="p-6 overflow-x-auto">
                             <table class="min-w-full text-sm border border-gray-200">
@@ -178,7 +176,6 @@
                                         <th class="px-3 py-2 border">Standar (Kondisi Fisik)</th>
                                         <th class="px-3 py-2 border">Hasil Uji</th>
                                         <th class="px-3 py-2 border">Hasil Inspeksi</th>
-                                        <th class="px-3 py-2 border text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -212,11 +209,7 @@
                                                     <span class="text-red-600">NOT OK</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2 border text-center">
-                                                <button type="button"
-                                                    wire:click="removeInspectionItem({{ $index }})"
-                                                    class="text-red-600 hover:text-red-800 text-xs">Hapus</button>
-                                            </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
