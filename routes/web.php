@@ -129,10 +129,11 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
             return view('incoming-material-tahap1.index');
         })->name('index');
     });
+
 Route::get('/incoming-material/file/{id}', function ($id) {
+    $file = IncomingMaterialFile::findOrFail($id);
 
-    $file = IncomingMaterialFile::findOrFail($id); // ganti model sesuai milikmu
-
+    // Path file sebenarnya
     $path = storage_path('app/public/' . $file->file_path);
 
     if (!file_exists($path)) {
@@ -143,6 +144,7 @@ Route::get('/incoming-material/file/{id}', function ($id) {
         'Content-Disposition' => 'inline; filename="' . $file->file_name . '"'
     ]);
 })->name('incoming-material.file');
+
 // User Management Routes
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/users', function () {
