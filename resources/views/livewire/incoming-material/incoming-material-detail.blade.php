@@ -268,7 +268,60 @@
                             {{ $material->notes ?? 'Tidak ada catatan.' }}
                         </div>
                     </div>
+                    @php
+                        $logs = \App\Models\Log::where('model_type', get_class($material))
+                            ->where('model_id', $material->id)
+                            ->with(['changes', 'user'])
+                            ->latest()
+                            ->get();
+                    @endphp
 
+                    @if ($logs->count())
+                        <div class="px-5 py-4 sm:px-6 sm:py-5 border-t border-gray-100">
+
+                            <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">
+                                Riwayat Perubahan
+                            </h3>
+
+                            {{-- CONTAINER SCROLL --}}
+                            <div class="space-y-2 max-h-24 overflow-y-auto pr-2">
+
+                                @foreach ($logs as $log)
+                                    <div class="border rounded-lg p-3 bg-gray-50 text-xs space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="font-semibold text-gray-700">
+                                                {{ ucfirst($log->action) }}
+                                            </span>
+                                            <span class="text-gray-400">
+                                                {{ $log->created_at->format('d M Y') }}
+                                            </span>
+                                        </div>
+
+                                        <div class="text-gray-500">
+                                            Oleh: {{ $log->user->name ?? 'System' }}
+                                        </div>
+
+                                        @foreach ($log->changes as $change)
+                                            <div>
+                                                <span class="font-medium">
+                                                    {{ ucfirst(str_replace('_', ' ', $change->field)) }}
+                                                </span>
+                                                :
+                                                <span class="text-red-600">
+                                                    {{ $change->old_value ?? '-' }}
+                                                </span>
+                                                →
+                                                <span class="text-emerald-600">
+                                                    {{ $change->new_value ?? '-' }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- FOOTER --}}
