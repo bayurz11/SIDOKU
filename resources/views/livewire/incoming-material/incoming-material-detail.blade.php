@@ -197,11 +197,24 @@
                             </table>
                         </div>
                     </div>
-                    {{-- DOKUMEN & FOTO --}}
-                    <div>
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Dokumen & Foto</h3>
+                    {{-- DOKUMEN MATERIAL --}}
+                    <div class="mb-6">
+                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Dokumen Material</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            @forelse($material->files ?? [] as $file)
+                            @php
+                                $documents = $material->files->filter(function ($file) {
+                                    return in_array(strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION)), [
+                                        'pdf',
+                                        'doc',
+                                        'docx',
+                                        'xls',
+                                        'xlsx',
+                                        'txt',
+                                    ]);
+                                });
+                            @endphp
+
+                            @forelse($documents as $file)
                                 <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-2">
                                     <div class="font-medium text-gray-800">{{ $file->file_name ?? '-' }}</div>
                                     <div class="text-gray-500">Kategori: {{ strtoupper($file->category ?? '-') }}</div>
@@ -212,7 +225,39 @@
                                     </a>
                                 </div>
                             @empty
-                                <div class="text-gray-500 text-xs">Tidak ada dokumen atau foto.</div>
+                                <div class="text-gray-500 text-xs">Tidak ada dokumen.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    {{-- FOTO MATERIAL --}}
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Foto Material</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @php
+                                $photos = $material->files->filter(function ($file) {
+                                    return in_array(strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION)), [
+                                        'jpg',
+                                        'jpeg',
+                                        'png',
+                                        'gif',
+                                        'webp',
+                                    ]);
+                                });
+                            @endphp
+
+                            @forelse($photos as $file)
+                                <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-2">
+                                    <div class="font-medium text-gray-800">{{ $file->file_name ?? '-' }}</div>
+                                    <div class="text-gray-500">Kategori: {{ strtoupper($file->category ?? '-') }}</div>
+                                    <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                        target="_blank"
+                                        class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition">
+                                        Lihat Foto
+                                    </a>
+                                </div>
+                            @empty
+                                <div class="text-gray-500 text-xs">Tidak ada foto.</div>
                             @endforelse
                         </div>
                     </div>
