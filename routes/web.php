@@ -130,18 +130,17 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
         })->name('index');
     });
 
-Route::get('/incoming-material/file/{id}', function ($id) {
-    $file = IncomingMaterialFile::findOrFail($id);
+Route::get('/incoming-material/file/{file}', function ($file) {
 
-    // Path file sebenarnya
-    $path = storage_path('app/public/' . $file->file_path);
+    // Path lengkap file di storage
+    $path = storage_path('app/public/incoming-material/2026/' . $file);
 
     if (!file_exists($path)) {
-        abort(404);
+        abort(404, 'File tidak ditemukan.');
     }
 
     return response()->file($path, [
-        'Content-Disposition' => 'inline; filename="' . $file->file_name . '"'
+        'Content-Disposition' => 'inline; filename="' . $file . '"'
     ]);
 })->name('incoming-material.file');
 
