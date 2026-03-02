@@ -255,6 +255,59 @@
 
                                 </div>
                             @endforeach
+                            {{-- ================= PACKAGING ================= --}}
+                            <div>
+                                <h5 class="text-xs font-semibold uppercase text-gray-600 mb-3">
+                                    Packaging
+                                </h5>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                    {{-- ORIGINAL PACKAGING --}}
+                                    <div class="bg-white border rounded-lg p-4 space-y-2">
+                                        <label class="flex items-center gap-2">
+                                            <input type="checkbox"
+                                                wire:model="documents.original_packaging.is_checked"
+                                                class="rounded border-gray-300">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                Original Packaging
+                                            </span>
+                                        </label>
+
+                                        <input type="file" wire:model="documents.original_packaging.file"
+                                            class="w-full text-xs border rounded-md p-2">
+
+                                        @if (isset($documents['original_packaging']['file']) && $documents['original_packaging']['file'])
+                                            <span class="text-xs text-green-600">
+                                                File siap upload:
+                                                {{ $documents['original_packaging']['file']->getClientOriginalName() }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    {{-- REPACKING --}}
+                                    <div class="bg-white border rounded-lg p-4 space-y-2">
+                                        <label class="flex items-center gap-2">
+                                            <input type="checkbox" wire:model="documents.repacking.is_checked"
+                                                class="rounded border-gray-300">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                Repacking
+                                            </span>
+                                        </label>
+
+                                        <input type="file" wire:model="documents.repacking.file"
+                                            class="w-full text-xs border rounded-md p-2">
+
+                                        @if (isset($documents['repacking']['file']) && $documents['repacking']['file'])
+                                            <span class="text-xs text-green-600">
+                                                File siap upload:
+                                                {{ $documents['repacking']['file']->getClientOriginalName() }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                </div>
+                            </div>
 
                         </div>
                     </div>
