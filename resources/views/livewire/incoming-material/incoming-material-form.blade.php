@@ -231,70 +231,133 @@
                             Kesesuaian Dokumen (Document Suitability)
                         </h4>
 
-                        <div class="space-y-6 text-sm">
+                        <div class="space-y-8">
 
-                            {{-- a. COA --}}
-                            <div>
-                                <p class="font-medium">a. COA</p>
-                                <p class="italic text-gray-500">COA</p>
+                            {{-- ================= A & B ================= --}}
+                            @php
+                                $mainDocuments = [
+                                    'coa' => 'a. COA',
+                                    'halal_certificate' => 'b. Sertifikat Halal',
+                                ];
+                            @endphp
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach ($mainDocuments as $key => $label)
+                                    <div class="bg-white border rounded-lg p-4 space-y-2">
+
+                                        <label class="flex items-center gap-2">
+                                            <input type="checkbox"
+                                                wire:model="documents.{{ $key }}.is_checked"
+                                                class="rounded border-gray-300">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                {{ $label }}
+                                            </span>
+                                        </label>
+
+                                        <input type="file" wire:model="documents.{{ $key }}.file"
+                                            class="w-full text-xs border rounded-md p-2">
+
+                                        @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                            <span class="text-xs text-green-600">
+                                                File siap upload:
+                                                {{ $documents[$key]['file']->getClientOriginalName() }}
+                                            </span>
+                                        @endif
+
+                                    </div>
+                                @endforeach
                             </div>
 
-                            {{-- b. Sertifikat Halal --}}
+
+                            {{-- ================= C. PACKAGING ================= --}}
                             <div>
-                                <p class="font-medium">b. Sertifikat halal</p>
-                                <p class="italic text-gray-500">Halal certificate</p>
-                            </div>
+                                <h5 class="text-sm font-semibold text-gray-700 mb-3">
+                                    c. Pengemasan (Packaging)
+                                </h5>
 
-                            {{-- c. Pengemasan --}}
-                            <div class="space-y-2">
-                                <p class="font-medium">c. Pengemasan</p>
-                                <p class="italic text-gray-500">Packaging</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                <div class="pl-6 space-y-2">
+                                    @php
+                                        $packagingDocuments = [
+                                            'original_packaging' => 'Kemasan asli*',
+                                            'repacking' => 'Pengemasan ulang*',
+                                        ];
+                                    @endphp
 
-                                    <label class="flex items-center gap-2">
-                                        <input type="checkbox" wire:model="documents.original_packaging.is_checked"
-                                            class="rounded border-gray-400">
-                                        <span>Kemasan asli*</span>
-                                    </label>
+                                    @foreach ($packagingDocuments as $key => $label)
+                                        <div class="bg-white border rounded-lg p-4 space-y-2">
 
-                                    <label class="flex items-center gap-2">
-                                        <input type="checkbox" wire:model="documents.repacking.is_checked"
-                                            class="rounded border-gray-400">
-                                        <span>Pengemasan ulang*</span>
-                                    </label>
+                                            <label class="flex items-center gap-2">
+                                                <input type="checkbox"
+                                                    wire:model="documents.{{ $key }}.is_checked"
+                                                    class="rounded border-gray-300">
+                                                <span class="text-sm font-medium text-gray-700">
+                                                    {{ $label }}
+                                                </span>
+                                            </label>
+
+                                            <input type="file" wire:model="documents.{{ $key }}.file"
+                                                class="w-full text-xs border rounded-md p-2">
+
+                                            @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                                <span class="text-xs text-green-600">
+                                                    File siap upload:
+                                                    {{ $documents[$key]['file']->getClientOriginalName() }}
+                                                </span>
+                                            @endif
+
+                                        </div>
+                                    @endforeach
 
                                 </div>
                             </div>
 
-                            {{-- d. Data Pendukung --}}
-                            <div class="space-y-2">
-                                <p class="font-medium">d. Data pendukung lain</p>
-                                <p class="italic text-gray-500">Other supporting data</p>
 
-                                <div class="pl-6 grid grid-cols-1 md:grid-cols-2 gap-y-2">
+                            {{-- ================= D. DATA PENDUKUNG ================= --}}
+                            <div>
+                                <h5 class="text-sm font-semibold text-gray-700 mb-3">
+                                    d. Data pendukung lain (Other supporting data)
+                                </h5>
 
-                                    @php
-                                        $supportingDocuments = [
-                                            'flow_chart' => 'Diagram alir*',
-                                            'no_animal_use' => 'Tanpa penggunaan hewan*',
-                                            'msds' => 'MSDS**',
-                                            'allergen' => 'Alergen statement**',
-                                            'food_grade' => 'Food Grade**',
-                                            'non_gmo' => 'Non GMO statement**',
-                                            'bse_tse' => 'BSE / TSE statement**',
-                                            'porcine_free' => 'Porcine free statement**',
-                                            'breakdown_composition' => 'Breakdown Composition**',
-                                        ];
-                                    @endphp
+                                @php
+                                    $supportingDocuments = [
+                                        'flow_chart' => 'Diagram alir*',
+                                        'no_animal_use' => 'Tanpa penggunaan hewan*',
+                                        'msds' => 'MSDS**',
+                                        'allergen' => 'Alergen statement**',
+                                        'food_grade' => 'Food Grade**',
+                                        'non_gmo' => 'Non GMO statement**',
+                                        'bse_tse' => 'BSE / TSE statement**',
+                                        'porcine_free' => 'Porcine free statement**',
+                                        'breakdown_composition' => 'Breakdown Composition**',
+                                    ];
+                                @endphp
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                                     @foreach ($supportingDocuments as $key => $label)
-                                        <label class="flex items-center gap-2">
-                                            <input type="checkbox"
-                                                wire:model="documents.{{ $key }}.is_checked"
-                                                class="rounded border-gray-400">
-                                            <span>{{ $label }}</span>
-                                        </label>
+                                        <div class="bg-white border rounded-lg p-4 space-y-2">
+
+                                            <label class="flex items-center gap-2">
+                                                <input type="checkbox"
+                                                    wire:model="documents.{{ $key }}.is_checked"
+                                                    class="rounded border-gray-300">
+                                                <span class="text-sm font-medium text-gray-700">
+                                                    {{ $label }}
+                                                </span>
+                                            </label>
+
+                                            <input type="file" wire:model="documents.{{ $key }}.file"
+                                                class="w-full text-xs border rounded-md p-2">
+
+                                            @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                                <span class="text-xs text-green-600">
+                                                    File siap upload:
+                                                    {{ $documents[$key]['file']->getClientOriginalName() }}
+                                                </span>
+                                            @endif
+
+                                        </div>
                                     @endforeach
 
                                 </div>
