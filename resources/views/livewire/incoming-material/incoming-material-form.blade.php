@@ -236,8 +236,8 @@
                             {{-- ================= A & B ================= --}}
                             @php
                                 $mainDocuments = [
-                                    'coa' => 'a. COA',
-                                    'halal_certificate' => 'b. Sertifikat Halal',
+                                    'coa' => 'COA*',
+                                    'halal_certificate' => 'Sertifikat Halal',
                                 ];
                             @endphp
 
@@ -272,15 +272,15 @@
                             {{-- ================= C. PACKAGING ================= --}}
                             <div>
                                 <h5 class="text-sm font-semibold text-gray-700 mb-3">
-                                    c. Pengemasan (Packaging)
+                                    Pengemasan (Packaging)
                                 </h5>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                                     @php
                                         $packagingDocuments = [
-                                            'original_packaging' => 'Kemasan asli*',
-                                            'repacking' => 'Pengemasan ulang*',
+                                            'original_packaging' => 'Kemasan asli',
+                                            'repacking' => 'Pengemasan ulang',
                                         ];
                                     @endphp
 
@@ -316,20 +316,20 @@
                             {{-- ================= D. DATA PENDUKUNG ================= --}}
                             <div>
                                 <h5 class="text-sm font-semibold text-gray-700 mb-3">
-                                    d. Data pendukung lain (Other supporting data)
+                                    Data pendukung lain (Other supporting data)
                                 </h5>
 
                                 @php
                                     $supportingDocuments = [
-                                        'flow_chart' => 'Diagram alir*',
-                                        'no_animal_use' => 'Tanpa penggunaan hewan*',
-                                        'msds' => 'MSDS**',
-                                        'allergen' => 'Alergen statement**',
-                                        'food_grade' => 'Food Grade**',
-                                        'non_gmo' => 'Non GMO statement**',
-                                        'bse_tse' => 'BSE / TSE statement**',
-                                        'porcine_free' => 'Porcine free statement**',
-                                        'breakdown_composition' => 'Breakdown Composition**',
+                                        'flow_chart' => 'Diagram alir',
+                                        'no_animal_use' => 'Tanpa penggunaan hewan',
+                                        'msds' => 'MSDS',
+                                        'allergen' => 'Alergen statement',
+                                        'food_grade' => 'Food Grade',
+                                        'non_gmo' => 'Non GMO statement',
+                                        'bse_tse' => 'BSE / TSE statement',
+                                        'porcine_free' => 'Porcine free statement',
+                                        'breakdown_composition' => 'Breakdown Composition',
                                     ];
                                 @endphp
 
@@ -361,6 +361,22 @@
                                     @endforeach
 
                                 </div>
+                            </div>
+
+                            {{-- ================= FOTO MATERIAL ================= --}}
+                            <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-4"> Upload Foto Material </h4> <input
+                                    type="file" wire:model="photos" multiple
+                                    class="w-full border rounded-md p-2 text-sm">
+                                @if ($photos)
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                        @foreach ($photos as $photo)
+                                            <div class="border rounded-md overflow-hidden"> <img
+                                                    src="{{ $photo->temporaryUrl() }}"
+                                                    class="w-full h-32 object-cover"> </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
 
                         </div>
