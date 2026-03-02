@@ -67,6 +67,11 @@
                                     <dd class="font-medium text-gray-900 text-right">
                                         {{ $material->receipt_time ?? '-' }}</dd>
                                 </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-500">Tanggal Input</dt>
+                                    <dd class="font-medium text-gray-900 text-right">
+                                        {{ $material->created_at?->format('d M Y') ?? '-' }}</dd>
+                                </div>
                             </dl>
                         </div>
 
@@ -91,11 +96,7 @@
                                     <dd class="font-medium text-gray-900 text-right">
                                         {{ $material->sample_quantity ?? '-' }}</dd>
                                 </div>
-                                <div class="flex justify-between">
-                                    <dt class="text-gray-500">Tanggal Input</dt>
-                                    <dd class="font-medium text-gray-900 text-right">
-                                        {{ $material->created_at?->format('d M Y') ?? '-' }}</dd>
-                                </div>
+
                             </dl>
                         </div>
 
