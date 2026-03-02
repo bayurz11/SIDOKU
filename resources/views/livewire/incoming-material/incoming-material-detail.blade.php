@@ -197,140 +197,174 @@
                             </table>
                         </div>
                     </div>
-                    {{-- DOKUMEN MATERIAL --}}
-                    <div class="mb-6">
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Dokumen Material</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {{-- ================= DOCUMENT SUITABILITY ================= --}}
+                    <div class="border border-blue-200 rounded-xl p-6 bg-blue-50/30 mb-6">
+
+                        <h4 class="text-sm font-semibold text-gray-800 mb-6">
+                            Kesesuaian Dokumen (Document Suitability)
+                        </h4>
+
+                        @php
+                            $files = $material->files;
+
+                            function getFileByCategory($files, $category)
+                            {
+                                return $files->firstWhere('category', $category);
+                            }
+                        @endphp
+
+                        <div class="space-y-8">
+
+                            {{-- ================= A & B ================= --}}
                             @php
-                                $documents = $material->files->filter(function ($file) {
-                                    return in_array(strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION)), [
-                                        'pdf',
-                                        'doc',
-                                        'docx',
-                                        'xls',
-                                        'xlsx',
-                                        'txt',
-                                    ]);
-                                });
+                                $mainDocuments = [
+                                    'coa' => 'COA',
+                                    'halal_certificate' => 'Sertifikat Halal',
+                                ];
                             @endphp
 
-                            @forelse($documents as $file)
-                                <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-2">
-                                    <div class="font-medium text-gray-800">{{ $file->file_name ?? '-' }}</div>
-                                    <div class="text-gray-500">Kategori: {{ strtoupper($file->category ?? '-') }}</div>
-                                    <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
-                                        target="_blank"
-                                        class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition">
-                                        Lihat File
-                                    </a>
-                                </div>
-                            @empty
-                                <div class="text-gray-500 text-xs">Tidak ada dokumen.</div>
-                            @endforelse
-                        </div>
-                    </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach ($mainDocuments as $key => $label)
+                                    @php $file = getFileByCategory($files, $key); @endphp
 
-                    {{-- FOTO MATERIAL --}}
-                    <div>
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3">Foto Material</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            @php
-                                $photos = $material->files->filter(function ($file) {
-                                    return in_array(strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION)), [
-                                        'jpg',
-                                        'jpeg',
-                                        'png',
-                                        'gif',
-                                        'webp',
-                                    ]);
-                                });
-                            @endphp
+                                    <div class="bg-white border rounded-lg p-4 text-xs space-y-2">
+                                        <div class="font-semibold text-gray-700">{{ $label }}</div>
 
-                            @forelse($photos as $file)
-                                <div class="border rounded-lg p-4 bg-gray-50 text-xs space-y-2">
-                                    <div class="font-medium text-gray-800">{{ $file->file_name ?? '-' }}</div>
-                                    <div class="text-gray-500">Kategori: {{ strtoupper($file->category ?? '-') }}</div>
-                                    <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
-                                        target="_blank"
-                                        class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition">
-                                        Lihat Foto
-                                    </a>
-                                </div>
-                            @empty
-                                <div class="text-gray-500 text-xs">Tidak ada foto.</div>
-                            @endforelse
-                        </div>
-                    </div>
-                    {{-- CATATAN --}}
-                    <div>
-                        <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">Catatan</h3>
-                        <div class="border rounded-lg p-4 bg-gray-50 text-xs text-gray-700">
-                            {{ $material->notes ?? 'Tidak ada catatan.' }}
-                        </div>
-                    </div>
-                    @php
-                        $logs = \App\Models\Log::where('model_type', get_class($material))
-                            ->where('model_id', $material->id)
-                            ->with(['changes', 'user'])
-                            ->latest()
-                            ->get();
-                    @endphp
-
-                    @if ($logs->count())
-                        <div class="px-5 py-4 sm:px-6 sm:py-5 border-t border-gray-100">
-
-                            <h3 class="text-xs font-semibold uppercase text-gray-500 mb-2">
-                                Riwayat Perubahan
-                            </h3>
-
-                            {{-- CONTAINER SCROLL --}}
-                            <div class="space-y-2 max-h-32 overflow-y-auto pr-2">
-
-                                @foreach ($logs as $log)
-                                    <div class="border rounded-lg p-3 bg-gray-50 text-xs space-y-2">
-                                        <div class="flex justify-between">
-                                            <span class="font-semibold text-gray-700">
-                                                {{ ucfirst($log->action) }}
-                                            </span>
-                                            <span class="text-gray-400">
-                                                {{ $log->created_at->format('d M Y') }}
-                                            </span>
-                                        </div>
-
-                                        <div class="text-gray-500">
-                                            Oleh: {{ $log->user->name ?? 'System' }}
-                                        </div>
-
-                                        @foreach ($log->changes as $change)
-                                            <div>
-                                                <span class="font-medium">
-                                                    {{ ucfirst(str_replace('_', ' ', $change->field)) }}
-                                                </span>
-                                                :
-                                                <span class="text-red-600">
-                                                    {{ $change->old_value ?? '-' }}
-                                                </span>
-                                                →
-                                                <span class="text-emerald-600">
-                                                    {{ $change->new_value ?? '-' }}
-                                                </span>
-                                            </div>
-                                        @endforeach
+                                        @if ($file)
+                                            <div class="text-gray-600">{{ $file->file_name }}</div>
+                                            <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                                target="_blank"
+                                                class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition">
+                                                Lihat File
+                                            </a>
+                                        @else
+                                            <div class="text-gray-400">Tidak tersedia</div>
+                                        @endif
                                     </div>
                                 @endforeach
-
                             </div>
+
+
+                            {{-- ================= PACKAGING ================= --}}
+                            <div>
+                                <h5 class="text-sm font-semibold text-gray-700 mb-3">
+                                    Pengemasan (Packaging)
+                                </h5>
+
+                                @php
+                                    $packagingDocuments = [
+                                        'original_packaging' => 'Kemasan asli',
+                                        'repacking' => 'Pengemasan ulang',
+                                    ];
+                                @endphp
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @foreach ($packagingDocuments as $key => $label)
+                                        @php $file = getFileByCategory($files, $key); @endphp
+
+                                        <div class="bg-white border rounded-lg p-4 text-xs space-y-2">
+                                            <div class="font-semibold text-gray-700">{{ $label }}</div>
+
+                                            @if ($file)
+                                                <div class="text-gray-600">{{ $file->file_name }}</div>
+                                                <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                                    target="_blank"
+                                                    class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition">
+                                                    Lihat File
+                                                </a>
+                                            @else
+                                                <div class="text-gray-400">Tidak tersedia</div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+
+                            {{-- ================= DATA PENDUKUNG ================= --}}
+                            <div>
+                                <h5 class="text-sm font-semibold text-gray-700 mb-3">
+                                    Data pendukung lain (Other supporting data)
+                                </h5>
+
+                                @php
+                                    $supportingDocuments = [
+                                        'flow_chart' => 'Diagram alir',
+                                        'no_animal_use' => 'Tanpa penggunaan hewan',
+                                        'msds' => 'MSDS',
+                                        'allergen' => 'Alergen statement',
+                                        'food_grade' => 'Food Grade',
+                                        'non_gmo' => 'Non GMO statement',
+                                        'bse_tse' => 'BSE / TSE statement',
+                                        'porcine_free' => 'Porcine free statement',
+                                        'breakdown_composition' => 'Breakdown Composition',
+                                    ];
+                                @endphp
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    @foreach ($supportingDocuments as $key => $label)
+                                        @php $file = getFileByCategory($files, $key); @endphp
+
+                                        <div class="bg-white border rounded-lg p-4 text-xs space-y-2">
+                                            <div class="font-semibold text-gray-700">{{ $label }}</div>
+
+                                            @if ($file)
+                                                <div class="text-gray-600">{{ $file->file_name }}</div>
+                                                <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                                    target="_blank"
+                                                    class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition">
+                                                    Lihat File
+                                                </a>
+                                            @else
+                                                <div class="text-gray-400">Tidak tersedia</div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
                         </div>
-                    @endif
-                </div>
+                    </div>
 
-                {{-- FOOTER --}}
-                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end rounded-b-2xl">
-                    <button wire:click="closeDetail"
-                        class="px-4 py-2 text-xs rounded-xl bg-gray-100 hover:bg-gray-200">Tutup</button>
-                </div>
 
+                    {{-- ================= FOTO MATERIAL ================= --}}
+                    <div class="border border-gray-200 rounded-xl p-6 bg-gray-50 mb-6">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-4">
+                            Foto Material
+                        </h4>
+
+                        @php
+                            $photos = $files->filter(function ($file) {
+                                return in_array(strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION)), [
+                                    'jpg',
+                                    'jpeg',
+                                    'png',
+                                    'gif',
+                                    'webp',
+                                ]);
+                            });
+                        @endphp
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            @forelse($photos as $file)
+                                <a href="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                    target="_blank">
+                                    <img src="{{ route('incoming-material.file', basename($file->file_path)) }}"
+                                        class="rounded-lg border h-32 w-full object-cover hover:opacity-80 transition">
+                                </a>
+                            @empty
+                                <div class="text-gray-400 text-xs">Tidak ada foto.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    {{-- FOOTER --}}
+                    <div class="px-6 py-4 border-t bg-gray-50 flex justify-end rounded-b-2xl">
+                        <button wire:click="closeDetail"
+                            class="px-4 py-2 text-xs rounded-xl bg-gray-100 hover:bg-gray-200">Tutup</button>
+                    </div>
+
+                </div>
             </div>
-        </div>
     @endif
 </div>
