@@ -224,59 +224,131 @@
                         </div>
 
                     </div>
-                    {{-- ================= DOCUMENT SUITABILITY ================= --}}
-                    <div class="border border-blue-200 rounded-xl p-6 bg-blue-50/30">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-4">
-                            Kesesuaian Dokumen (Document Suitability)
+                    {{-- ================= DOCUMENT & FOTO MATERIAL ================= --}}
+                    <div class="border border-blue-200 rounded-xl p-6 bg-blue-50/30 space-y-8">
+
+                        <h4 class="text-sm font-semibold text-gray-800">
+                            Kesesuaian Dokumen & Foto Material
                         </h4>
 
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {{-- ================= PACKAGING ================= --}}
+                        <div>
+                            <h5 class="text-xs font-semibold uppercase text-gray-600 mb-3">
+                                Packaging
+                            </h5>
 
-                            @foreach ($documentTypes as $key => $label)
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                {{-- ORIGINAL PACKAGING --}}
                                 <div class="bg-white border rounded-lg p-4 space-y-2">
-
                                     <label class="flex items-center gap-2">
-                                        <input type="checkbox" wire:model="documents.{{ $key }}.is_checked"
+                                        <input type="checkbox" wire:model="documents.original_packaging.is_checked"
                                             class="rounded border-gray-300">
                                         <span class="text-sm font-medium text-gray-700">
-                                            {{ $label }}
+                                            Original Packaging
                                         </span>
                                     </label>
 
-                                    <input type="file" wire:model="documents.{{ $key }}.file"
+                                    <input type="file" wire:model="documents.original_packaging.file"
                                         class="w-full text-xs border rounded-md p-2">
 
-                                    @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                    @if (isset($documents['original_packaging']['file']) && $documents['original_packaging']['file'])
                                         <span class="text-xs text-green-600">
                                             File siap upload:
-                                            {{ $documents[$key]['file']->getClientOriginalName() }}
+                                            {{ $documents['original_packaging']['file']->getClientOriginalName() }}
                                         </span>
                                     @endif
-
                                 </div>
-                            @endforeach
 
+                                {{-- REPACKING --}}
+                                <div class="bg-white border rounded-lg p-4 space-y-2">
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" wire:model="documents.repacking.is_checked"
+                                            class="rounded border-gray-300">
+                                        <span class="text-sm font-medium text-gray-700">
+                                            Repacking
+                                        </span>
+                                    </label>
+
+                                    <input type="file" wire:model="documents.repacking.file"
+                                        class="w-full text-xs border rounded-md p-2">
+
+                                    @if (isset($documents['repacking']['file']) && $documents['repacking']['file'])
+                                        <span class="text-xs text-green-600">
+                                            File siap upload:
+                                            {{ $documents['repacking']['file']->getClientOriginalName() }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                            </div>
                         </div>
-                    </div>
 
-                    {{-- ================= FOTO MATERIAL ================= --}}
-                    <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-4">
-                            Upload Foto Material
-                        </h4>
 
-                        <input type="file" wire:model="photos" multiple
-                            class="w-full border rounded-md p-2 text-sm">
+                        {{-- ================= DATA PENDUKUNG ================= --}}
+                        <div>
+                            <h5 class="text-xs font-semibold uppercase text-gray-600 mb-3">
+                                Data Pendukung
+                            </h5>
 
-                        @if ($photos)
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                                @foreach ($photos as $photo)
-                                    <div class="border rounded-md overflow-hidden">
-                                        <img src="{{ $photo->temporaryUrl() }}" class="w-full h-32 object-cover">
+                            @php
+                                $supportingDocuments = [
+                                    'flow_chart' => 'Flow Chart',
+                                    'coa' => 'Certificate of Analysis (COA)',
+                                    'msds' => 'Material Safety Data Sheet (MSDS)',
+                                    'breakdown_composition' => 'Breakdown Composition',
+                                ];
+                            @endphp
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                @foreach ($supportingDocuments as $key => $label)
+                                    <div class="bg-white border rounded-lg p-4 space-y-2">
+
+                                        <label class="flex items-center gap-2">
+                                            <input type="checkbox"
+                                                wire:model="documents.{{ $key }}.is_checked"
+                                                class="rounded border-gray-300">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                {{ $label }}
+                                            </span>
+                                        </label>
+
+                                        <input type="file" wire:model="documents.{{ $key }}.file"
+                                            class="w-full text-xs border rounded-md p-2">
+
+                                        @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                            <span class="text-xs text-green-600">
+                                                File siap upload:
+                                                {{ $documents[$key]['file']->getClientOriginalName() }}
+                                            </span>
+                                        @endif
+
                                     </div>
                                 @endforeach
                             </div>
-                        @endif
+                        </div>
+
+
+                        {{-- ================= FOTO MATERIAL ================= --}}
+                        <div>
+                            <h5 class="text-xs font-semibold uppercase text-gray-600 mb-3">
+                                Upload Foto Material
+                            </h5>
+
+                            <input type="file" wire:model="photos" multiple
+                                class="w-full border rounded-md p-2 text-sm bg-white">
+
+                            @if ($photos)
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                    @foreach ($photos as $photo)
+                                        <div class="border rounded-md overflow-hidden bg-white">
+                                            <img src="{{ $photo->temporaryUrl() }}" class="w-full h-32 object-cover">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+
                     </div>
 
                     {{-- ================= KEPUTUSAN INSPEKSI ================= --}}
