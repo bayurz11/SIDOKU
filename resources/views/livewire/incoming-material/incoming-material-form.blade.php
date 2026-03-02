@@ -226,110 +226,81 @@
                     </div>
                     {{-- ================= DOCUMENT SUITABILITY ================= --}}
                     <div class="border border-blue-200 rounded-xl p-6 bg-blue-50/30">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-4">
+
+                        <h4 class="text-sm font-semibold text-gray-800 mb-6">
                             Kesesuaian Dokumen (Document Suitability)
                         </h4>
 
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="space-y-6 text-sm">
 
-                            @foreach ($documentTypes as $key => $label)
-                                <div class="bg-white border rounded-lg p-4 space-y-2">
+                            {{-- a. COA --}}
+                            <div>
+                                <p class="font-medium">a. COA</p>
+                                <p class="italic text-gray-500">COA</p>
+                            </div>
+
+                            {{-- b. Sertifikat Halal --}}
+                            <div>
+                                <p class="font-medium">b. Sertifikat halal</p>
+                                <p class="italic text-gray-500">Halal certificate</p>
+                            </div>
+
+                            {{-- c. Pengemasan --}}
+                            <div class="space-y-2">
+                                <p class="font-medium">c. Pengemasan</p>
+                                <p class="italic text-gray-500">Packaging</p>
+
+                                <div class="pl-6 space-y-2">
 
                                     <label class="flex items-center gap-2">
-                                        <input type="checkbox" wire:model="documents.{{ $key }}.is_checked"
-                                            class="rounded border-gray-300">
-                                        <span class="text-sm font-medium text-gray-700">
-                                            {{ $label }}
-                                        </span>
+                                        <input type="checkbox" wire:model="documents.original_packaging.is_checked"
+                                            class="rounded border-gray-400">
+                                        <span>Kemasan asli*</span>
                                     </label>
 
-                                    <input type="file" wire:model="documents.{{ $key }}.file"
-                                        class="w-full text-xs border rounded-md p-2">
-
-                                    @if (isset($documents[$key]['file']) && $documents[$key]['file'])
-                                        <span class="text-xs text-green-600">
-                                            File siap upload:
-                                            {{ $documents[$key]['file']->getClientOriginalName() }}
-                                        </span>
-                                    @endif
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" wire:model="documents.repacking.is_checked"
+                                            class="rounded border-gray-400">
+                                        <span>Pengemasan ulang*</span>
+                                    </label>
 
                                 </div>
-                            @endforeach
-                            {{-- ================= PACKAGING ================= --}}
-                            <div>
-                                <h5 class="text-xs font-semibold uppercase text-gray-600 mb-3">
-                                    Packaging
-                                </h5>
+                            </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{-- d. Data Pendukung --}}
+                            <div class="space-y-2">
+                                <p class="font-medium">d. Data pendukung lain</p>
+                                <p class="italic text-gray-500">Other supporting data</p>
 
-                                    {{-- ORIGINAL PACKAGING --}}
-                                    <div class="bg-white border rounded-lg p-4 space-y-2">
+                                <div class="pl-6 grid grid-cols-1 md:grid-cols-2 gap-y-2">
+
+                                    @php
+                                        $supportingDocuments = [
+                                            'flow_chart' => 'Diagram alir*',
+                                            'no_animal_use' => 'Tanpa penggunaan hewan*',
+                                            'msds' => 'MSDS**',
+                                            'allergen' => 'Alergen statement**',
+                                            'food_grade' => 'Food Grade**',
+                                            'non_gmo' => 'Non GMO statement**',
+                                            'bse_tse' => 'BSE / TSE statement**',
+                                            'porcine_free' => 'Porcine free statement**',
+                                            'breakdown_composition' => 'Breakdown Composition**',
+                                        ];
+                                    @endphp
+
+                                    @foreach ($supportingDocuments as $key => $label)
                                         <label class="flex items-center gap-2">
                                             <input type="checkbox"
-                                                wire:model="documents.original_packaging.is_checked"
-                                                class="rounded border-gray-300">
-                                            <span class="text-sm font-medium text-gray-700">
-                                                Original Packaging
-                                            </span>
+                                                wire:model="documents.{{ $key }}.is_checked"
+                                                class="rounded border-gray-400">
+                                            <span>{{ $label }}</span>
                                         </label>
-
-                                        <input type="file" wire:model="documents.original_packaging.file"
-                                            class="w-full text-xs border rounded-md p-2">
-
-                                        @if (isset($documents['original_packaging']['file']) && $documents['original_packaging']['file'])
-                                            <span class="text-xs text-green-600">
-                                                File siap upload:
-                                                {{ $documents['original_packaging']['file']->getClientOriginalName() }}
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    {{-- REPACKING --}}
-                                    <div class="bg-white border rounded-lg p-4 space-y-2">
-                                        <label class="flex items-center gap-2">
-                                            <input type="checkbox" wire:model="documents.repacking.is_checked"
-                                                class="rounded border-gray-300">
-                                            <span class="text-sm font-medium text-gray-700">
-                                                Repacking
-                                            </span>
-                                        </label>
-
-                                        <input type="file" wire:model="documents.repacking.file"
-                                            class="w-full text-xs border rounded-md p-2">
-
-                                        @if (isset($documents['repacking']['file']) && $documents['repacking']['file'])
-                                            <span class="text-xs text-green-600">
-                                                File siap upload:
-                                                {{ $documents['repacking']['file']->getClientOriginalName() }}
-                                            </span>
-                                        @endif
-                                    </div>
+                                    @endforeach
 
                                 </div>
                             </div>
 
                         </div>
-                    </div>
-
-                    {{-- ================= FOTO MATERIAL ================= --}}
-                    <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-4">
-                            Upload Foto Material
-                        </h4>
-
-                        <input type="file" wire:model="photos" multiple
-                            class="w-full border rounded-md p-2 text-sm">
-
-                        @if ($photos)
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                                @foreach ($photos as $photo)
-                                    <div class="border rounded-md overflow-hidden">
-                                        <img src="{{ $photo->temporaryUrl() }}" class="w-full h-32 object-cover">
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
                     </div>
 
                     {{-- ================= KEPUTUSAN INSPEKSI ================= --}}
