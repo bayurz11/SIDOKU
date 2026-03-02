@@ -349,7 +349,6 @@ class IncomingMaterialForm extends Component
             ]);
 
             $this->dispatch('incoming-material:saved');
-
             $this->closeModal();
         } catch (\Throwable $e) {
 
