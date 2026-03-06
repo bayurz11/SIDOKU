@@ -141,10 +141,79 @@ class PermissionSeeder extends Seeder
             ['name' => 'document_prefix_settings.generate_preview', 'display_name' => 'Generate Number Preview', 'description' => 'Can generate or preview document numbering pattern outputs', 'group' => 'document_prefix_settings',],
 
             // Incoming Material permissions
-            ['name' => 'incoming_material.view', 'display_name' => 'View Incoming Material', 'description' => 'Can view incoming material list and details', 'group' => 'incoming_material'],
-            ['name' => 'incoming_material.create', 'display_name' => 'Create Incoming Material', 'description' => 'Can create new incoming material data', 'group' => 'incoming_material'],
-            ['name' => 'incoming_material.edit', 'display_name' => 'Edit Incoming Material', 'description' => 'Can edit existing incoming material data', 'group' => 'incoming_material'],
-            ['name' => 'incoming_material.delete', 'display_name' => 'Delete Incoming Material', 'description' => 'Can delete incoming material data', 'group' => 'incoming_material'],
+            [
+                'name' => 'incoming_material.view',
+                'display_name' => 'View Incoming Material',
+                'description' => 'Can view incoming material list and details',
+                'group' => 'incoming_material'
+            ],
+            [
+                'name' => 'incoming_material.create',
+                'display_name' => 'Create Incoming Material',
+                'description' => 'Can create new incoming material data',
+                'group' => 'incoming_material'
+            ],
+            [
+                'name' => 'incoming_material.edit',
+                'display_name' => 'Edit Incoming Material',
+                'description' => 'Can edit existing incoming material data',
+                'group' => 'incoming_material'
+            ],
+            [
+                'name' => 'incoming_material.delete',
+                'display_name' => 'Delete Incoming Material',
+                'description' => 'Can delete incoming material data',
+                'group' => 'incoming_material'
+            ],
+            [
+                'name' => 'incoming_material.approve',
+                'display_name' => 'Approve Incoming Material',
+                'description' => 'Can approve incoming material data',
+                'group' => 'incoming_material'
+            ],
+            [
+                'name' => 'incoming_material.print',
+                'display_name' => 'Print Incoming Material',
+                'description' => 'Can print incoming material report',
+                'group' => 'incoming_material'
+            ],
+            // Mikrobiologi permissions
+            [
+                'name' => 'microbiology.view',
+                'display_name' => 'View Mikrobiologi',
+                'description' => 'Can view microbiology test list and details',
+                'group' => 'microbiology'
+            ],
+            [
+                'name' => 'microbiology.create',
+                'display_name' => 'Create Mikrobiologi',
+                'description' => 'Can create new microbiology test data',
+                'group' => 'microbiology'
+            ],
+            [
+                'name' => 'microbiology.edit',
+                'display_name' => 'Edit Mikrobiologi',
+                'description' => 'Can edit existing microbiology test data',
+                'group' => 'microbiology'
+            ],
+            [
+                'name' => 'microbiology.delete',
+                'display_name' => 'Delete Mikrobiologi',
+                'description' => 'Can delete microbiology test data',
+                'group' => 'microbiology'
+            ],
+            [
+                'name' => 'microbiology.approve',
+                'display_name' => 'Approve Mikrobiologi',
+                'description' => 'Can approve microbiology test results',
+                'group' => 'microbiology'
+            ],
+            [
+                'name' => 'microbiology.print',
+                'display_name' => 'Print Mikrobiologi Report',
+                'description' => 'Can print microbiology test reports',
+                'group' => 'microbiology'
+            ],
         ];
 
 
