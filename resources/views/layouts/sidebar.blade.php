@@ -15,7 +15,7 @@
      </div>
 
      <!-- Sidebar Navigation -->
-     <nav class="mt-8 px-4">
+     <nav class="mt-8 px-4 flex-1 overflow-y-auto">
          <div class="space-y-2">
              <!-- Dashboard -->
              <a href="{{ route('dashboard') }}"
@@ -419,7 +419,7 @@
      </nav>
 
      <!-- User Profile Section -->
-     <div class="absolute bottom-0 w-full p-4">
+     <div class="p-4 border-t border-blue-400 border-opacity-30">
          <div class="bg-white bg-opacity-10 rounded-lg p-3">
              <div class="flex items-center">
                  <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
