@@ -230,6 +230,10 @@
                                                             Document
                                                         @elseif(request()->routeIs('incoming-material-tahap1.*'))
                                                             Incoming Material Tahap 1
+                                                        @elseif(request()->routeIs('incoming-material-tahap2.*'))
+                                                            Incoming Material Tahap 2
+                                                        @elseif(request()->routeIs('mikrobiologi.*'))
+                                                            Mikrobiologi
                                                         @else
                                                             {{ ucwords(str_replace(['-', '_'], ' ', request()->route()->getName())) }}
                                                         @endif

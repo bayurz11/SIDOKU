@@ -41,6 +41,9 @@
 
                  $incomingActive = request()->routeIs('incoming-material-tahap1.*', 'incoming-material-tahap2.*');
 
+                 // ===== TAMBAHAN MIKROBIOLOGI =====
+                 $microbiologyActive = request()->routeIs('microbiology-tahap1.*', 'microbiology-tahap2.*');
+
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
                  // ===== VISIBILITY =====
@@ -65,6 +68,11 @@
                      ->user()
                      ->hasAnyPermission(['incoming_material.view']);
 
+                 // ===== TAMBAHAN MIKROBIOLOGI =====
+                 $canSeeMicrobiologyMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['microbiology.view']);
+
                  $canSeeAccountMenu = auth()
                      ->user()
                      ->hasAnyPermission(['users.view', 'roles.view']);
@@ -79,9 +87,11 @@
                                  ? 'ipc'
                                  : ($incomingActive && $canSeeIncomingMenu
                                      ? 'incoming'
-                                     : ($accountActive && $canSeeAccountMenu
-                                         ? 'account'
-                                         : ''))));
+                                     : ($microbiologyActive && $canSeeMicrobiologyMenu
+                                         ? 'microbiology'
+                                         : ($accountActive && $canSeeAccountMenu
+                                             ? 'account'
+                                             : '')))));
              @endphp
 
 
@@ -294,6 +304,57 @@
                              @permission('incoming_material.view')
                                  <a href="#"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Tahap 2
+                                 </a>
+                             @endpermission
+
+                         </div>
+                     </div>
+                 @endif
+                 {{-- ============== Mikrobiologi ============== --}}
+                 @if ($canSeeMicrobiologyMenu)
+                     <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
+
+                         <button @click="activeMenu = (activeMenu === 'microbiology' ? '' : 'microbiology')"
+                             aria-controls="menu-microbiology"
+                             :aria-expanded="(activeMenu === 'microbiology').toString()"
+                             class="group relative flex w-full items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 {{ $microbiologyActive ? 'text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}"
+                             type="button">
+
+                             @if ($microbiologyActive)
+                                 <span
+                                     class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-emerald-400"></span>
+                             @endif
+
+                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3 h-5 w-5" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round"
+                                     d="M19.428 15.428a4 4 0 00-5.656 0l-4.95 4.95a4 4 0 01-5.657-5.657l4.95-4.95a4 4 0 015.657 5.657l-.707.707" />
+                             </svg>
+
+                             <span>Mikrobiologi</span>
+
+                             <svg :class="{ 'rotate-180': activeMenu === 'microbiology' }"
+                                 class="ml-auto h-4 w-4 transform transition-transform duration-200" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M19 9l-7 7-7-7" />
+                             </svg>
+                         </button>
+
+                         <div id="menu-microbiology" x-show="activeMenu === 'microbiology'" x-collapse
+                             class="mt-1 pl-10 space-y-1 overflow-hidden">
+
+                             @permission('microbiology.view')
+                                 <a href="{{ route('microbiology-tahap1.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology-tahap1.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Tahap 1
+                                 </a>
+                             @endpermission
+
+                             @permission('microbiology.view')
+                                 <a href="{{ route('microbiology-tahap2.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology-tahap2.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Tahap 2
                                  </a>
                              @endpermission
