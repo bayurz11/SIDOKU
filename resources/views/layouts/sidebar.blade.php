@@ -311,6 +311,7 @@
                          </div>
                      </div>
                  @endif
+
                  {{-- ============== Mikrobiologi ============== --}}
                  @if ($canSeeMicrobiologyMenu)
                      <div class="relative pt-4 mt-4 border-t border-blue-400 border-opacity-30">
@@ -346,14 +347,14 @@
                              class="mt-1 pl-10 space-y-1 overflow-hidden">
 
                              @permission('microbiology.view')
-                                 <a href="{{ route('microbiology-tahap1.index') }}"
-                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology-tahap1.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                     Tahap 1
+                                 <a href="#"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     micro
                                  </a>
                              @endpermission
 
                              @permission('microbiology.view')
-                                 <a href="{{ route('microbiology-tahap2.index') }}"
+                                 <a href="#"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology-tahap2.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Tahap 2
                                  </a>
