@@ -1,5 +1,5 @@
  <div id="sidebar"
-     class="sidebar-toggle fixed inset-y-0 left-0 z-50 w-64 sidebar-gradient shadow-xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+     class="sidebar-toggle fixed inset-y-0 left-0 z-50 w-64 sidebar-gradient shadow-xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-screen">
      <!-- Sidebar Header -->
      <div class="flex items-center justify-center h-16 px-4 bg-black bg-opacity-20">
          <div class="flex items-center">
