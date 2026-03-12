@@ -465,7 +465,7 @@
                 <div class="flex items-center justify-between mb-4">
 
                     <h3 class="text-lg font-semibold">
-                        IPC Summary
+                        IPC Summary (kadar AIR)
                     </h3>
 
                     <span class="text-xs bg-green-100 text-green-600 px-3 py-1 rounded-full">
