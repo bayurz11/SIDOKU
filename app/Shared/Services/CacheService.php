@@ -139,8 +139,8 @@ class CacheService
             $totalDocuments  = Document::count();
             $activeDocuments = Document::where('is_active', true)->count();
 
-            $totalArrivalOfGoods = \App\models\Domains\IncomingMaterial\Models\IncomingMaterial::count();
-            $activeArrivalOfGoods = \App\models\Domains\IncomingMaterial\Models\IncomingMaterial::where('is_active', true)->count();
+            $totalArrivalOfGoods = \App\Models\Domains\IncomingMaterial\Models\IncomingMaterial::count();
+            $activeArrivalOfGoods = \App\Models\Domains\IncomingMaterial\Models\IncomingMaterial::where('is_active', true)->count();
 
             return [
                 // ===== DEPARTEMEN =====
@@ -174,7 +174,7 @@ class CacheService
                     ->get(),
 
                 // ===== RECENT ARRIVAL OF GOODS (SUDAH ADA) =====
-                'recent_arrival_of_goods' => \App\models\Domains\IncomingMaterial\Models\IncomingMaterial::count(),
+                'recent_arrival_of_goods' => \App\Models\Domains\IncomingMaterial\Models\IncomingMaterial::count(),
 
                 // ===== RECENT USERS (SUDAH ADA) =====
                 'recent_users' => \App\Domains\User\Models\User::latest()->take(5)->get(),
