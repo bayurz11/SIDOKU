@@ -710,96 +710,132 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            (function() {
 
-                const labels = @json($stats['ipc_chart']['labels'] ?? []);
-                const values = @json($stats['ipc_chart']['values'] ?? []);
+                if (window.__dashboardChartInitialized) return;
+                window.__dashboardChartInitialized = true;
 
-                if (!labels.length || !values.length) {
-                    console.warn('IPC Chart: No data available');
-                    return;
-                }
+                window.dashboardMixedChart = null;
 
-                const maxValue = Math.max(...values);
-                const limitValue = maxValue * 0.10;
+                function renderDashboardChart() {
 
-                const ctx = document.getElementById('mixedChart');
+                    const canvas = document.getElementById('mixedChart');
 
-                if (!ctx) return;
+                    const labels = @json($stats['ipc_chart']['labels'] ?? []);
+                    const values = @json($stats['ipc_chart']['values'] ?? []);
 
-                new Chart(ctx, {
+                    if (!canvas) return;
 
-                    data: {
-                        labels: labels,
-
-                        datasets: [
-
-                            {
-                                type: 'bar',
-                                label: 'Jumlah Sample IPC',
-                                data: values,
-                                backgroundColor: 'rgba(59,130,246,0.6)',
-                                borderRadius: 8,
-                                order: 2
-                            },
-
-                            {
-                                type: 'line',
-                                label: 'Trend',
-                                data: values,
-                                borderColor: '#16a34a',
-                                backgroundColor: '#16a34a',
-                                tension: 0.4,
-                                fill: false,
-                                order: 1
-                            },
-
-                            {
-                                type: 'line',
-                                label: 'Limit 10%',
-                                data: labels.map(() => limitValue),
-                                borderColor: '#ef4444',
-                                borderDash: [6, 6],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: false,
-                                order: 0
-                            }
-
-                        ]
-                    },
-
-                    options: {
-
-                        responsive: true,
-                        maintainAspectRatio: false,
-
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        },
-
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Jumlah Sample'
-                                }
-                            }
-                        }
-
+                    // destroy chart lama
+                    if (window.dashboardMixedChart && typeof window.dashboardMixedChart.destroy === 'function') {
+                        window.dashboardMixedChart.destroy();
+                        window.dashboardMixedChart = null;
                     }
 
-                });
+                    // tidak ada data
+                    if (!labels.length || !values.length) {
+                        console.warn('Dashboard IPC Chart: No data');
+                        return;
+                    }
 
-            });
+                    const ctx = canvas.getContext('2d');
+
+                    const maxValue = Math.max(...values);
+                    const limitValue = maxValue * 0.10;
+
+                    window.dashboardMixedChart = new Chart(ctx, {
+
+                        data: {
+                            labels: labels,
+
+                            datasets: [
+
+                                {
+                                    type: 'bar',
+                                    label: 'Jumlah Sample IPC',
+                                    data: values,
+                                    backgroundColor: 'rgba(59,130,246,0.6)',
+                                    borderRadius: 8,
+                                    order: 2
+                                },
+
+                                {
+                                    type: 'line',
+                                    label: 'Trend',
+                                    data: values,
+                                    borderColor: '#16a34a',
+                                    backgroundColor: '#16a34a',
+                                    tension: 0.4,
+                                    fill: false,
+                                    order: 1
+                                },
+
+                                {
+                                    type: 'line',
+                                    label: 'Limit 10%',
+                                    data: labels.map(() => limitValue),
+                                    borderColor: '#ef4444',
+                                    borderDash: [6, 6],
+                                    borderWidth: 2,
+                                    pointRadius: 0,
+                                    fill: false,
+                                    order: 0
+                                }
+
+                            ]
+                        },
+
+                        options: {
+
+                            responsive: true,
+                            maintainAspectRatio: false,
+
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Jumlah Sample'
+                                    }
+                                }
+                            }
+
+                        }
+
+                    });
+
+                }
+
+                function boot() {
+
+                    renderDashboardChart();
+
+                    if (window.Livewire) {
+                        Livewire.hook('message.processed', () => {
+                            renderDashboardChart();
+                        });
+                    }
+
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', boot);
+                } else {
+                    boot();
+                }
+
+            })();
         </script>
     @endpush
 @endsection
