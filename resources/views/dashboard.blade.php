@@ -462,10 +462,11 @@
         <div class="grid grid-cols-1 gap-8">
 
             <div class="bg-white p-6 rounded-2xl shadow">
+
                 <div class="flex items-center justify-between mb-4">
 
                     <h3 class="text-lg font-semibold">
-                        IPC Summary (kadar AIR)
+                        IPC Summary (Kadar Air)
                     </h3>
 
                     <span class="text-xs bg-green-100 text-green-600 px-3 py-1 rounded-full">
@@ -721,68 +722,69 @@
 
                     const canvas = document.getElementById('mixedChart');
 
-                    const labels = @json($stats['ipc_chart']['labels'] ?? []);
-                    const values = @json($stats['ipc_chart']['values'] ?? []);
+                    const labels = @json($chartLabels ?? []);
+                    const moistureValues = @json($chartValues ?? []);
+                    const counts = @json($chartCounts ?? []);
 
                     if (!canvas) return;
 
-                    // destroy chart lama
                     if (window.dashboardMixedChart && typeof window.dashboardMixedChart.destroy === 'function') {
                         window.dashboardMixedChart.destroy();
                         window.dashboardMixedChart = null;
                     }
 
-                    // tidak ada data
-                    if (!labels.length || !values.length) {
+                    if (!labels.length || !moistureValues.length) {
                         console.warn('Dashboard IPC Chart: No data');
                         return;
                     }
 
                     const ctx = canvas.getContext('2d');
 
-                    const maxValue = Math.max(...values);
-                    const limitValue = maxValue * 0.10;
+                    // warna bar otomatis merah jika >= 10%
+                    const barColors = moistureValues.map(v =>
+                        v >= 10 ? 'rgba(239,68,68,0.7)' : 'rgba(16,185,129,0.6)'
+                    );
 
                     window.dashboardMixedChart = new Chart(ctx, {
 
                         data: {
+
                             labels: labels,
 
                             datasets: [
 
                                 {
                                     type: 'bar',
-                                    label: 'Jumlah Sample IPC',
-                                    data: values,
-                                    backgroundColor: 'rgba(59,130,246,0.6)',
-                                    borderRadius: 8,
-                                    order: 2
+                                    label: 'Rata-rata Kadar Air (%)',
+                                    data: moistureValues,
+                                    backgroundColor: barColors,
+                                    borderRadius: 6,
+                                    yAxisID: 'y'
                                 },
 
                                 {
                                     type: 'line',
-                                    label: 'Trend',
-                                    data: values,
-                                    borderColor: '#16a34a',
-                                    backgroundColor: '#16a34a',
-                                    tension: 0.4,
-                                    fill: false,
-                                    order: 1
+                                    label: 'Jumlah Data',
+                                    data: counts,
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: '#3b82f6',
+                                    tension: 0.3,
+                                    yAxisID: 'y1'
                                 },
 
                                 {
                                     type: 'line',
-                                    label: 'Limit 10%',
-                                    data: labels.map(() => limitValue),
-                                    borderColor: '#ef4444',
+                                    label: 'Batas Maksimum (10%)',
+                                    data: labels.map(() => 10),
+                                    borderColor: 'red',
                                     borderDash: [6, 6],
                                     borderWidth: 2,
                                     pointRadius: 0,
-                                    fill: false,
-                                    order: 0
+                                    yAxisID: 'y'
                                 }
 
                             ]
+
                         },
 
                         options: {
@@ -797,18 +799,35 @@
 
                             plugins: {
                                 legend: {
-                                    position: 'bottom'
+                                    position: 'top'
                                 }
                             },
 
                             scales: {
+
                                 y: {
+                                    type: 'linear',
+                                    position: 'left',
                                     beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Jumlah Sample'
+                                        text: 'Moisture (%)'
+                                    }
+                                },
+
+                                y1: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Jumlah Data'
                                     }
                                 }
+
                             }
 
                         }
