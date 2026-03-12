@@ -245,7 +245,6 @@
                                 <!-- ACCEPTED -->
                                 <div class="flex items-center space-x-2">
                                     <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-
                                     <span class="text-sm text-green-600 font-semibold">
                                         {{ $stats['accepted_arrival_of_goods'] ?? 0 }} Accepted
                                     </span>
@@ -254,9 +253,16 @@
                                 <!-- HOLD -->
                                 <div class="flex items-center space-x-2">
                                     <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-
                                     <span class="text-sm text-yellow-600 font-semibold">
                                         {{ $stats['hold_arrival_of_goods'] ?? 0 }} Hold
+                                    </span>
+                                </div>
+
+                                <!-- REJECTED -->
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                    <span class="text-sm text-red-600 font-semibold">
+                                        {{ $stats['rejected_arrival_of_goods'] ?? 0 }} Rejected
                                     </span>
                                 </div>
 
