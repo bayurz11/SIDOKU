@@ -822,9 +822,9 @@
                                                 return "Moisture: " + context.raw + "%";
                                             }
 
-                                            // if (context.datasetIndex === 1) {
-                                            //     return "Jumlah Data: " + context.raw;
-                                            // }
+                                            if (context.datasetIndex === 1) {
+                                                return "Jumlah Data: " + context.raw;
+                                            }
 
                                             return context.raw;
                                         }
