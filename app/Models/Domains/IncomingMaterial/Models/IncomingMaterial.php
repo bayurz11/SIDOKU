@@ -2,14 +2,12 @@
 
 namespace App\Models\Domains\IncomingMaterial\Models;
 
-
 use App\Auditable;
 use App\Domains\User\Models\User;
-use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
-use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialInspection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IncomingMaterial extends Model
 {
@@ -20,17 +18,30 @@ class IncomingMaterial extends Model
 
     protected $fillable = [
         'date',
-        'expired_date',
         'receipt_time',
+        'expired_date',
+
         'supplier',
         'material_name',
         'batch_number',
+
         'quantity',
         'quantity_unit',
         'sample_quantity',
+
         'vehicle_number',
+
+        // PARAMETER PENGUJIAN
+        'test_moisture',
+        'test_microbiology',
+        'test_chemical',
+
+        // STATUS LAB
+        'lab_status',
+
         'status',
         'notes',
+
         'created_by',
         'updated_by',
     ];
@@ -39,8 +50,14 @@ class IncomingMaterial extends Model
         'date' => 'date',
         'expired_date' => 'date',
         'receipt_time' => 'datetime:H:i',
+
         'quantity' => 'decimal:2',
         'sample_quantity' => 'decimal:2',
+
+        // parameter pengujian
+        'test_moisture' => 'boolean',
+        'test_microbiology' => 'boolean',
+        'test_chemical' => 'boolean',
     ];
 
     /*
@@ -65,12 +82,35 @@ class IncomingMaterial extends Model
         );
     }
 
-    public function createdBy()
+    public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(
+            User::class,
+            'created_by'
+        );
     }
-    public function updatedBy()
+
+    public function updatedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(
+            User::class,
+            'updated_by'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER
+    |--------------------------------------------------------------------------
+    */
+
+    public function needsMicroTest(): bool
+    {
+        return $this->test_microbiology === true;
+    }
+
+    public function needsMoistureTest(): bool
+    {
+        return $this->test_moisture === true;
     }
 }
