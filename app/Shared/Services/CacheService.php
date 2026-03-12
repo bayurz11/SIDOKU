@@ -178,6 +178,7 @@ class CacheService
                 'total_arrival_of_goods' => IncomingMaterial::count(),
                 'accepted_arrival_of_goods' => IncomingMaterial::where('status', 'accepted')->count(),
                 'hold_arrival_of_goods' => IncomingMaterial::where('status', 'hold')->count(),
+                'rejected_arrival_of_goods' => IncomingMaterial::where('status', 'rejected')->count(),
 
                 // ===== RECENT USERS (SUDAH ADA) =====
                 'recent_users' => \App\Domains\User\Models\User::latest()->take(5)->get(),
