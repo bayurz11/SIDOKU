@@ -409,7 +409,71 @@
 
                         </div>
                     </div>
+                    {{-- ================= PARAMETER PENGUJIAN LAB ================= --}}
+                    <div class="border border-purple-200 rounded-xl p-6 bg-purple-50/30">
 
+                        <h4 class="text-sm font-semibold text-gray-800 mb-4">
+                            Parameter Pengujian Laboratorium
+                        </h4>
+
+                        <p class="text-xs text-gray-500 mb-4">
+                            Pilih parameter pengujian yang diperlukan untuk material ini. Data akan digunakan untuk
+                            proses pengujian pada Tahap 2.
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                            {{-- Kadar Air --}}
+                            <label
+                                class="flex items-center gap-3 bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" wire:model="test_parameters.moisture_content"
+                                    class="rounded border-gray-300">
+
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">
+                                        Kadar Air
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        Pengujian Moisture Content
+                                    </p>
+                                </div>
+                            </label>
+
+                            {{-- Mikrobiologi --}}
+                            <label
+                                class="flex items-center gap-3 bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" wire:model="test_parameters.microbiology"
+                                    class="rounded border-gray-300">
+
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">
+                                        Mikrobiologi
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        Uji TPC, YM, Coliform
+                                    </p>
+                                </div>
+                            </label>
+
+                            {{-- Kimia --}}
+                            <label
+                                class="flex items-center gap-3 bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" wire:model="test_parameters.chemical"
+                                    class="rounded border-gray-300">
+
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">
+                                        Kimia
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        Parameter kimia tambahan
+                                    </p>
+                                </div>
+                            </label>
+
+                        </div>
+
+                    </div>
                     {{-- ================= BUTTON ================= --}}
                     <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                         <button type="button" wire:click="closeModal"
