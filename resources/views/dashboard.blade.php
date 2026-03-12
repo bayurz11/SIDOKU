@@ -782,15 +782,7 @@
                                     }
                                 },
 
-                                {
-                                    type: 'line',
-                                    label: 'Jumlah Data',
-                                    data: counts,
-                                    borderColor: '#3b82f6',
-                                    backgroundColor: '#3b82f6',
-                                    tension: 0.3,
-                                    yAxisID: 'y1'
-                                },
+
 
                                 {
                                     type: 'line',
