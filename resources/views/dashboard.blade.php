@@ -458,20 +458,26 @@
 
         </div>
 
-        <!-- Chart -->
+        <!-- IPC Chart -->
         <div class="grid grid-cols-1 gap-8">
 
             <div class="bg-white p-6 rounded-2xl shadow">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">IPC Summary (Mixed Chart)</h3>
-                    <span class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                        Static Demo
+
+                    <h3 class="text-lg font-semibold">
+                        IPC Summary (Mixed Chart)
+                    </h3>
+
+                    <span class="text-xs bg-green-100 text-green-600 px-3 py-1 rounded-full">
+                        Live Data
                     </span>
+
                 </div>
 
                 <div class="h-80">
                     <canvas id="mixedChart"></canvas>
                 </div>
+
             </div>
 
         </div>
@@ -709,18 +715,28 @@
                 const labels = @json($stats['ipc_chart']['labels'] ?? []);
                 const values = @json($stats['ipc_chart']['values'] ?? []);
 
-                const maxValue = Math.max(...values, 1);
+                if (!labels.length || !values.length) {
+                    console.warn('IPC Chart: No data available');
+                    return;
+                }
+
+                const maxValue = Math.max(...values);
                 const limitValue = maxValue * 0.10;
 
-                new Chart(document.getElementById('mixedChart'), {
-                    type: 'bar',
+                const ctx = document.getElementById('mixedChart');
+
+                if (!ctx) return;
+
+                new Chart(ctx, {
+
                     data: {
                         labels: labels,
+
                         datasets: [
 
                             {
                                 type: 'bar',
-                                label: 'Jumlah Sample',
+                                label: 'Jumlah Sample IPC',
                                 data: values,
                                 backgroundColor: 'rgba(59,130,246,0.6)',
                                 borderRadius: 8,
@@ -732,6 +748,7 @@
                                 label: 'Trend',
                                 data: values,
                                 borderColor: '#16a34a',
+                                backgroundColor: '#16a34a',
                                 tension: 0.4,
                                 fill: false,
                                 order: 1
@@ -743,6 +760,7 @@
                                 data: labels.map(() => limitValue),
                                 borderColor: '#ef4444',
                                 borderDash: [6, 6],
+                                borderWidth: 2,
                                 pointRadius: 0,
                                 fill: false,
                                 order: 0
@@ -750,24 +768,35 @@
 
                         ]
                     },
+
                     options: {
+
                         responsive: true,
                         maintainAspectRatio: false,
+
                         interaction: {
                             mode: 'index',
                             intersect: false
                         },
+
                         plugins: {
                             legend: {
                                 position: 'bottom'
                             }
                         },
+
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Sample'
+                                }
                             }
                         }
+
                     }
+
                 });
 
             });

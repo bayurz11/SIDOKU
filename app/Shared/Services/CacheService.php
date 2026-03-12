@@ -136,6 +136,7 @@ class CacheService
     public static function getDashboardStats($ttl = self::SHORT_TTL)
     {
         return Cache::remember('dashboard.stats', $ttl, function () {
+
             $totalDepartments  = \App\Domains\Department\Models\Department::count();
             $activeDepartments = \App\Domains\Department\Models\Department::where('is_active', true)->count();
 
@@ -151,8 +152,14 @@ class CacheService
                 ->orderBy('line_group')
                 ->get();
 
+            $ipcLabels = $ipcSummary->pluck('line_group')->map(function ($line) {
+                return IpcProductCheck::LINE_GROUPS[$line] ?? $line;
+            });
+
+            $ipcValues = $ipcSummary->pluck('total_sample');
 
             return [
+
                 // ===== DEPARTEMEN =====
                 'total_departments'    => $totalDepartments,
                 'active_departments'   => $activeDepartments,
@@ -162,40 +169,42 @@ class CacheService
                 'total_users'  => \App\Domains\User\Models\User::count(),
                 'active_users' => \App\Domains\User\Models\User::where('is_active', true)->count(),
 
-                // ===== ROLES & PERMISSIONS =====
-                'total_roles'       => \App\Domains\Role\Models\Role::count(),
-                'active_roles'      => \App\Domains\Role\Models\Role::where('is_active', true)->count(),
+                // ===== ROLES =====
+                'total_roles'  => \App\Domains\Role\Models\Role::count(),
+                'active_roles' => \App\Domains\Role\Models\Role::where('is_active', true)->count(),
+
+                // ===== PERMISSIONS =====
                 'total_permissions' => \App\Domains\Permission\Models\Permission::count(),
 
-                // ===== DOCUMENTS (ANGKA) =====
+                // ===== DOCUMENTS =====
                 'total_documents'    => $totalDocuments,
                 'active_documents'   => $activeDocuments,
                 'inactive_documents' => $totalDocuments - $activeDocuments,
 
-                // ===== RECENT DOCUMENTS (UNTUK KARTU YANG KAMU KASIH) =====
+                // ===== RECENT DOCUMENTS =====
                 'recent_documents' => Document::with([
                     'documentType',
                     'department',
                     'createdBy',
                     'updatedBy',
                 ])
-                    ->orderByDesc('updated_at') // atau 'created_at' kalau mau
+                    ->orderByDesc('updated_at')
                     ->take(3)
                     ->get(),
 
                 // ===== ARRIVAL OF GOODS =====
-                'total_arrival_of_goods' => IncomingMaterial::count(),
+                'total_arrival_of_goods'   => IncomingMaterial::count(),
                 'accepted_arrival_of_goods' => IncomingMaterial::where('status', 'accepted')->count(),
-                'hold_arrival_of_goods' => IncomingMaterial::where('status', 'hold')->count(),
+                'hold_arrival_of_goods'    => IncomingMaterial::where('status', 'hold')->count(),
                 'rejected_arrival_of_goods' => IncomingMaterial::where('status', 'rejected')->count(),
 
-                // ===== IPC SUMMARY PER LINE (UNTUK CHART) =====
+                // ===== IPC CHART =====
                 'ipc_chart' => [
-                    'labels' => $ipcSummary->pluck('line_group'),
-                    'values' => $ipcSummary->pluck('total_sample'),
+                    'labels' => $ipcLabels,
+                    'values' => $ipcValues,
                 ],
 
-                // ===== RECENT USERS (SUDAH ADA) =====
+                // ===== RECENT USERS =====
                 'recent_users' => \App\Domains\User\Models\User::latest()->take(5)->get(),
             ];
         });
