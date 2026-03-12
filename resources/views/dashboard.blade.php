@@ -823,7 +823,7 @@
                                             }
 
                                             if (context.datasetIndex === 1) {
-                                                return "Jumlah Data: " + context.raw;
+                                                return "Batas Maksimum: " + context.raw + "%";
                                             }
 
                                             return context.raw;
