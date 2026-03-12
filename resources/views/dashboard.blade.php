@@ -62,56 +62,6 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-            <!-- Total Department Card -->
-            <div class="group relative bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1 animate-slideInRight"
-                style="animation-delay: 0.1s">
-                <div
-                    class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                </div>
-                <div class="relative p-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-shrink-0">
-                                    <div
-                                        class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="2" stroke="currentColor" class="h-6 w-6 text-white">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-600 mb-1">Total Department</p>
-                                    <p class="text-2xl font-bold text-gray-900">
-                                        {{ number_format($stats['total_departments']) }}</p>
-                                </div>
-                            </div>
-                            <div class="mt-4 flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span
-                                        class="text-sm text-green-600 font-semibold">{{ $stats['active_departments'] ?? 0 }}
-
-                                        active</span>
-                                </div>
-
-                                <div class="flex items-center text-xs text-gray-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-                                    </svg>
-                                    {{ $stats['inactive_departments'] ?? 0 }}
-
-                                    Inactive
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Your Document Card -->
             <div class="group relative bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-200 hover:shadow-2xl hover:border-yellow-300 transition-all duration-300 transform hover:-translate-y-1 animate-slideInRight"
@@ -243,6 +193,57 @@
                                     </svg>
                                     {{ $stats['inactive_users'] ?? 0 }}
                                     Revisions
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Total arrival of goods Card -->
+            <div class="group relative bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1 animate-slideInRight"
+                style="animation-delay: 0.1s">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                </div>
+                <div class="relative p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div
+                                        class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="2" stroke="currentColor" class="h-6 w-6 text-white">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-600 mb-1">Total Kedatangan Barang</p>
+                                    <p class="text-2xl font-bold text-gray-900">
+                                        {{ number_format($stats['recent_arrival_of_goods']) }}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span
+                                        class="text-sm text-green-600 font-semibold">{{ $stats['active_departments'] ?? 0 }}
+
+                                        active</span>
+                                </div>
+
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                    </svg>
+                                    {{ $stats['inactive_departments'] ?? 0 }}
+
+                                    Inactive
                                 </div>
                             </div>
                         </div>
