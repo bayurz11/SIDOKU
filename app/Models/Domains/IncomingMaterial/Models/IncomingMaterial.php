@@ -17,33 +17,28 @@ class IncomingMaterial extends Model
     protected $table = 'incoming_materials';
 
     protected $fillable = [
-        'date',
-        'receipt_time',
-        'expired_date',
 
+        'date',
+        'expired_date',
+        'receipt_time',
         'supplier',
         'material_name',
         'batch_number',
-
         'quantity',
         'quantity_unit',
         'sample_quantity',
-
         'vehicle_number',
 
-        // PARAMETER PENGUJIAN
         'test_moisture',
         'test_microbiology',
         'test_chemical',
-
-        // STATUS LAB
         'lab_status',
 
         'status',
         'notes',
 
         'created_by',
-        'updated_by',
+        'updated_by'
     ];
 
     protected $casts = [

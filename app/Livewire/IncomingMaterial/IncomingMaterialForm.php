@@ -262,6 +262,13 @@ class IncomingMaterialForm extends Component
                 'test_microbiology' => $this->test_microbiology,
                 'test_chemical' => $this->test_chemical,
 
+                // AUTO STATUS LAB
+                'lab_status' => (
+                    $this->test_moisture ||
+                    $this->test_microbiology ||
+                    $this->test_chemical
+                ) ? 'WAITING_TEST' : null,
+
                 'status' => $this->inspection_decision,
                 'notes' => $this->inspection_notes,
             ];

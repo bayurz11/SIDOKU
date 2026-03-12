@@ -417,8 +417,7 @@
                         </h4>
 
                         <p class="text-xs text-gray-500 mb-4">
-                            Pilih parameter pengujian yang diperlukan untuk material ini. Data akan digunakan untuk
-                            proses pengujian pada Tahap 2.
+                            Pilih parameter pengujian yang diperlukan untuk material ini.
                         </p>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -426,8 +425,7 @@
                             {{-- Kadar Air --}}
                             <label
                                 class="flex items-center gap-3 bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                                <input type="checkbox" wire:model="test_parameters.moisture_content"
-                                    class="rounded border-gray-300">
+                                <input type="checkbox" wire:model="test_moisture" class="rounded border-gray-300">
 
                                 <div>
                                     <p class="text-sm font-medium text-gray-700">
@@ -442,7 +440,7 @@
                             {{-- Mikrobiologi --}}
                             <label
                                 class="flex items-center gap-3 bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                                <input type="checkbox" wire:model="test_parameters.microbiology"
+                                <input type="checkbox" wire:model="test_microbiology"
                                     class="rounded border-gray-300">
 
                                 <div>
@@ -458,8 +456,7 @@
                             {{-- Kimia --}}
                             <label
                                 class="flex items-center gap-3 bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                                <input type="checkbox" wire:model="test_parameters.chemical"
-                                    class="rounded border-gray-300">
+                                <input type="checkbox" wire:model="test_chemical" class="rounded border-gray-300">
 
                                 <div>
                                     <p class="text-sm font-medium text-gray-700">
