@@ -845,18 +845,7 @@
                                     }
                                 },
 
-                                y1: {
-                                    type: 'linear',
-                                    position: 'right',
-                                    beginAtZero: true,
-                                    grid: {
-                                        drawOnChartArea: false
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Jumlah Data'
-                                    }
-                                }
+
 
                             }
 
