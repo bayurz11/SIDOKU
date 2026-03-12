@@ -714,6 +714,7 @@
 
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
         <script>
             (function() {
@@ -743,13 +744,17 @@
 
                     const ctx = canvas.getContext('2d');
 
+                    // warna otomatis jika moisture >= 10%
                     const barColors = moistureValues.map(v =>
                         v >= 10 ? 'rgba(239,68,68,0.7)' : 'rgba(16,185,129,0.6)'
                     );
 
                     window.dashboardMixedChart = new Chart(ctx, {
 
+                        plugins: [ChartDataLabels],
+
                         data: {
+
                             labels: labels,
 
                             datasets: [
@@ -760,7 +765,21 @@
                                     data: moistureValues,
                                     backgroundColor: barColors,
                                     borderRadius: 6,
-                                    yAxisID: 'y'
+                                    yAxisID: 'y',
+
+                                    datalabels: {
+                                        anchor: 'end',
+                                        align: 'top',
+                                        color: '#111',
+                                        font: {
+                                            weight: 'bold',
+                                            size: 11
+                                        },
+                                        formatter: function(value, context) {
+                                            const count = counts[context.dataIndex] ?? 0;
+                                            return count + " sampel";
+                                        }
+                                    }
                                 },
 
                                 {
@@ -798,9 +817,28 @@
                             },
 
                             plugins: {
+
                                 legend: {
                                     position: 'top'
+                                },
+
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+
+                                            if (context.datasetIndex === 0) {
+                                                return "Moisture: " + context.raw + "%";
+                                            }
+
+                                            if (context.datasetIndex === 1) {
+                                                return "Jumlah Data: " + context.raw;
+                                            }
+
+                                            return context.raw;
+                                        }
+                                    }
                                 }
+
                             },
 
                             scales: {
