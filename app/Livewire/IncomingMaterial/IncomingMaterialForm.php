@@ -229,9 +229,15 @@ class IncomingMaterialForm extends Component
         $this->evaluateFinalDecision();
 
         $this->validate([
-            'name_of_goods' => 'required',
-            'supplier_name' => 'required',
-            'receipt_date' => 'required|date',
+            'name_of_goods' => ['required', 'string', 'max:255'],
+            'supplier_name' => ['required', 'string', 'max:255'],
+            'receipt_date' => ['required', 'date'],
+
+            'inspectionItems.*.parameter' => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.standard' => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.test_result' => ['nullable', 'string'],
+
+            'photos.*' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
@@ -242,14 +248,14 @@ class IncomingMaterialForm extends Component
 
                 'date' => $this->receipt_date,
                 'expired_date' => $this->expired_date,
-                'receipt_time' => $this->receipt_time,
+                'receipt_time' => $this->receipt_time ?? null,
                 'supplier' => $this->supplier_name,
                 'material_name' => $this->name_of_goods,
                 'batch_number' => $this->batch_number,
                 'quantity' => $this->quantity,
-                'quantity_unit' => $this->quantity_unit,
-                'sample_quantity' => $this->sample_quantity,
-                'vehicle_number' => $this->vehicle_number,
+                'quantity_unit' => $this->quantity_unit ?? null,
+                'sample_quantity' => $this->sample_quantity ?? null,
+                'vehicle_number' => $this->vehicle_number ?? null,
 
                 // TEST PARAMETERS
                 'test_moisture' => $this->test_moisture,
@@ -260,6 +266,12 @@ class IncomingMaterialForm extends Component
                 'notes' => $this->inspection_notes,
             ];
 
+            /*
+        |--------------------------------------------------------------------------
+        | CREATE / UPDATE MATERIAL
+        |--------------------------------------------------------------------------
+        */
+
             if ($this->incomingId) {
 
                 $material = IncomingMaterial::findOrFail($this->incomingId);
@@ -268,12 +280,84 @@ class IncomingMaterialForm extends Component
 
                 $material->update($data);
 
+                // hapus inspection lama
                 $material->inspections()->delete();
             } else {
 
                 $data['created_by'] = auth()->id();
 
                 $material = IncomingMaterial::create($data);
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | SIMPAN INSPECTION ITEMS
+        |--------------------------------------------------------------------------
+        */
+
+            foreach ($this->inspectionItems as $item) {
+
+                if (
+                    empty($item['parameter']) &&
+                    empty($item['standard']) &&
+                    empty($item['test_result'])
+                ) {
+                    continue;
+                }
+
+                $material->inspections()->create([
+                    'parameter' => $item['parameter'],
+                    'standard' => $item['standard'],
+                    'test_result' => $item['test_result'],
+                    'inspection_result' => $item['inspection_result'] ?? null,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | UPLOAD DOCUMENTS
+        |--------------------------------------------------------------------------
+        */
+
+            foreach ($this->documents as $key => $doc) {
+
+                if (!empty($doc['file'])) {
+
+                    $file = $doc['file'];
+
+                    $path = $file->store('incoming-material/' . date('Y'), 'public');
+
+                    $material->files()->create([
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->extension(),
+                        'category' => $key,
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | UPLOAD PHOTOS
+        |--------------------------------------------------------------------------
+        */
+
+            foreach ($this->photos as $file) {
+
+                $path = $file->store('incoming-material/' . date('Y'), 'public');
+
+                $material->files()->create([
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'file_type' => $file->extension(),
+                    'category' => 'photo',
+                    'uploaded_by' => auth()->id(),
+                ]);
             }
 
             DB::commit();
@@ -289,7 +373,13 @@ class IncomingMaterialForm extends Component
         } catch (\Throwable $e) {
 
             DB::rollBack();
-            throw $e;
+
+            report($e);
+
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'Gagal menyimpan data!'
+            ]);
         }
     }
 
