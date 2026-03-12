@@ -190,6 +190,15 @@ class IncomingMaterialForm extends Component
             'inspection_result' => '',
         ];
     }
+    public function removeInspectionItem($index)
+    {
+        unset($this->inspectionItems[$index]);
+
+        // reset index array supaya Livewire tidak error
+        $this->inspectionItems = array_values($this->inspectionItems);
+
+        $this->evaluateFinalDecision();
+    }
 
     public function updatedInspectionItems()
     {
