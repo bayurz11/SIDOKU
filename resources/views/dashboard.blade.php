@@ -461,307 +461,249 @@
         <!-- IPC Chart -->
         <div class="grid grid-cols-1 gap-8">
 
-            @if ($moistureSummary->isEmpty())
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <div class="flex items-center justify-between mb-4">
 
-                <p class="text-sm text-gray-500 italic">
-                    Belum ada data moisture untuk ditampilkan. Atur filter line / tanggal terlebih dahulu.
-                </p>
-            @else
-                {{-- ALERT KADAR AIR TINGGI --}}
-                @if ($hasHighMoistureAlert)
-                    <div class="mb-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 shadow-sm">
+                    <h3 class="text-lg font-semibold">
+                        IPC Summary
+                    </h3>
 
-                        <div class="flex items-start gap-3">
-
-                            <div
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white flex-shrink-0">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 9v3m0 4h.01M10.29 3.86l-8.02 14A2 2 0 0 0 4.02 21h15.96a2 2 0 0 0 1.73-3.14l-8.02-14a2 2 0 0 0-3.46 0Z" />
-                                </svg>
-                            </div>
-
-                            <div>
-
-                                <h4 class="text-sm font-semibold text-red-800">
-                                    ⚠ Peringatan Kadar Air Tinggi (≥ 10%)
-                                </h4>
-
-                                <p class="text-xs text-red-700 mt-1">
-                                    Terdapat {{ $highMoistureItems->count() }} line / produk dengan kadar air ≥ 10%.
-                                </p>
-
-                                <ul class="mt-2 space-y-1 text-xs text-red-700 list-disc list-inside">
-
-                                    @foreach ($highMoistureItems as $row)
-                                        <li>
-
-                                            {{ $lineGroupLabels[$row->line_group] ?? $row->line_group }}
-
-                                            @if ($row->sub_line)
-                                                - {{ $subLineLabels[$row->sub_line] ?? $row->sub_line }}
-                                            @endif
-
-                                            → <strong>{{ Str::limit($row->product_name, 40) }}</strong>
-
-                                            → <strong>{{ round($row->avg_moisture, 2) }}%</strong>
-
-                                            <span class="ml-1 text-red-600">
-                                                {{ optional($row->test_date)->format('d M Y') }}
-                                            </span>
-
-                                        </li>
-                                    @endforeach
-
-                                </ul>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-                @endif
-
-
-                {{-- MIXED CHART (BAR + LINE + LIMIT) --}}
-                <div class="h-56 sm:h-72 mb-6" wire:ignore>
-
-                    <canvas id="ipcMoistureChart"></canvas>
+                    <span class="text-xs bg-green-100 text-green-600 px-3 py-1 rounded-full">
+                        Live Data
+                    </span>
 
                 </div>
 
-
-                {{-- DOUGHNUT CHART --}}
-                <div class="h-56 sm:h-72" wire:ignore>
-
-                    <canvas id="ipcMoistureDonutChart"></canvas>
-
+                <div class="h-80">
+                    <canvas id="mixedChart"></canvas>
                 </div>
 
-            @endif
+            </div>
 
         </div>
 
-    </div>
-
-    <!-- Modern Quick Actions & Recent Activity -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Modern Quick Actions -->
-        <div class="lg:col-span-1">
-            <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
-                    <div class="flex items-center">
-                        <div
-                            class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
-                    </div>
-                </div>
-                <div class="p-6 space-y-3">
-                    @permission('documents.create')
-                        <a href="{{ route('documents.index') }}"
-                            class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+        <!-- Modern Quick Actions & Recent Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Modern Quick Actions -->
+            <div class="lg:col-span-1">
+                <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
+                        <div class="flex items-center">
                             <div
-                                class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-4 group-hover:shadow-lg transition-shadow duration-300">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
                             </div>
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-900 group-hover:text-blue-800">Add New Document</p>
-                                <p class="text-xs text-gray-500 group-hover:text-blue-600">Create and manage documents</p>
-                            </div>
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all duration-300"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
-                                </path>
-                            </svg>
-                        </a>
-                    @endpermission
+                            <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        @permission('documents.create')
+                            <a href="{{ route('documents.index') }}"
+                                class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-4 group-hover:shadow-lg transition-shadow duration-300">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900 group-hover:text-blue-800">Add New Document</p>
+                                    <p class="text-xs text-gray-500 group-hover:text-blue-600">Create and manage documents</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all duration-300"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                    </path>
+                                </svg>
+                            </a>
+                        @endpermission
 
-                    @permission('roles.create')
-                        <a href="{{ route('roles.index') }}"
-                            class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                        @permission('roles.create')
+                            <a href="{{ route('roles.index') }}"
+                                class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-4 group-hover:shadow-lg transition-shadow duration-300">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900 group-hover:text-green-800">Create Role</p>
+                                    <p class="text-xs text-gray-500 group-hover:text-green-600">Manage roles & permissions</p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-green-600 transform group-hover:translate-x-1 transition-all duration-300"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                    </path>
+                                </svg>
+                            </a>
+                        @endpermission
+
+                        <!-- System Status -->
+                        <div
+                            class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl">
                             <div
-                                class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-4 group-hover:shadow-lg transition-shadow duration-300">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                                     </path>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <p class="font-semibold text-gray-900 group-hover:text-green-800">Create Role</p>
-                                <p class="text-xs text-gray-500 group-hover:text-green-600">Manage roles & permissions</p>
-                            </div>
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-green-600 transform group-hover:translate-x-1 transition-all duration-300"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
-                                </path>
-                            </svg>
-                        </a>
-                    @endpermission
-
-                    <!-- System Status -->
-                    <div
-                        class="group w-full flex items-center px-4 py-4 text-sm font-medium text-gray-700 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl">
-                        <div
-                            class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-4">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                </path>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-900">System Status</p>
-                            <div class="flex items-center space-x-2 mt-1">
-                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <p class="text-xs text-green-600 font-medium">All systems operational</p>
+                                <p class="font-semibold text-gray-900">System Status</p>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <p class="text-xs text-green-600 font-medium">All systems operational</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Modern Recent Documents -->
-        <div class="lg:col-span-2">
-            <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
-                <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div
-                                class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                </svg>
+            <!-- Modern Recent Documents -->
+            <div class="lg:col-span-2">
+                <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Documents</h3>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Documents</h3>
-                        </div>
-                        <div class="flex items-center space-x-2 text-sm text-gray-500">
-                            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                            <span>Live updates</span>
+                            <div class="flex items-center space-x-2 text-sm text-gray-500">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span>Live updates</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                @php
-                    /** @var \Illuminate\Support\Collection|\App\Domains\Document\Models\Document[] $recentDocuments */
-                    $recentDocuments = $stats['recent_documents'] ?? collect();
-                @endphp
-                <div class="divide-y divide-gray-100">
-                    @forelse ($recentDocuments as $doc)
-                        @php
-                            // Editor (kanan)
-                            $editor = $doc->updatedBy ?? $doc->createdBy;
-                            $editorName = $editor?->name ?? 'System';
-                            $editorEmail = $editor?->email ?? '-';
+                    @php
+                        /** @var \Illuminate\Support\Collection|\App\Domains\Document\Models\Document[] $recentDocuments */
+                        $recentDocuments = $stats['recent_documents'] ?? collect();
+                    @endphp
+                    <div class="divide-y divide-gray-100">
+                        @forelse ($recentDocuments as $doc)
+                            @php
+                                // Editor (kanan)
+                                $editor = $doc->updatedBy ?? $doc->createdBy;
+                                $editorName = $editor?->name ?? 'System';
+                                $editorEmail = $editor?->email ?? '-';
 
-                            // Pisahkan dengan "/"
-                            $parts = explode('/', $doc->document_code);
+                                // Pisahkan dengan "/"
+                                $parts = explode('/', $doc->document_code);
 
-                            // Ambil segmen setelah PRP/
-                            $segment = $parts[1] ?? '';
+                                // Ambil segmen setelah PRP/
+                                $segment = $parts[1] ?? '';
 
-                            // Jika ada titik, ambil kata pertama sebelum titik
-                            $prefix = strtoupper(explode('.', $segment)[0] ?? 'DC');
+                                // Jika ada titik, ambil kata pertama sebelum titik
+                                $prefix = strtoupper(explode('.', $segment)[0] ?? 'DC');
 
-                            // Initial avatar = SOP
-                            $initial = $prefix;
+                                // Initial avatar = SOP
+                                $initial = $prefix;
 
-                            // Warna avatar berdasarkan prefix
-                            $avatarGradientMap = [
-                                'SOP' => 'from-blue-500 to-blue-600',
-                                'WI' => 'from-purple-500 to-purple-600',
-                                'FORM' => 'from-green-500 to-green-600',
-                            ];
+                                // Warna avatar berdasarkan prefix
+                                $avatarGradientMap = [
+                                    'SOP' => 'from-blue-500 to-blue-600',
+                                    'WI' => 'from-purple-500 to-purple-600',
+                                    'FORM' => 'from-green-500 to-green-600',
+                                ];
 
-                            $avatarGradient = $avatarGradientMap[$prefix] ?? 'from-gray-400 to-gray-600';
-                        @endphp
+                                $avatarGradient = $avatarGradientMap[$prefix] ?? 'from-gray-400 to-gray-600';
+                            @endphp
 
-                        <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
-                            <div class="flex items-center justify-between">
-                                {{-- Kiri: info dokumen --}}
-                                <div class="flex items-center space-x-4">
-                                    {{-- Avatar: initial dari document type --}}
-                                    <div class="relative">
-                                        <div
-                                            class="w-12 h-12 bg-gradient-to-br {{ $avatarGradient }} rounded-xl flex items-center justify-center shadow-lg">
-                                            <span class="text-xs font-bold text-white tracking-wide">
-                                                {{ $initial }}
-                                            </span>
-                                        </div>
-                                        @if ($doc->is_active)
+                            <div class="px-6 py-4 hover:bg-gray-50 transition-colors duration-200">
+                                <div class="flex items-center justify-between">
+                                    {{-- Kiri: info dokumen --}}
+                                    <div class="flex items-center space-x-4">
+                                        {{-- Avatar: initial dari document type --}}
+                                        <div class="relative">
                                             <div
-                                                class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
+                                                class="w-12 h-12 bg-gradient-to-br {{ $avatarGradient }} rounded-xl flex items-center justify-center shadow-lg">
+                                                <span class="text-xs font-bold text-white tracking-wide">
+                                                    {{ $initial }}
+                                                </span>
                                             </div>
-                                        @endif
+                                            @if ($doc->is_active)
+                                                <div
+                                                    class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex-1">
+                                            {{-- Judul dokumen --}}
+                                            <p class="text-sm font-semibold text-gray-900">
+                                                {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
+                                            </p>
+
+                                            {{-- Nomor dokumen --}}
+                                            <p class="text-xs font-mono text-gray-600 mt-0.5">
+                                                {{ $doc->document_code }}
+                                            </p>
+
+
+                                        </div>
                                     </div>
 
-                                    <div class="flex-1">
-                                        {{-- Judul dokumen --}}
-                                        <p class="text-sm font-semibold text-gray-900">
-                                            {{ \Illuminate\Support\Str::limit($doc->title, 50) }}
-                                        </p>
-
-                                        {{-- Nomor dokumen --}}
-                                        <p class="text-xs font-mono text-gray-600 mt-0.5">
-                                            {{ $doc->document_code }}
-                                        </p>
-
-
+                                    {{-- Kanan: info editor + waktu update --}}
+                                    <div class="flex flex-col items-end space-y-1">
+                                        <span class="text-xs font-semibold text-gray-800">
+                                            {{ $editorName }}
+                                        </span>
+                                        <span class="text-[11px] text-gray-500">
+                                            {{ $editorEmail }}
+                                        </span>
+                                        <span class="text-[11px] text-gray-500 flex items-center mt-1">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at?->diffForHumans() }}
+                                        </span>
                                     </div>
-                                </div>
-
-                                {{-- Kanan: info editor + waktu update --}}
-                                <div class="flex flex-col items-end space-y-1">
-                                    <span class="text-xs font-semibold text-gray-800">
-                                        {{ $editorName }}
-                                    </span>
-                                    <span class="text-[11px] text-gray-500">
-                                        {{ $editorEmail }}
-                                    </span>
-                                    <span class="text-[11px] text-gray-500 flex items-center mt-1">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        {{ $doc->updated_at?->diffForHumans() ?? $doc->created_at?->diffForHumans() }}
-                                    </span>
                                 </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="px-6 py-6 text-center text-sm text-gray-500">
-                            Belum ada dokumen yang diperbarui.
-                        </div>
-                    @endforelse
-                </div>
-
-                @permission('documents.view')
-                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
-                        <a href="{{ route('documents.index') }}"
-                            class="group flex items-center justify-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                            <span>View all documents</span>
-                            <svg class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </a>
+                        @empty
+                            <div class="px-6 py-6 text-center text-sm text-gray-500">
+                                Belum ada dokumen yang diperbarui.
+                            </div>
+                        @endforelse
                     </div>
-                @endpermission
+
+                    @permission('documents.view')
+                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+                            <a href="{{ route('documents.index') }}"
+                                class="group flex items-center justify-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                <span>View all documents</span>
+                                <svg class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    @endpermission
+                </div>
             </div>
         </div>
-    </div>
 
     </div>
     @push('scripts')
