@@ -457,6 +457,7 @@
             </div>
 
         </div>
+
         <!-- Chart -->
         <div class="grid grid-cols-1 gap-8">
 
@@ -474,6 +475,7 @@
             </div>
 
         </div>
+
         <!-- Modern Quick Actions & Recent Activity -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Modern Quick Actions -->
@@ -704,11 +706,10 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
 
-                const labels = ['Line A', 'Line B', 'Line C', 'Line D', 'Line E'];
-                const values = [120, 95, 140, 80, 110];
+                const labels = @json($stats['ipc_chart']['labels'] ?? []);
+                const values = @json($stats['ipc_chart']['values'] ?? []);
 
-                // Hitung limit 10%
-                const maxValue = Math.max(...values);
+                const maxValue = Math.max(...values, 1);
                 const limitValue = maxValue * 0.10;
 
                 new Chart(document.getElementById('mixedChart'), {
@@ -717,7 +718,6 @@
                         labels: labels,
                         datasets: [
 
-                            // ===== BAR DATA =====
                             {
                                 type: 'bar',
                                 label: 'Jumlah Sample',
@@ -727,20 +727,16 @@
                                 order: 2
                             },
 
-                            // ===== LINE TREND =====
                             {
                                 type: 'line',
                                 label: 'Trend',
                                 data: values,
                                 borderColor: '#16a34a',
-                                backgroundColor: '#16a34a',
                                 tension: 0.4,
                                 fill: false,
-                                yAxisID: 'y',
                                 order: 1
                             },
 
-                            // ===== LIMIT 10% =====
                             {
                                 type: 'line',
                                 label: 'Limit 10%',
@@ -749,7 +745,6 @@
                                 borderDash: [6, 6],
                                 pointRadius: 0,
                                 fill: false,
-                                yAxisID: 'y',
                                 order: 0
                             }
 
@@ -769,11 +764,7 @@
                         },
                         scales: {
                             y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Jumlah Sample'
-                                }
+                                beginAtZero: true
                             }
                         }
                     }

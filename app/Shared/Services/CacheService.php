@@ -3,8 +3,10 @@
 namespace App\Shared\Services;
 
 use App\Domains\Document\Models\Document;
+use App\Domains\Ipc\Models\IpcProductCheck;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
 
@@ -140,7 +142,14 @@ class CacheService
             $totalDocuments  = Document::count();
             $activeDocuments = Document::where('is_active', true)->count();
 
-
+            // ===== IPC SUMMARY PER LINE =====
+            $ipcSummary = IpcProductCheck::select(
+                'line_group',
+                DB::raw('COUNT(*) as total_sample')
+            )
+                ->groupBy('line_group')
+                ->orderBy('line_group')
+                ->get();
 
 
             return [
@@ -179,6 +188,12 @@ class CacheService
                 'accepted_arrival_of_goods' => IncomingMaterial::where('status', 'accepted')->count(),
                 'hold_arrival_of_goods' => IncomingMaterial::where('status', 'hold')->count(),
                 'rejected_arrival_of_goods' => IncomingMaterial::where('status', 'rejected')->count(),
+
+                // ===== IPC SUMMARY PER LINE (UNTUK CHART) =====
+                'ipc_chart' => [
+                    'labels' => $ipcSummary->pluck('line_group'),
+                    'values' => $ipcSummary->pluck('total_sample'),
+                ],
 
                 // ===== RECENT USERS (SUDAH ADA) =====
                 'recent_users' => \App\Domains\User\Models\User::latest()->take(5)->get(),
