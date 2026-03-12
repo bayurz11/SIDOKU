@@ -4,6 +4,7 @@ use App\Domains\Document\Models\Document;
 use App\Livewire\Document\DocumentImportTemplateExport;
 use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
+use App\Shared\Services\CacheService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,17 +19,11 @@ Route::get('/', function () {
 
 // Dashboard Route (redirect /home to /dashboard)
 Route::get('/dashboard', function () {
-    $recentDocuments = Document::query()
-        ->with(['documentType', 'department', 'updatedBy', 'createdBy'])
-        ->orderByDesc('updated_at')
-        ->limit(5)
-        ->get();
+
+    $stats = CacheService::getDashboardStats();
 
     return view('dashboard', [
-        'stats' => [
-            'recent_documents' => $recentDocuments,
-
-        ],
+        'stats' => $stats
     ]);
 })->middleware(['auth'])->name('dashboard');
 
