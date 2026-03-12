@@ -476,7 +476,11 @@
                 </div>
 
                 <div class="h-80">
-                    <canvas id="mixedChart"></canvas>
+
+                    <canvas id="mixedChart" data-labels='@json($stats['ipc_moisture_chart']['labels'] ?? [])'
+                        data-values='@json($stats['ipc_moisture_chart']['values'] ?? [])' data-counts='@json($stats['ipc_moisture_chart']['counts'] ?? [])'>
+                    </canvas>
+
                 </div>
 
             </div>
@@ -707,6 +711,7 @@
         </div>
 
     </div>
+
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -721,26 +726,23 @@
                 function renderDashboardChart() {
 
                     const canvas = document.getElementById('mixedChart');
-
-                    const labels = @json($chartLabels ?? []);
-                    const moistureValues = @json($chartValues ?? []);
-                    const counts = @json($chartCounts ?? []);
-
                     if (!canvas) return;
 
-                    if (window.dashboardMixedChart && typeof window.dashboardMixedChart.destroy === 'function') {
-                        window.dashboardMixedChart.destroy();
-                        window.dashboardMixedChart = null;
-                    }
+                    const labels = JSON.parse(canvas.dataset.labels || "[]");
+                    const moistureValues = JSON.parse(canvas.dataset.values || "[]");
+                    const counts = JSON.parse(canvas.dataset.counts || "[]");
 
-                    if (!labels.length || !moistureValues.length) {
+                    if (!labels.length) {
                         console.warn('Dashboard IPC Chart: No data');
                         return;
                     }
 
+                    if (window.dashboardMixedChart) {
+                        window.dashboardMixedChart.destroy();
+                    }
+
                     const ctx = canvas.getContext('2d');
 
-                    // warna bar otomatis merah jika >= 10%
                     const barColors = moistureValues.map(v =>
                         v >= 10 ? 'rgba(239,68,68,0.7)' : 'rgba(16,185,129,0.6)'
                     );
@@ -748,7 +750,6 @@
                     window.dashboardMixedChart = new Chart(ctx, {
 
                         data: {
-
                             labels: labels,
 
                             datasets: [
@@ -776,7 +777,7 @@
                                     type: 'line',
                                     label: 'Batas Maksimum (10%)',
                                     data: labels.map(() => 10),
-                                    borderColor: 'red',
+                                    borderColor: '#ef4444',
                                     borderDash: [6, 6],
                                     borderWidth: 2,
                                     pointRadius: 0,
@@ -784,7 +785,6 @@
                                 }
 
                             ]
-
                         },
 
                         options: {

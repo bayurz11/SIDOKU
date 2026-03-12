@@ -143,20 +143,40 @@ class CacheService
             $totalDocuments  = Document::count();
             $activeDocuments = Document::where('is_active', true)->count();
 
-            // ===== IPC SUMMARY PER LINE =====
-            $ipcSummary = IpcProductCheck::select(
+            // ===== IPC MOISTURE SUMMARY =====
+            $moistureSummary = IpcProductCheck::select(
                 'line_group',
+                'sub_line',
+                DB::raw('AVG(avg_moisture_percent) as avg_moisture'),
                 DB::raw('COUNT(*) as total_sample')
             )
-                ->groupBy('line_group')
+                ->groupBy('line_group', 'sub_line')
                 ->orderBy('line_group')
                 ->get();
 
-            $ipcLabels = $ipcSummary->pluck('line_group')->map(function ($line) {
-                return IpcProductCheck::LINE_GROUPS[$line] ?? $line;
+            $lineLabels = IpcProductCheck::LINE_GROUPS ?? [];
+            $subLineLabels = IpcProductCheck::SUB_LINES_TEH ?? [];
+
+            $moistureLabels = $moistureSummary->map(function ($row) use ($lineLabels, $subLineLabels) {
+
+                $lineLabel = $lineLabels[$row->line_group] ?? $row->line_group;
+                $subLabel = $row->sub_line ? ($subLineLabels[$row->sub_line] ?? $row->sub_line) : null;
+
+                return $subLabel ?: $lineLabel;
             });
 
-            $ipcValues = $ipcSummary->pluck('total_sample');
+            $moistureValues = $moistureSummary->map(function ($row) {
+                return round($row->avg_moisture, 2);
+            });
+
+            $moistureCounts = $moistureSummary->pluck('total_sample');
+
+
+            // ===== MOISTURE ALERT (>=10%) =====
+            $highMoistureItems = IpcProductCheck::where('avg_moisture_percent', '>=', 10)
+                ->latest('test_date')
+                ->take(10)
+                ->get();
 
             return [
 
@@ -198,10 +218,17 @@ class CacheService
                 'hold_arrival_of_goods'    => IncomingMaterial::where('status', 'hold')->count(),
                 'rejected_arrival_of_goods' => IncomingMaterial::where('status', 'rejected')->count(),
 
-                // ===== IPC CHART =====
-                'ipc_chart' => [
-                    'labels' => $ipcLabels,
-                    'values' => $ipcValues,
+                // ===== IPC MOISTURE CHART =====
+                'ipc_moisture_chart' => [
+                    'labels' => $moistureLabels,
+                    'values' => $moistureValues,
+                    'counts' => $moistureCounts,
+                ],
+
+                // ===== IPC MOISTURE ALERT =====
+                'ipc_moisture_alert' => [
+                    'has_alert' => $highMoistureItems->isNotEmpty(),
+                    'items' => $highMoistureItems,
                 ],
 
                 // ===== RECENT USERS =====
