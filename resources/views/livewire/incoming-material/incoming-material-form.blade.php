@@ -291,7 +291,6 @@
                                 @endforeach
                             </div>
 
-
                             {{-- ================= C. PACKAGING ================= --}}
                             <div>
                                 <h5 class="text-sm font-semibold text-gray-700 mb-3">
@@ -308,25 +307,61 @@
                                     @endphp
 
                                     @foreach ($packagingDocuments as $key => $label)
-                                        <div class="bg-white border rounded-lg p-4 space-y-2">
+                                        <div class="bg-white border rounded-xl p-4 space-y-3">
 
                                             <label class="flex items-center gap-2">
                                                 <input type="checkbox"
                                                     wire:model="documents.{{ $key }}.is_checked"
                                                     class="rounded border-gray-300">
+
                                                 <span class="text-sm font-medium text-gray-700">
                                                     {{ $label }}
                                                 </span>
                                             </label>
 
-                                            <input type="file" wire:model="documents.{{ $key }}.file"
-                                                class="w-full text-xs border rounded-md p-2">
+                                            {{-- Drag Upload --}}
+                                            <div
+                                                class="border-2 border-dashed rounded-lg p-3 text-center hover:border-blue-400 transition">
 
+                                                <input type="file" wire:model="documents.{{ $key }}.file"
+                                                    id="upload_{{ $key }}" class="hidden">
+
+                                                <label for="upload_{{ $key }}"
+                                                    class="cursor-pointer text-xs text-gray-500">
+                                                    Drag & Drop atau Klik Upload
+                                                </label>
+
+                                            </div>
+
+                                            {{-- FILE LAMA --}}
+                                            @if (!empty($documents[$key]['existing_path']))
+                                                <div
+                                                    class="flex justify-between items-center bg-gray-100 rounded p-2 text-xs">
+
+                                                    <a href="{{ Storage::url($documents[$key]['existing_path']) }}"
+                                                        target="_blank" class="text-blue-600 underline">
+
+                                                        Lihat File
+
+                                                    </a>
+
+                                                    <button type="button"
+                                                        wire:click="removeExistingDocument('{{ $key }}')"
+                                                        class="text-red-500">
+
+                                                        Hapus
+
+                                                    </button>
+
+                                                </div>
+                                            @endif
+
+                                            {{-- FILE BARU --}}
                                             @if (isset($documents[$key]['file']) && $documents[$key]['file'])
-                                                <span class="text-xs text-green-600">
-                                                    File siap upload:
+                                                <div class="text-xs text-green-600">
+                                                    File baru:
                                                     {{ $documents[$key]['file']->getClientOriginalName() }}
-                                                </span>
+                                                </div>
                                             @endif
 
                                         </div>
@@ -338,6 +373,7 @@
 
                             {{-- ================= D. DATA PENDUKUNG ================= --}}
                             <div>
+
                                 <h5 class="text-sm font-semibold text-gray-700 mb-3">
                                     Data pendukung lain (Other supporting data)
                                 </h5>
@@ -359,69 +395,133 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                                     @foreach ($supportingDocuments as $key => $label)
-                                        <div class="bg-white border rounded-lg p-4 space-y-2">
+                                        <div class="bg-white border rounded-xl p-4 space-y-3">
 
                                             <label class="flex items-center gap-2">
+
                                                 <input type="checkbox"
                                                     wire:model="documents.{{ $key }}.is_checked"
                                                     class="rounded border-gray-300">
+
                                                 <span class="text-sm font-medium text-gray-700">
                                                     {{ $label }}
                                                 </span>
+
                                             </label>
 
-                                            <input type="file" wire:model="documents.{{ $key }}.file"
-                                                class="w-full text-xs border rounded-md p-2">
+                                            {{-- Drag Upload --}}
+                                            <div
+                                                class="border-2 border-dashed rounded-lg p-3 text-center hover:border-blue-400 transition">
 
+                                                <input type="file" wire:model="documents.{{ $key }}.file"
+                                                    id="doc_{{ $key }}" class="hidden">
+
+                                                <label for="doc_{{ $key }}"
+                                                    class="cursor-pointer text-xs text-gray-500">
+
+                                                    Drag & Drop atau Klik Upload
+
+                                                </label>
+
+                                            </div>
+
+                                            {{-- FILE LAMA --}}
+                                            @if (!empty($documents[$key]['existing_path']))
+                                                <div
+                                                    class="flex justify-between items-center bg-gray-100 rounded p-2 text-xs">
+
+                                                    <a href="{{ Storage::url($documents[$key]['existing_path']) }}"
+                                                        target="_blank" class="text-blue-600 underline">
+
+                                                        Lihat File
+
+                                                    </a>
+
+                                                    <button type="button"
+                                                        wire:click="removeExistingDocument('{{ $key }}')"
+                                                        class="text-red-500">
+
+                                                        Hapus
+
+                                                    </button>
+
+                                                </div>
+                                            @endif
+
+                                            {{-- FILE BARU --}}
                                             @if (isset($documents[$key]['file']) && $documents[$key]['file'])
-                                                <span class="text-xs text-green-600">
-                                                    File siap upload:
+                                                <div class="text-xs text-green-600">
+
+                                                    File baru:
                                                     {{ $documents[$key]['file']->getClientOriginalName() }}
-                                                </span>
+
+                                                </div>
                                             @endif
 
                                         </div>
                                     @endforeach
 
                                 </div>
+
                             </div>
 
                             {{-- ================= FOTO MATERIAL ================= --}}
                             <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
-                                <h4 class="text-sm font-semibold text-gray-800 mb-4"> Upload Foto Material </h4> <input
-                                    type="file" wire:model="photos" multiple
-                                    class="w-full border rounded-md p-2 text-sm">
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
 
-                                    {{-- Foto Lama --}}
-                                    @if (!empty($existingPhotos))
-                                        @foreach ($existingPhotos as $photo)
-                                            <div class="border rounded-md overflow-hidden relative">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-4">
+                                    Upload Foto Material
+                                </h4>
 
-                                                <img src="{{ Storage::url($photo) }}"
-                                                    class="w-full h-32 object-cover">
+                                {{-- Drag Upload --}}
+                                <div
+                                    class="border-2 border-dashed rounded-xl p-6 text-center hover:border-purple-400 transition">
 
-                                                <button type="button"
-                                                    wire:click="removeExistingPhoto('{{ $photo }}')"
-                                                    class="absolute top-1 right-1 bg-red-600 text-white text-xs px-1 rounded">
-                                                    x
-                                                </button>
+                                    <input type="file" wire:model="photos" multiple id="uploadPhoto"
+                                        class="hidden">
 
-                                            </div>
-                                        @endforeach
-                                    @endif
+                                    <label for="uploadPhoto" class="cursor-pointer text-sm text-gray-500">
 
-                                    {{-- Foto Baru --}}
-                                    @if ($photos)
-                                        @foreach ($photos as $photo)
-                                            <div class="border rounded-md overflow-hidden">
-                                                <img src="{{ $photo->temporaryUrl() }}"
-                                                    class="w-full h-32 object-cover">
-                                            </div>
-                                        @endforeach
-                                    @endif
+                                        Drag & Drop Foto atau Klik Upload
+
+                                    </label>
 
                                 </div>
+
+                                {{-- Loading --}}
+                                <div wire:loading wire:target="photos" class="text-xs text-gray-500 mt-2">
+                                    Uploading...
+                                </div>
+
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+
+                                    {{-- FOTO LAMA --}}
+                                    @foreach ($existingPhotos as $photo)
+                                        <div class="relative group border rounded-lg overflow-hidden">
+
+                                            <img src="{{ Storage::url($photo) }}" class="w-full h-32 object-cover">
+
+                                            <button type="button"
+                                                wire:click="removeExistingPhoto('{{ $photo }}')"
+                                                class="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100">
+
+                                                Hapus
+
+                                            </button>
+
+                                        </div>
+                                    @endforeach
+
+                                    {{-- FOTO BARU --}}
+                                    @foreach ($photos as $photo)
+                                        <div class="border rounded-lg overflow-hidden">
+
+                                            <img src="{{ $photo->temporaryUrl() }}" class="w-full h-32 object-cover">
+
+                                        </div>
+                                    @endforeach
+
+                                </div>
+
                             </div>
 
                         </div>
