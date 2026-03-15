@@ -71,7 +71,8 @@ class IncomingMaterialForm extends Component
 
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
-        'incoming-material:saved' => '$refresh',
+        'incoming-material:saved' => '$refreshData',
+        'incoming-material:deleted' => '$refreshData',
     ];
 
     public function mount(): void
@@ -79,7 +80,10 @@ class IncomingMaterialForm extends Component
         $this->initializeDocuments();
         $this->addInspectionItem();
     }
-
+    public function refreshData()
+    {
+        $this->render();
+    }
     protected function initializeDocuments(): void
     {
         $this->documents = [];
