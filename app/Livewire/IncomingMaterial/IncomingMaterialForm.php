@@ -3,7 +3,9 @@
 namespace App\Livewire\IncomingMaterial;
 
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -174,6 +176,9 @@ class IncomingMaterialForm extends Component
                 $this->addInspectionItem();
             }
 
+            $this->existingPhotos = [];
+            $this->existingDocuments = [];
+
             foreach ($material->files as $file) {
 
                 if ($file->category === 'photo') {
@@ -198,12 +203,23 @@ class IncomingMaterialForm extends Component
     // ================= PHOTO MANAGEMENT =================
     public function removeExistingPhoto($path)
     {
+        // hapus dari database
+        $file = IncomingMaterialFile::where('file_path', $path)->first();
+
+        if ($file) {
+
+            Storage::disk('public')->delete($file->file_path);
+
+            $file->delete();
+        }
+
+        // hapus dari state livewire
         $this->existingPhotos = array_values(
             array_filter($this->existingPhotos, fn($p) => $p !== $path)
         );
     }
 
-    // ================= DOCUMENT MANAGEMENT =================
+    //
     public function removeExistingDocument($key)
     {
         if (isset($this->documents[$key]['existing_path'])) {
