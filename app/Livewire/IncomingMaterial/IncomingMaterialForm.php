@@ -397,21 +397,37 @@ class IncomingMaterialForm extends Component
 
                     $extension = strtolower($file->getClientOriginalExtension());
 
-                    $safeName = Str::uuid() . '.' . $extension;
+                    foreach ($this->documents ?? [] as $key => $doc) {
 
-                    $path = $file->storeAs(
-                        'incoming-material/' . date('Y/m'),
-                        $safeName,
-                        'public'
-                    );
+                        if (
+                            isset($doc['file']) &&
+                            $doc['file'] instanceof TemporaryUploadedFile
+                        ) {
 
-                    $material->files()->create([
-                        'file_name' => $safeName,
-                        'file_path' => $path,
-                        'file_type' => $extension,
-                        'category' => $key,
-                        'uploaded_by' => auth()->id(),
-                    ]);
+                            $file = $doc['file'];
+
+                            $extension = strtolower($file->getClientOriginalExtension());
+
+                            // nama dokumen dari checklist
+                            $docName = Str::slug($key);
+
+                            $fileName = $docName . '_' . now()->format('Y-m-d_His') . '.' . $extension;
+
+                            $path = $file->storeAs(
+                                'incoming-material/' . date('Y/m'),
+                                $fileName,
+                                'public'
+                            );
+
+                            $material->files()->create([
+                                'file_name' => $fileName,
+                                'file_path' => $path,
+                                'file_type' => $extension,
+                                'category' => $key,
+                                'uploaded_by' => auth()->id(),
+                            ]);
+                        }
+                    }
                 }
             }
 
@@ -428,21 +444,31 @@ class IncomingMaterialForm extends Component
 
                     $extension = strtolower($file->getClientOriginalExtension());
 
-                    $safeName = Str::uuid() . '.' . $extension;
+                    foreach ($this->photos ?? [] as $index => $file) {
 
-                    $path = $file->storeAs(
-                        'incoming-material/' . date('Y/m'),
-                        $safeName,
-                        'public'
-                    );
+                        if ($file instanceof TemporaryUploadedFile) {
 
-                    $material->files()->create([
-                        'file_name' => $safeName,
-                        'file_path' => $path,
-                        'file_type' => $extension,
-                        'category' => 'photo',
-                        'uploaded_by' => auth()->id(),
-                    ]);
+                            $extension = strtolower($file->getClientOriginalExtension());
+
+                            $materialName = Str::slug($this->name_of_goods);
+
+                            $fileName = $materialName . '_' . now()->format('Y-m-d_His') . '_' . ($index + 1) . '.' . $extension;
+
+                            $path = $file->storeAs(
+                                'incoming-material/' . date('Y/m'),
+                                $fileName,
+                                'public'
+                            );
+
+                            $material->files()->create([
+                                'file_name' => $fileName,
+                                'file_path' => $path,
+                                'file_type' => $extension,
+                                'category' => 'photo',
+                                'uploaded_by' => auth()->id(),
+                            ]);
+                        }
+                    }
                 }
             }
 
