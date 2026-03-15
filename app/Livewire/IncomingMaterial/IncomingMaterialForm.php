@@ -55,6 +55,9 @@ class IncomingMaterialForm extends Component
 
     // ================= PHOTOS =================
     public array $photos = [];
+    public array $existingPhotos = [];
+    // ================= DETAIL DOCUMENTS =================
+    public array $existingDocuments = [];
 
     // ================= INSPECTION =================
     public array $inspectionItems = [];
@@ -173,15 +176,41 @@ class IncomingMaterialForm extends Component
 
             foreach ($material->files as $file) {
 
+                if ($file->category === 'photo') {
+
+                    $this->existingPhotos[] = $file->file_path;
+                    continue;
+                }
+
                 if (isset($this->documents[$file->category])) {
 
                     $this->documents[$file->category]['existing_path'] = $file->file_path;
                     $this->documents[$file->category]['is_checked'] = true;
+
+                    $this->existingDocuments[$file->category] = $file->file_path;
                 }
             }
         }
 
         $this->showModal = true;
+    }
+
+    // ================= PHOTO MANAGEMENT =================
+    public function removeExistingPhoto($path)
+    {
+        $this->existingPhotos = array_values(
+            array_filter($this->existingPhotos, fn($p) => $p !== $path)
+        );
+    }
+
+    // ================= DOCUMENT MANAGEMENT =================
+    public function removeExistingDocument($key)
+    {
+        if (isset($this->documents[$key]['existing_path'])) {
+
+            $this->documents[$key]['existing_path'] = null;
+            $this->documents[$key]['is_checked'] = false;
+        }
     }
 
     // ================= INSPECTION =================

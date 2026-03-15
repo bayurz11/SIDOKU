@@ -254,22 +254,37 @@
                                             </span>
                                         </label>
 
-                                        <input type="file" wire:model="documents.{{ $key }}.file"
-                                            class="w-full text-xs border rounded-md p-2">
+                                        <div
+                                            class="border-2 border-dashed rounded-lg p-4 text-center hover:border-blue-400 transition">
 
-                                        {{-- Preview File Baru --}}
-                                        @if (isset($documents[$key]['file']) && is_object($documents[$key]['file']))
-                                            <span class="text-xs text-green-600">
-                                                File baru:
-                                                {{ $documents[$key]['file']->getClientOriginalName() }}
-                                            </span>
+                                            <input type="file" wire:model="documents.{{ $key }}.file"
+                                                class="hidden" id="doc_{{ $key }}">
 
-                                            {{-- Preview File Lama --}}
-                                        @elseif (!empty($documents[$key]['path']))
-                                            <a href="{{ Storage::url($documents[$key]['path']) }}" target="_blank"
-                                                class="text-xs text-blue-600 underline">
-                                                Lihat file lama
-                                            </a>
+                                            <label for="doc_{{ $key }}" class="cursor-pointer">
+
+                                                <p class="text-xs text-gray-500">
+                                                    Drag & drop file atau klik upload
+                                                </p>
+
+                                            </label>
+
+                                        </div>
+                                        @if (!empty($documents[$key]['existing_path']))
+                                            <div
+                                                class="flex items-center justify-between bg-gray-100 rounded p-2 text-xs">
+
+                                                <a href="{{ Storage::url($documents[$key]['existing_path']) }}"
+                                                    target="_blank" class="text-blue-600 underline">
+                                                    Lihat file
+                                                </a>
+
+                                                <button type="button"
+                                                    wire:click="removeExistingDocument('{{ $key }}')"
+                                                    class="text-red-500">
+                                                    Hapus
+                                                </button>
+
+                                            </div>
                                         @endif
 
                                     </div>
