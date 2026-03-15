@@ -141,7 +141,7 @@ Route::get('/incoming-material/file/{file}', function ($file) {
     }
 
     return response()->file(
-        storage_path('app/public/' . $filePath),
+        storage_path('app/public/incoming-material/2026/' . $filePath),
         [
             'Content-Disposition' => 'inline; filename="' . $file . '"'
         ]
