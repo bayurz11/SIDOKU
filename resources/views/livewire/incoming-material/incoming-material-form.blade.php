@@ -553,7 +553,8 @@
                                     @foreach ($existingPhotos as $photo)
                                         <div class="relative group border rounded-lg overflow-hidden">
 
-                                            <img src="{{ Storage::url($photo) }}" class="w-full h-32 object-cover">
+                                            <img src="{{ route('incoming-material.file', basename($photo)) }}"
+                                                class="w-full h-32 object-cover">
 
                                             <button type="button"
                                                 wire:click="removeExistingPhoto('{{ $photo }}')"
@@ -570,7 +571,8 @@
                                     @foreach ($photos as $photo)
                                         <div class="border rounded-lg overflow-hidden">
 
-                                            <img src="{{ $photo->temporaryUrl() }}" class="w-full h-32 object-cover">
+                                            <img src="{{ route('incoming-material.file', basename($photo)) }}"
+                                                class="w-full h-32 object-cover">
 
                                         </div>
                                     @endforeach

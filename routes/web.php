@@ -125,8 +125,6 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
     });
 
 
-
-
 Route::get('/incoming-material/file/{file}', function ($file) {
 
     $fileData = IncomingMaterialFile::where('file_name', $file)->first();
