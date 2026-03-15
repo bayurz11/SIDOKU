@@ -4,6 +4,7 @@ namespace App\Livewire\IncomingMaterial;
 
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -227,168 +228,190 @@ class IncomingMaterialForm extends Component
     public function save(): void
     {
         $this->evaluateFinalDecision();
-
-        $this->validate([
-            'name_of_goods' => ['required', 'string', 'max:255'],
-            'supplier_name' => ['required', 'string', 'max:255'],
-            'receipt_date' => ['required', 'date'],
-
-            'inspectionItems.*.parameter' => ['nullable', 'string', 'max:255'],
-            'inspectionItems.*.standard' => ['nullable', 'string', 'max:255'],
-            'inspectionItems.*.test_result' => ['nullable', 'string'],
-
-            'photos.*' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $this->validateAll();        // ← ganti $this->validate([...]) lama
 
         DB::beginTransaction();
 
         try {
-
-            $data = [
-
-                'date' => $this->receipt_date,
-                'expired_date' => $this->expired_date,
-                'receipt_time' => $this->receipt_time ?? null,
-                'supplier' => $this->supplier_name,
-                'material_name' => $this->name_of_goods,
-                'batch_number' => $this->batch_number,
-                'quantity' => $this->quantity,
-                'quantity_unit' => $this->quantity_unit ?? null,
-                'sample_quantity' => $this->sample_quantity ?? null,
-                'vehicle_number' => $this->vehicle_number ?? null,
-
-                // TEST PARAMETERS
-                'test_moisture' => $this->test_moisture,
-                'test_microbiology' => $this->test_microbiology,
-                'test_chemical' => $this->test_chemical,
-
-                // AUTO STATUS LAB
-                'lab_status' => (
-                    $this->test_moisture ||
-                    $this->test_microbiology ||
-                    $this->test_chemical
-                ) ? 'WAITING_TEST' : null,
-
-                'status' => $this->inspection_decision,
-                'notes' => $this->inspection_notes,
-            ];
-
-            /*
-        |--------------------------------------------------------------------------
-        | CREATE / UPDATE MATERIAL
-        |--------------------------------------------------------------------------
-        */
-
-            if ($this->incomingId) {
-
-                $material = IncomingMaterial::findOrFail($this->incomingId);
-
-                $data['updated_by'] = auth()->id();
-
-                $material->update($data);
-
-                // hapus inspection lama
-                $material->inspections()->delete();
-            } else {
-
-                $data['created_by'] = auth()->id();
-
-                $material = IncomingMaterial::create($data);
-            }
-
-
-            /*
-        |--------------------------------------------------------------------------
-        | SIMPAN INSPECTION ITEMS
-        |--------------------------------------------------------------------------
-        */
-
-            foreach ($this->inspectionItems as $item) {
-
-                if (
-                    empty($item['parameter']) &&
-                    empty($item['standard']) &&
-                    empty($item['test_result'])
-                ) {
-                    continue;
-                }
-
-                $material->inspections()->create([
-                    'parameter' => $item['parameter'],
-                    'standard' => $item['standard'],
-                    'test_result' => $item['test_result'],
-                    'inspection_result' => $item['inspection_result'] ?? null,
-                    'created_by' => auth()->id(),
-                ]);
-            }
-
-
-            /*
-        |--------------------------------------------------------------------------
-        | UPLOAD DOCUMENTS
-        |--------------------------------------------------------------------------
-        */
-
-            foreach ($this->documents as $key => $doc) {
-
-                if (!empty($doc['file'])) {
-
-                    $file = $doc['file'];
-
-                    $path = $file->store('incoming-material/' . date('Y'), 'public');
-
-                    $material->files()->create([
-                        'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'file_type' => $file->extension(),
-                        'category' => $key,
-                        'uploaded_by' => auth()->id(),
-                    ]);
-                }
-            }
-
-
-            /*
-        |--------------------------------------------------------------------------
-        | UPLOAD PHOTOS
-        |--------------------------------------------------------------------------
-        */
-
-            foreach ($this->photos as $file) {
-
-                $path = $file->store('incoming-material/' . date('Y'), 'public');
-
-                $material->files()->create([
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_type' => $file->extension(),
-                    'category' => 'photo',
-                    'uploaded_by' => auth()->id(),
-                ]);
-            }
+            $material = $this->upsertMaterial();
+            $this->saveInspectionItems($material);
+            $this->uploadDocuments($material);
+            $this->uploadPhotos($material);
 
             DB::commit();
 
-            $this->dispatch('show-toast', [
-                'type' => 'success',
-                'title' => 'Data Incoming Material berhasil disimpan!'
-            ]);
-
+            $this->dispatch('show-toast', ['type' => 'success', 'title' => 'Data Incoming Material berhasil disimpan!']);
             $this->dispatch('incoming-material:saved');
-
             $this->closeModal();
-        } catch (\Throwable $e) {
-
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('IncomingMaterial save failed', [
+                'incoming_id' => $this->incomingId ?? null,
+                'user_id'     => auth()->id(),
+                'error'       => $e->getMessage(),
+            ]);
+            $this->dispatch('show-toast', ['type' => 'error', 'title' => 'Gagal menyimpan data!']);
+        }
+    }
 
-            report($e);
 
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'title' => 'Gagal menyimpan data!'
+    // ✅ TAMBAHKAN semua method ini di bawah save(), masih dalam class yang sama:
+
+    private function validateAll(): void
+    {
+        $this->validate([
+            'name_of_goods'             => ['required', 'string', 'max:255'],
+            'supplier_name'             => ['required', 'string', 'max:255'],
+            'receipt_date'              => ['required', 'date'],
+            'inspectionItems'           => ['present', 'array'],
+            'inspectionItems.*.parameter'   => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.standard'    => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.test_result' => ['nullable', 'string', 'max:1000'],
+            'documents'         => ['present', 'array'],
+            'documents.*.file'  => ['nullable', 'file', 'max:5120', 'mimes:pdf,doc,docx,xls,xlsx'],
+            'photos'   => ['present', 'array', 'max:10'],
+            'photos.*' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,jpg,png,webp'],
+        ]);
+    }
+
+    private function upsertMaterial(): IncomingMaterial
+    {
+        $data = [
+            'date'              => $this->receipt_date,
+            'expired_date'      => $this->expired_date     ?? null,
+            'receipt_time'      => $this->receipt_time     ?? null,
+            'supplier'          => $this->supplier_name,
+            'material_name'     => $this->name_of_goods,
+            'batch_number'      => $this->batch_number     ?? null,
+            'quantity'          => $this->quantity         ?? null,
+            'quantity_unit'     => $this->quantity_unit    ?? null,
+            'sample_quantity'   => $this->sample_quantity  ?? null,
+            'vehicle_number'    => $this->vehicle_number   ?? null,
+            'test_moisture'     => $this->test_moisture    ?? false,
+            'test_microbiology' => $this->test_microbiology ?? false,
+            'test_chemical'     => $this->test_chemical    ?? false,
+            'lab_status'        => $this->resolveLabStatus(),
+            'status'            => $this->inspection_decision,
+            'notes'             => $this->inspection_notes ?? null,
+        ];
+
+        if ($this->incomingId) {
+            $material = IncomingMaterial::findOrFail($this->incomingId);
+            $data['updated_by'] = auth()->id();
+            $material->update($data);
+            $material->inspections()->delete();
+        } else {
+            $data['created_by'] = auth()->id();
+            $material = IncomingMaterial::create($data);
+        }
+
+        return $material;
+    }
+
+    private function resolveLabStatus(): ?string
+    {
+        return (($this->test_moisture ?? false)
+            || ($this->test_microbiology ?? false)
+            || ($this->test_chemical ?? false))
+            ? 'WAITING_TEST'
+            : null;
+    }
+
+    private function saveInspectionItems(IncomingMaterial $material): void
+    {
+        if (empty($this->inspectionItems) || !is_array($this->inspectionItems)) return;
+
+        foreach ($this->inspectionItems as $item) {
+            if (
+                empty(trim($item['parameter']   ?? '')) &&
+                empty(trim($item['standard']    ?? '')) &&
+                empty(trim($item['test_result'] ?? ''))
+            ) continue;
+
+            $material->inspections()->create([
+                'parameter'         => $item['parameter']         ?? null,
+                'standard'          => $item['standard']          ?? null,
+                'test_result'       => $item['test_result']        ?? null,
+                'inspection_result' => $item['inspection_result'] ?? null,
+                'created_by'        => auth()->id(),
             ]);
         }
     }
+
+    private function uploadDocuments(IncomingMaterial $material): void
+    {
+        if (empty($this->documents) || !is_array($this->documents)) return;
+
+        foreach ($this->documents as $category => $doc) {
+            $file = $doc['file'] ?? null;
+
+            if (!$file instanceof \Illuminate\Http\UploadedFile) continue;
+
+            if (!in_array(strtolower($file->getClientOriginalExtension()), ['pdf', 'doc', 'docx', 'xls', 'xlsx'], true)) continue;
+
+            $path = $file->store('incoming-material/' . date('Y'), 'public');
+
+            if (!$path) throw new \RuntimeException("Gagal upload dokumen [{$category}].");
+
+            $material->files()->create([
+                'file_name'   => $this->sanitizeFilename($file->getClientOriginalName()),
+                'file_path'   => $path,
+                'file_type'   => strtolower($file->getClientOriginalExtension()),
+                'category'    => $category,
+                'uploaded_by' => auth()->id(),
+            ]);
+        }
+    }
+
+    private function uploadPhotos(IncomingMaterial $material): void
+    {
+        if (empty($this->photos) || !is_array($this->photos)) return;
+
+        $photos = array_filter(
+            array_slice($this->photos, 0, 10),
+            fn($f) => $f instanceof \Illuminate\Http\UploadedFile
+        );
+
+        foreach ($photos as $file) {
+            if (!in_array(strtolower($file->getClientOriginalExtension()), ['jpg', 'jpeg', 'png', 'webp'], true)) continue;
+
+            $path = $file->store('incoming-material/' . date('Y'), 'public');
+
+            if (!$path) throw new \RuntimeException('Gagal upload foto.');
+
+            $material->files()->create([
+                'file_name'   => $this->sanitizeFilename($file->getClientOriginalName()),
+                'file_path'   => $path,
+                'file_type'   => strtolower($file->getClientOriginalExtension()),
+                'category'    => 'photo',
+                'uploaded_by' => auth()->id(),
+            ]);
+        }
+    }
+
+    private function sanitizeFilename(string $name): string
+    {
+        $ext      = pathinfo($name, PATHINFO_EXTENSION);
+        $basename = pathinfo($name, PATHINFO_FILENAME);
+        $basename = preg_replace('/[^\w\-.]/', '_', $basename);
+        $basename = substr($basename, 0, 100);
+        return $basename . ($ext ? '.' . $ext : '');
+    }
+
+    // Opsional — panggil manual jika perlu hapus file lama saat update
+    protected function deleteOldFiles(IncomingMaterial $material, ?string $category = null): void
+    {
+        $query = $category ? $material->files()->where('category', $category) : $material->files();
+
+        foreach ($query->get() as $record) {
+            Storage::disk('public')->delete($record->file_path);
+            $record->delete();
+        }
+    }
+
 
     // ================= CLOSE =================
 
