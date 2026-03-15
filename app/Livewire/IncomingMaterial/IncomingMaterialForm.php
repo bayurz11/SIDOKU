@@ -187,13 +187,15 @@ class IncomingMaterialForm extends Component
                     continue;
                 }
 
-                if (isset($this->documents[$file->category])) {
-
-                    $this->documents[$file->category]['existing_path'] = $file->file_path;
-                    $this->documents[$file->category]['is_checked'] = true;
-
-                    $this->existingDocuments[$file->category] = $file->file_path;
+                // pastikan category ada di documents
+                if (!array_key_exists($file->category, $this->documents)) {
+                    continue;
                 }
+
+                $this->documents[$file->category]['existing_path'] = $file->file_path;
+                $this->documents[$file->category]['is_checked'] = true;
+
+                $this->existingDocuments[$file->category] = $file->file_path;
             }
         }
 
