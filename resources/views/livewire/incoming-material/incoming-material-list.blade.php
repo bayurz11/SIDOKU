@@ -453,12 +453,7 @@
         });
 
         window.addEventListener('incoming-material:saved', () => {
-
-            // jeda 3 detik sebelum reload
-            setTimeout(() => {
-                location.reload();
-            }, 3000);
-
+            location.reload();
         });
     </script>
 @endpush
