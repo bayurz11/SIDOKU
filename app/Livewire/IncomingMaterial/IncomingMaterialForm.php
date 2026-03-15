@@ -68,7 +68,7 @@ class IncomingMaterialForm extends Component
     // ================= UI =================
     public bool $showModal = false;
     public bool $isEditing = false;
-
+    public $existingPhotos = [];
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
         'incoming-material:saved' => '$refresh',
@@ -224,6 +224,20 @@ class IncomingMaterialForm extends Component
         $this->inspection_decision = $hasNotOk ? 'HOLD' : 'ACCEPTED';
     }
 
+    public function edit($id)
+    {
+        $data = IncomingMaterial::findOrFail($id);
+
+        $this->incomingId = $data->id;
+
+        $this->existingPhotos = $data->photos ?? [];
+    }
+    public function removeExistingPhoto($photo)
+    {
+        $this->existingPhotos = array_values(
+            array_filter($this->existingPhotos, fn($p) => $p !== $photo)
+        );
+    }
     // ================= SAVE =================
 
     public function save(): void

@@ -257,11 +257,19 @@
                                         <input type="file" wire:model="documents.{{ $key }}.file"
                                             class="w-full text-xs border rounded-md p-2">
 
-                                        @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                        {{-- Preview File Baru --}}
+                                        @if (isset($documents[$key]['file']) && is_object($documents[$key]['file']))
                                             <span class="text-xs text-green-600">
-                                                File siap upload:
+                                                File baru:
                                                 {{ $documents[$key]['file']->getClientOriginalName() }}
                                             </span>
+
+                                            {{-- Preview File Lama --}}
+                                        @elseif (!empty($documents[$key]['path']))
+                                            <a href="{{ Storage::url($documents[$key]['path']) }}" target="_blank"
+                                                class="text-xs text-blue-600 underline">
+                                                Lihat file lama
+                                            </a>
                                         @endif
 
                                     </div>
@@ -368,15 +376,37 @@
                                 <h4 class="text-sm font-semibold text-gray-800 mb-4"> Upload Foto Material </h4> <input
                                     type="file" wire:model="photos" multiple
                                     class="w-full border rounded-md p-2 text-sm">
-                                @if ($photos)
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                                        @foreach ($photos as $photo)
-                                            <div class="border rounded-md overflow-hidden"> <img
-                                                    src="{{ $photo->temporaryUrl() }}"
-                                                    class="w-full h-32 object-cover"> </div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+
+                                    {{-- Foto Lama --}}
+                                    @if (!empty($existingPhotos))
+                                        @foreach ($existingPhotos as $photo)
+                                            <div class="border rounded-md overflow-hidden relative">
+
+                                                <img src="{{ Storage::url($photo) }}"
+                                                    class="w-full h-32 object-cover">
+
+                                                <button type="button"
+                                                    wire:click="removeExistingPhoto('{{ $photo }}')"
+                                                    class="absolute top-1 right-1 bg-red-600 text-white text-xs px-1 rounded">
+                                                    x
+                                                </button>
+
+                                            </div>
                                         @endforeach
-                                    </div>
-                                @endif
+                                    @endif
+
+                                    {{-- Foto Baru --}}
+                                    @if ($photos)
+                                        @foreach ($photos as $photo)
+                                            <div class="border rounded-md overflow-hidden">
+                                                <img src="{{ $photo->temporaryUrl() }}"
+                                                    class="w-full h-32 object-cover">
+                                            </div>
+                                        @endforeach
+                                    @endif
+
+                                </div>
                             </div>
 
                         </div>
