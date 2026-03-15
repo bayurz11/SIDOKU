@@ -220,14 +220,34 @@ class IncomingMaterialForm extends Component
             array_filter($this->existingPhotos, fn($p) => $p !== $path)
         );
     }
-
-    //
+    // ================= DOCUMENT MANAGEMENT =================
     public function removeExistingDocument($key)
     {
-        if (isset($this->documents[$key]['existing_path'])) {
+        if (!isset($this->documents[$key]['existing_path'])) {
+            return;
+        }
 
-            $this->documents[$key]['existing_path'] = null;
-            $this->documents[$key]['is_checked'] = false;
+        $path = $this->documents[$key]['existing_path'];
+
+        // cari file di database
+        $file = IncomingMaterialFile::where('file_path', $path)->first();
+
+        if ($file) {
+
+            // hapus file dari storage
+            Storage::disk('public')->delete($file->file_path);
+
+            // hapus record database
+            $file->delete();
+        }
+
+        // reset state livewire
+        $this->documents[$key]['existing_path'] = null;
+        $this->documents[$key]['is_checked'] = false;
+
+        // hapus dari existingDocuments jika ada
+        if (isset($this->existingDocuments[$key])) {
+            unset($this->existingDocuments[$key]);
         }
     }
 
