@@ -403,9 +403,16 @@ class IncomingMaterialForm extends Component
 
             DB::commit();
 
+            DB::commit();
+
+            // cek apakah edit atau create
+            $message = $this->incomingId
+                ? 'Data Incoming Material berhasil diperbarui!'
+                : 'Data Incoming Material berhasil disimpan!';
+
             $this->dispatch('show-toast', [
                 'type' => 'success',
-                'title' => 'Data Incoming Material berhasil disimpan!'
+                'title' => $message
             ]);
 
             $this->dispatch('incoming-material:saved');
