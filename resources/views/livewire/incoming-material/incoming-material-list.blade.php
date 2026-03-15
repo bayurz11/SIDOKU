@@ -452,11 +452,12 @@
 
         });
 
-        window.addEventListener('reload-page', () => {
+        window.addEventListener('incoming-material:saved', () => {
 
+            // jeda 3 detik sebelum reload
             setTimeout(() => {
                 location.reload();
-            }, 3000); // reload setelah 3 detik
+            }, 3000);
 
         });
     </script>
