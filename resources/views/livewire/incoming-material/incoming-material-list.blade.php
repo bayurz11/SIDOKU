@@ -303,7 +303,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
-                                                                                                                                                                                                                                                                                             a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                                                                                                                                                                                                                                     a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                             Edit
                                         </button>
@@ -335,26 +335,35 @@
 
     {{-- Modal Konfirmasi Delete --}}
     <div x-data="{ open: false, deleteId: null }" x-on:confirm-delete.window="open = true; deleteId = $event.detail" x-show="open"
-        x-transition.opacity
+        x-cloak x-transition.opacity
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 min-h-screen overflow-y-auto">
 
         <div class="bg-white rounded-lg shadow-lg w-96 p-5 mx-4 sm:mx-0" @click.away="open = false"
             x-transition.scale.100.origin.center>
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Konfirmasi Hapus</h3>
-            <p class="text-sm text-gray-500 mb-6">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat
-                dikembalikan.</p>
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                Konfirmasi Hapus
+            </h3>
+
+            <p class="text-sm text-gray-500 mb-6">
+                Apakah Anda yakin ingin menghapus data ini?
+                Tindakan ini tidak dapat dikembalikan.
+            </p>
 
             <div class="flex justify-end space-x-3">
+
                 <button @click="open = false"
                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200">
                     Batal
                 </button>
+
                 <button @click="$wire.delete(deleteId); open = false"
                     class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700">
                     Hapus
                 </button>
+
             </div>
         </div>
+
     </div>
 </div>
 
