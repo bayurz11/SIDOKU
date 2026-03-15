@@ -6,10 +6,8 @@ use App\Livewire\Ipc\IpcProductImportTemplateExport;
 use App\Shared\Services\CacheService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -126,26 +124,26 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
         })->name('index');
     });
 
+
+
+
 Route::get('/incoming-material/file/{file}', function ($file) {
 
-    // cari file di folder incoming-material
-    $files = Storage::disk('public')->files('incoming-material');
+    $fileData = IncomingMaterialFile::where('file_name', $file)->first();
 
-    // cari file berdasarkan nama
-    $filePath = collect($files)->first(function ($path) use ($file) {
-        return Str::endsWith($path, $file);
-    });
-
-    if (!$filePath) {
+    if (!$fileData) {
         abort(404, 'File tidak ditemukan.');
     }
 
-    return response()->file(
-        storage_path('app/public/incoming-material/2026/' . $filePath),
-        [
-            'Content-Disposition' => 'inline; filename="' . $file . '"'
-        ]
-    );
+    $path = storage_path('app/public/' . $fileData->file_path);
+
+    if (!file_exists($path)) {
+        abort(404, 'File tidak ditemukan di storage.');
+    }
+
+    return response()->file($path, [
+        'Content-Disposition' => 'inline; filename="' . $fileData->file_name . '"'
+    ]);
 })->name('incoming-material.file');
 
 // User Management Routes
