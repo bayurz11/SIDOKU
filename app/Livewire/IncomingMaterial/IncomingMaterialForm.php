@@ -36,36 +36,38 @@ class IncomingMaterialForm extends Component
     // ================= DOCUMENTS =================
     public array $documents = [];
 
-    // ================= PHOTOS =================
-    public array $photos = [];
-    public array $existingPhotos = [];
-
-    // ================= INSPECTION =================
-    public array $inspectionItems = [];
-    public string $inspection_decision = '';
-    public ?string $inspection_notes = null;
-
-    // ================= UI =================
-    public bool $showModal = false;
-    public bool $isEditing = false;
-
     public array $documentTypes = [
-
         'coa' => 'COA',
-        'halal_certificate' => 'Sertifikat Halal',
-        'original_packaging' => 'Kemasan Asli',
+        'halal' => 'Sertifikat Halal',
+        'packaging' => 'Packaging',
+        'original_packaging' => 'Original Packaging',
         'repacking' => 'Repacking',
         'flow_chart' => 'Flow Chart',
         'no_animal_use' => 'No Animal Use',
         'msds' => 'MSDS',
         'allergen' => 'Allergen Statement',
         'food_grade' => 'Food Grade',
-        'non_gmo' => 'Non GMO',
-        'bse_tse' => 'BSE / TSE',
-        'porcine_free' => 'Porcine Free',
+        'non_gmo' => 'Non GMO Statement',
+        'bse_tse' => 'BSE / TSE Statement',
+        'porcine_free' => 'Porcine Free Statement',
         'breakdown_composition' => 'Breakdown Composition',
-
     ];
+
+    // ================= PHOTOS =================
+    public array $photos = [];
+
+    // ================= INSPECTION =================
+    public array $inspectionItems = [];
+    public string $inspection_decision = '';
+    public ?string $inspection_notes = null;
+
+    // ================= DETAIL =================
+    public $material;
+    public bool $showDetail = false;
+
+    // ================= UI =================
+    public bool $showModal = false;
+    public bool $isEditing = false;
 
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
@@ -77,8 +79,6 @@ class IncomingMaterialForm extends Component
         $this->initializeDocuments();
         $this->addInspectionItem();
     }
-
-    // ================= INIT DOCUMENT =================
 
     protected function initializeDocuments(): void
     {
@@ -95,10 +95,36 @@ class IncomingMaterialForm extends Component
     }
 
     // ================= OPEN FORM =================
-
     public function openForm(?int $id = null): void
     {
-        $this->resetForm();
+        $this->resetErrorBag();
+        $this->resetValidation();
+
+        $this->incomingId = null;
+        $this->isEditing = false;
+
+        $this->name_of_goods = '';
+        $this->supplier_name = '';
+        $this->receipt_date = null;
+        $this->expired_date = null;
+        $this->batch_number = '';
+        $this->quantity = null;
+        $this->receipt_time = null;
+        $this->quantity_unit = null;
+        $this->sample_quantity = null;
+        $this->vehicle_number = null;
+
+        $this->test_moisture = false;
+        $this->test_microbiology = false;
+        $this->test_chemical = false;
+
+        $this->inspection_decision = '';
+        $this->inspection_notes = null;
+
+        $this->photos = [];
+        $this->inspectionItems = [];
+        $this->addInspectionItem();
+        $this->initializeDocuments();
 
         if ($id) {
 
@@ -118,6 +144,7 @@ class IncomingMaterialForm extends Component
             $this->sample_quantity = $material->sample_quantity;
             $this->vehicle_number = $material->vehicle_number;
 
+            // TEST PARAMETERS
             $this->test_moisture = (bool) $material->test_moisture;
             $this->test_microbiology = (bool) $material->test_microbiology;
             $this->test_chemical = (bool) $material->test_chemical;
@@ -125,12 +152,11 @@ class IncomingMaterialForm extends Component
             $this->inspection_decision = $material->status;
             $this->inspection_notes = $material->notes;
 
-            // ================= LOAD INSPECTIONS =================
+            $this->inspectionItems = [];
 
             foreach ($material->inspections as $inspection) {
 
                 $this->inspectionItems[] = [
-
                     'parameter' => $inspection->parameter,
                     'standard' => $inspection->standard,
                     'test_result' => $inspection->test_result,
@@ -142,14 +168,9 @@ class IncomingMaterialForm extends Component
                 $this->addInspectionItem();
             }
 
-            // ================= LOAD FILES =================
-
             foreach ($material->files as $file) {
 
-                if ($file->category === 'photo') {
-
-                    $this->existingPhotos[] = $file;
-                } elseif (isset($this->documents[$file->category])) {
+                if (isset($this->documents[$file->category])) {
 
                     $this->documents[$file->category]['existing_path'] = $file->file_path;
                     $this->documents[$file->category]['is_checked'] = true;
@@ -160,81 +181,72 @@ class IncomingMaterialForm extends Component
         $this->showModal = true;
     }
 
-    // ================= RESET FORM =================
-
-    private function resetForm(): void
-    {
-        $this->resetErrorBag();
-        $this->resetValidation();
-
-        $this->reset([
-            'incomingId',
-            'name_of_goods',
-            'supplier_name',
-            'receipt_date',
-            'expired_date',
-            'batch_number',
-            'quantity',
-            'receipt_time',
-            'quantity_unit',
-            'sample_quantity',
-            'vehicle_number',
-            'inspection_decision',
-            'inspection_notes',
-            'photos',
-            'existingPhotos',
-            'inspectionItems',
-        ]);
-
-        $this->initializeDocuments();
-        $this->addInspectionItem();
-    }
-
     // ================= INSPECTION =================
 
-    public function addInspectionItem(): void
+    public function addInspectionItem()
     {
         $this->inspectionItems[] = [
-
             'parameter' => '',
             'standard' => '',
             'test_result' => '',
             'inspection_result' => '',
         ];
     }
-
-    public function removeInspectionItem($index): void
+    public function removeInspectionItem($index)
     {
         unset($this->inspectionItems[$index]);
+
+        // reset index array supaya Livewire tidak error
         $this->inspectionItems = array_values($this->inspectionItems);
+
+        $this->evaluateFinalDecision();
     }
 
-    public function updatedInspectionItems(): void
+    public function updatedInspectionItems()
     {
         foreach ($this->inspectionItems as $i => $item) {
 
             $this->inspectionItems[$i]['inspection_result'] = match (strtolower($item['test_result'])) {
-
                 'ok' => 'OK',
                 'not ok' => 'NOT OK',
                 default => '',
             };
         }
+
+        $this->evaluateFinalDecision();
+    }
+
+    protected function evaluateFinalDecision()
+    {
+        $hasNotOk = collect($this->inspectionItems)
+            ->contains(fn($item) => $item['inspection_result'] === 'NOT OK');
+
+        $this->inspection_decision = $hasNotOk ? 'HOLD' : 'ACCEPTED';
     }
 
     // ================= SAVE =================
 
     public function save(): void
     {
+        $this->evaluateFinalDecision();
+
         $this->validate([
+            'name_of_goods' => ['required', 'string', 'max:255'],
+            'supplier_name' => ['required', 'string', 'max:255'],
+            'receipt_date' => ['required', 'date'],
 
-            'name_of_goods' => 'required|string|max:255',
-            'supplier_name' => 'required|string|max:255',
-            'receipt_date' => 'required|date',
+            'inspectionItems.*.parameter' => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.standard' => ['nullable', 'string', 'max:255'],
+            'inspectionItems.*.test_result' => ['nullable', 'string'],
 
-            'photos.*' => 'nullable|image|max:2048',
+            'photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
 
-            'documents.*.file' => 'nullable|file|max:4096',
+            'documents.*.file' => [
+                'nullable',
+                'file',
+                'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+                'max:4096'
+            ],
         ]);
 
         DB::beginTransaction();
@@ -245,50 +257,108 @@ class IncomingMaterialForm extends Component
 
                 'date' => $this->receipt_date,
                 'expired_date' => $this->expired_date,
-                'receipt_time' => $this->receipt_time,
+                'receipt_time' => $this->receipt_time ?? null,
                 'supplier' => $this->supplier_name,
                 'material_name' => $this->name_of_goods,
                 'batch_number' => $this->batch_number,
                 'quantity' => $this->quantity,
-                'quantity_unit' => $this->quantity_unit,
-                'sample_quantity' => $this->sample_quantity,
-                'vehicle_number' => $this->vehicle_number,
+                'quantity_unit' => $this->quantity_unit ?? null,
+                'sample_quantity' => $this->sample_quantity ?? null,
+                'vehicle_number' => $this->vehicle_number ?? null,
+
+                // TEST PARAMETERS
                 'test_moisture' => $this->test_moisture,
                 'test_microbiology' => $this->test_microbiology,
                 'test_chemical' => $this->test_chemical,
+
+                // AUTO STATUS LAB
+                'lab_status' => (
+                    $this->test_moisture ||
+                    $this->test_microbiology ||
+                    $this->test_chemical
+                ) ? 'WAITING_TEST' : null,
+
                 'status' => $this->inspection_decision,
                 'notes' => $this->inspection_notes,
             ];
 
+            /*
+        |--------------------------------------------------------------------------
+        | CREATE / UPDATE MATERIAL
+        |--------------------------------------------------------------------------
+        */
+
             if ($this->incomingId) {
 
                 $material = IncomingMaterial::findOrFail($this->incomingId);
+
+                $data['updated_by'] = auth()->id();
+
                 $material->update($data);
 
+                // hapus inspection lama
                 $material->inspections()->delete();
             } else {
+
+                $data['created_by'] = auth()->id();
 
                 $material = IncomingMaterial::create($data);
             }
 
-            // ================= UPLOAD DOCUMENT =================
 
-            foreach ($this->documents as $key => $doc) {
+            /*
+        |--------------------------------------------------------------------------
+        | SIMPAN INSPECTION ITEMS
+        |--------------------------------------------------------------------------
+        */
 
-                if ($doc['file'] instanceof TemporaryUploadedFile) {
+            foreach ($this->inspectionItems as $item) {
 
-                    $extension = $doc['file']->getClientOriginalExtension();
-                    $name = Str::uuid() . '.' . $extension;
+                if (
+                    empty($item['parameter']) &&
+                    empty($item['standard']) &&
+                    empty($item['test_result'])
+                ) {
+                    continue;
+                }
 
-                    $path = $doc['file']->storeAs(
+                $material->inspections()->create([
+                    'parameter' => $item['parameter'],
+                    'standard' => $item['standard'],
+                    'test_result' => $item['test_result'],
+                    'inspection_result' => $item['inspection_result'] ?? null,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | UPLOAD DOCUMENTS
+        |--------------------------------------------------------------------------
+        */
+
+            foreach ($this->documents ?? [] as $key => $doc) {
+
+                if (
+                    isset($doc['file']) &&
+                    $doc['file'] instanceof TemporaryUploadedFile
+                ) {
+
+                    $file = $doc['file'];
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+
+                    $safeName = Str::uuid() . '.' . $extension;
+
+                    $path = $file->storeAs(
                         'incoming-material/' . date('Y/m'),
-                        $name,
+                        $safeName,
                         'public'
                     );
 
                     $material->files()->create([
-
-                        'file_name' => $name,
+                        'file_name' => $safeName,
                         'file_path' => $path,
                         'file_type' => $extension,
                         'category' => $key,
@@ -297,41 +367,57 @@ class IncomingMaterialForm extends Component
                 }
             }
 
-            // ================= UPLOAD PHOTO =================
 
-            foreach ($this->photos as $photo) {
+            /*
+        |--------------------------------------------------------------------------
+        | UPLOAD PHOTOS
+        |--------------------------------------------------------------------------
+        */
 
-                $extension = $photo->getClientOriginalExtension();
-                $name = Str::uuid() . '.' . $extension;
+            foreach ($this->photos ?? [] as $file) {
 
-                $path = $photo->storeAs(
-                    'incoming-material/' . date('Y/m'),
-                    $name,
-                    'public'
-                );
+                if ($file instanceof TemporaryUploadedFile) {
 
-                $material->files()->create([
+                    $extension = strtolower($file->getClientOriginalExtension());
 
-                    'file_name' => $name,
-                    'file_path' => $path,
-                    'file_type' => $extension,
-                    'category' => 'photo',
-                    'uploaded_by' => auth()->id(),
-                ]);
+                    $safeName = Str::uuid() . '.' . $extension;
+
+                    $path = $file->storeAs(
+                        'incoming-material/' . date('Y/m'),
+                        $safeName,
+                        'public'
+                    );
+
+                    $material->files()->create([
+                        'file_name' => $safeName,
+                        'file_path' => $path,
+                        'file_type' => $extension,
+                        'category' => 'photo',
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                }
             }
 
             DB::commit();
 
             $this->dispatch('show-toast', [
                 'type' => 'success',
-                'title' => 'Data berhasil disimpan'
+                'title' => 'Data Incoming Material berhasil disimpan!'
             ]);
+
+            $this->dispatch('incoming-material:saved');
 
             $this->closeModal();
         } catch (\Throwable $e) {
 
             DB::rollBack();
+
             report($e);
+
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'Gagal menyimpan data!'
+            ]);
         }
     }
 
@@ -339,7 +425,12 @@ class IncomingMaterialForm extends Component
 
     public function closeModal(): void
     {
-        $this->resetForm();
+        $this->reset();
+
+        $this->initializeDocuments();
+        $this->inspectionItems = [];
+        $this->photos = [];
+
         $this->showModal = false;
         $this->isEditing = false;
     }
