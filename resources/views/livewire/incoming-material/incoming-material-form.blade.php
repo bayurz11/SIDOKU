@@ -346,15 +346,26 @@
                                             </label>
 
                                             {{-- Drag Upload --}}
-                                            <div
-                                                class="border-2 border-dashed rounded-lg p-3 text-center hover:border-blue-400 transition">
+                                            <div x-data="{ drag: false }" x-on:dragover.prevent="drag=true"
+                                                x-on:dragleave.prevent="drag=false"
+                                                x-on:drop.prevent="
+        drag=false;
+        let files = $event.dataTransfer.files;
+        if(files.length){
+            $wire.upload('documents.{{ $key }}.file', files[0])
+        }
+    "
+                                                :class="drag ? 'border-blue-500 bg-blue-50' : ''"
+                                                class="border-2 border-dashed rounded-lg p-3 text-center transition">
 
                                                 <input type="file" wire:model="documents.{{ $key }}.file"
-                                                    id="upload_{{ $key }}" class="hidden">
+                                                    id="doc_{{ $key }}" class="hidden">
 
-                                                <label for="upload_{{ $key }}"
-                                                    class="cursor-pointer text-xs text-gray-500">
+                                                <label for="doc_{{ $key }}"
+                                                    class="cursor-pointer text-xs text-gray-500 block">
+
                                                     Drag & Drop atau Klik Upload
+
                                                 </label>
 
                                             </div>
@@ -436,14 +447,23 @@
                                             </label>
 
                                             {{-- Drag Upload --}}
-                                            <div
-                                                class="border-2 border-dashed rounded-lg p-3 text-center hover:border-blue-400 transition">
+                                            <div x-data="{ drag: false }" x-on:dragover.prevent="drag=true"
+                                                x-on:dragleave.prevent="drag=false"
+                                                x-on:drop.prevent="
+        drag=false;
+        let files = $event.dataTransfer.files;
+        if(files.length){
+            $wire.upload('documents.{{ $key }}.file', files[0])
+        }
+    "
+                                                :class="drag ? 'border-blue-500 bg-blue-50' : ''"
+                                                class="border-2 border-dashed rounded-lg p-3 text-center transition">
 
                                                 <input type="file" wire:model="documents.{{ $key }}.file"
                                                     id="doc_{{ $key }}" class="hidden">
 
                                                 <label for="doc_{{ $key }}"
-                                                    class="cursor-pointer text-xs text-gray-500">
+                                                    class="cursor-pointer text-xs text-gray-500 block">
 
                                                     Drag & Drop atau Klik Upload
 
@@ -499,13 +519,22 @@
                                 </h4>
 
                                 {{-- Drag Upload --}}
-                                <div
-                                    class="border-2 border-dashed rounded-xl p-6 text-center hover:border-purple-400 transition">
+                                <div x-data="{ drag: false }" x-on:dragover.prevent="drag=true"
+                                    x-on:dragleave.prevent="drag=false"
+                                    x-on:drop.prevent="
+        drag=false;
+        let files = $event.dataTransfer.files;
+        for (let i = 0; i < files.length; i++) {
+            $wire.upload('photos', files[i])
+        }
+    "
+                                    :class="drag ? 'border-purple-500 bg-purple-50' : ''"
+                                    class="border-2 border-dashed rounded-xl p-6 text-center transition">
 
                                     <input type="file" wire:model="photos" multiple id="uploadPhoto"
                                         class="hidden">
 
-                                    <label for="uploadPhoto" class="cursor-pointer text-sm text-gray-500">
+                                    <label for="uploadPhoto" class="cursor-pointer text-sm text-gray-500 block">
 
                                         Drag & Drop Foto atau Klik Upload
 
