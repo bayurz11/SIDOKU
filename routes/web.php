@@ -3,10 +3,11 @@
 use App\Domains\Document\Models\Document;
 use App\Livewire\Document\DocumentImportTemplateExport;
 use App\Livewire\Ipc\IpcProductImportTemplateExport;
-
 use App\Shared\Services\CacheService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -127,16 +128,24 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
 
 Route::get('/incoming-material/file/{file}', function ($file) {
 
-    // Path lengkap file di storage
-    $path = storage_path('app/public/incoming-material/2026/' . $file);
+    // cari file di folder incoming-material
+    $files = Storage::disk('public')->files('incoming-material');
 
-    if (!file_exists($path)) {
+    // cari file berdasarkan nama
+    $filePath = collect($files)->first(function ($path) use ($file) {
+        return Str::endsWith($path, $file);
+    });
+
+    if (!$filePath) {
         abort(404, 'File tidak ditemukan.');
     }
 
-    return response()->file($path, [
-        'Content-Disposition' => 'inline; filename="' . $file . '"'
-    ]);
+    return response()->file(
+        storage_path('app/public/' . $filePath),
+        [
+            'Content-Disposition' => 'inline; filename="' . $file . '"'
+        ]
+    );
 })->name('incoming-material.file');
 
 // User Management Routes
