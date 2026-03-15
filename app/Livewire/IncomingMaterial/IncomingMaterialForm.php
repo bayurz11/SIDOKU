@@ -71,6 +71,7 @@ class IncomingMaterialForm extends Component
 
     protected $listeners = [
         'openIncomingMaterialForm' => 'openForm',
+        'incoming-material:saved' => '$refresh',
     ];
 
     public function mount(): void
