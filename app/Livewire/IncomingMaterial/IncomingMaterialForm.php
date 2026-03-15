@@ -409,7 +409,7 @@ class IncomingMaterialForm extends Component
                 'title' => 'Data Incoming Material berhasil disimpan!'
             ]);
 
-            $this->dispatch('incoming-material-saved')->to('*');
+            $this->dispatch('incoming-material:saved');
 
             $this->closeModal();
         } catch (\Throwable $e) {
