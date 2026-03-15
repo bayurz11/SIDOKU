@@ -243,24 +243,32 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 @foreach ($mainDocuments as $key => $label)
-                                    <div class="bg-white border rounded-lg p-4 space-y-2">
+                                    <div class="bg-white border rounded-lg p-4 space-y-3">
 
+                                        {{-- Checkbox --}}
                                         <label class="flex items-center gap-2">
                                             <input type="checkbox"
                                                 wire:model="documents.{{ $key }}.is_checked"
                                                 class="rounded border-gray-300">
+
                                             <span class="text-sm font-medium text-gray-700">
                                                 {{ $label }}
                                             </span>
                                         </label>
 
-                                        <div
-                                            class="border-2 border-dashed rounded-lg p-4 text-center hover:border-blue-400 transition">
 
+                                        {{-- Drag & Drop Area --}}
+                                        <div x-data="{ drag: false }" x-on:dragover.prevent="drag=true"
+                                            x-on:dragleave.prevent="drag=false"
+                                            x-on:drop.prevent=" drag=false;  let files = $event.dataTransfer.files; if(files.length){$wire.upload('documents.{{ $key }}.file', files[0])} "
+                                            :class="drag ? 'border-blue-500 bg-blue-50' : ''"
+                                            class="border-2 border-dashed rounded-lg p-4 text-center transition">
+
+                                            {{-- Hidden File Input --}}
                                             <input type="file" wire:model="documents.{{ $key }}.file"
-                                                class="hidden" id="doc_{{ $key }}">
+                                                id="doc_{{ $key }}" class="hidden">
 
-                                            <label for="doc_{{ $key }}" class="cursor-pointer">
+                                            <label for="doc_{{ $key }}" class="cursor-pointer block">
 
                                                 <p class="text-xs text-gray-500">
                                                     Drag & drop file atau klik upload
@@ -269,20 +277,38 @@
                                             </label>
 
                                         </div>
+
+
+                                        {{-- Preview File Lama --}}
                                         @if (!empty($documents[$key]['existing_path']))
                                             <div
                                                 class="flex items-center justify-between bg-gray-100 rounded p-2 text-xs">
 
                                                 <a href="{{ Storage::url($documents[$key]['existing_path']) }}"
                                                     target="_blank" class="text-blue-600 underline">
+
                                                     Lihat file
+
                                                 </a>
 
                                                 <button type="button"
                                                     wire:click="removeExistingDocument('{{ $key }}')"
                                                     class="text-red-500">
+
                                                     Hapus
+
                                                 </button>
+
+                                            </div>
+                                        @endif
+
+
+                                        {{-- Preview File Baru --}}
+                                        @if (isset($documents[$key]['file']) && $documents[$key]['file'])
+                                            <div class="text-xs text-green-600">
+
+                                                File baru:
+                                                {{ $documents[$key]['file']->getClientOriginalName() }}
 
                                             </div>
                                         @endif
