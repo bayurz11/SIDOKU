@@ -239,10 +239,8 @@ class IncomingMaterialForm extends Component
             'inspectionItems.*.standard' => ['nullable', 'string', 'max:255'],
             'inspectionItems.*.test_result' => ['nullable', 'string'],
 
-            'photos' => ['nullable', 'array', 'max:10'],
             'photos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
 
-            'documents' => ['nullable', 'array', 'max:10'],
             'documents.*.file' => [
                 'nullable',
                 'file',
@@ -251,13 +249,12 @@ class IncomingMaterialForm extends Component
             ],
         ]);
 
-        $userId = auth()->id();
-
         DB::beginTransaction();
 
         try {
 
             $data = [
+
                 'date' => $this->receipt_date,
                 'expired_date' => $this->expired_date,
                 'receipt_time' => $this->receipt_time ?? null,
@@ -269,10 +266,12 @@ class IncomingMaterialForm extends Component
                 'sample_quantity' => $this->sample_quantity ?? null,
                 'vehicle_number' => $this->vehicle_number ?? null,
 
+                // TEST PARAMETERS
                 'test_moisture' => $this->test_moisture,
                 'test_microbiology' => $this->test_microbiology,
                 'test_chemical' => $this->test_chemical,
 
+                // AUTO STATUS LAB
                 'lab_status' => (
                     $this->test_moisture ||
                     $this->test_microbiology ||
@@ -291,9 +290,9 @@ class IncomingMaterialForm extends Component
 
             if ($this->incomingId) {
 
-                $material = IncomingMaterial::lockForUpdate()->findOrFail($this->incomingId);
+                $material = IncomingMaterial::findOrFail($this->incomingId);
 
-                $data['updated_by'] = $userId;
+                $data['updated_by'] = auth()->id();
 
                 $material->update($data);
 
@@ -301,7 +300,7 @@ class IncomingMaterialForm extends Component
                 $material->inspections()->delete();
             } else {
 
-                $data['created_by'] = $userId;
+                $data['created_by'] = auth()->id();
 
                 $material = IncomingMaterial::create($data);
             }
@@ -313,7 +312,7 @@ class IncomingMaterialForm extends Component
         |--------------------------------------------------------------------------
         */
 
-            foreach ($this->inspectionItems ?? [] as $item) {
+            foreach ($this->inspectionItems as $item) {
 
                 if (
                     empty($item['parameter']) &&
@@ -328,7 +327,7 @@ class IncomingMaterialForm extends Component
                     'standard' => $item['standard'],
                     'test_result' => $item['test_result'],
                     'inspection_result' => $item['inspection_result'] ?? null,
-                    'created_by' => $userId,
+                    'created_by' => auth()->id(),
                 ]);
             }
 
@@ -353,19 +352,17 @@ class IncomingMaterialForm extends Component
                     $safeName = Str::uuid() . '.' . $extension;
 
                     $path = $file->storeAs(
-                        'incoming-material/' . date('Y/m') . '/documents',
+                        'incoming-material/' . date('Y/m'),
                         $safeName,
                         'public'
                     );
 
                     $material->files()->create([
                         'file_name' => $safeName,
-                        'original_name' => $file->getClientOriginalName(),
                         'file_path' => $path,
                         'file_type' => $extension,
-                        'file_size' => $file->getSize(),
                         'category' => $key,
-                        'uploaded_by' => $userId,
+                        'uploaded_by' => auth()->id(),
                     ]);
                 }
             }
@@ -386,19 +383,17 @@ class IncomingMaterialForm extends Component
                     $safeName = Str::uuid() . '.' . $extension;
 
                     $path = $file->storeAs(
-                        'incoming-material/' . date('Y/m') . '/photos',
+                        'incoming-material/' . date('Y/m'),
                         $safeName,
                         'public'
                     );
 
                     $material->files()->create([
                         'file_name' => $safeName,
-                        'original_name' => $file->getClientOriginalName(),
                         'file_path' => $path,
                         'file_type' => $extension,
-                        'file_size' => $file->getSize(),
                         'category' => 'photo',
-                        'uploaded_by' => $userId,
+                        'uploaded_by' => auth()->id(),
                     ]);
                 }
             }
