@@ -3,6 +3,7 @@
 namespace App\Livewire\IncomingMaterial;
 
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
+use App\Models\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -248,7 +249,7 @@ class IncomingMaterialForm extends Component
             throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
-            \Log::error('IncomingMaterial save failed', [
+            Log::error('IncomingMaterial save failed', [
                 'incoming_id' => $this->incomingId ?? null,
                 'user_id'     => auth()->id(),
                 'error'       => $e->getMessage(),
