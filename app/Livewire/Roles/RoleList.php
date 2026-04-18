@@ -13,12 +13,15 @@ class RoleList extends Component
 {
     use WithPagination, WithAlerts;
 
-    public $search = '';
-    public $showInactive = false;
-    public $perPage = 10;
-    public $sortField = 'name';
-    public $sortDirection = 'asc';
-    public $filterByPermissions = '';
+    public string $search = '';
+    public bool $showInactive = false;
+    public int $perPage = 10;
+    public string $sortField = 'name';
+    public string $sortDirection = 'asc';
+    public string $filterByPermissions = '';
+
+    protected array $allowedSorts = ['name', 'display_name', 'description', 'is_active', 'created_at', 'updated_at'];
+    protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -36,8 +39,23 @@ class RoleList extends Component
         $this->resetPage();
     }
 
+    public function updatingShowInactive()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage($value)
+    {
+        $this->perPage = in_array((int) $value, $this->allowedPerPage, true) ? (int) $value : 10;
+        $this->resetPage();
+    }
+
     public function sortBy($field)
     {
+        if (! in_array($field, $this->allowedSorts, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -45,18 +63,18 @@ class RoleList extends Component
         }
 
         $this->sortField = $field;
+        $this->resetPage();
     }
 
     public function toggleRoleStatus($roleId)
     {
         $role = Role::findOrFail($roleId);
         $oldStatus = $role->is_active;
-        $newStatus = !$role->is_active;
+        $newStatus = ! $role->is_active;
         $status = $oldStatus ? 'deactivated' : 'activated';
 
         $role->update(['is_active' => $newStatus]);
 
-        // Log the action
         LoggerService::logUserAction(
             'toggle_status',
             'Role',
@@ -64,18 +82,14 @@ class RoleList extends Component
             [
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
-                'role_name' => $role->name
+                'role_name' => $role->name,
             ]
         );
 
-        // Clear related caches
         CacheService::clearRoleCache($roleId);
-        CacheService::clearAllUserCaches();
         CacheService::clearDashboardCache();
 
-        // Refresh the component to show updated data
         $this->dispatch('$refresh');
-
         $this->showSuccessToast("Role {$status} successfully!");
     }
 
@@ -83,13 +97,12 @@ class RoleList extends Component
     {
         $role = Role::findOrFail($roleId);
 
-        // Cegah hapus super-admin
         if ($role->name === 'super-admin') {
             $this->showErrorToast('Cannot delete super-admin role.');
+
             return;
         }
 
-        // Optional: log sebelum hapus
         LoggerService::logUserAction(
             'delete',
             'Role',
@@ -102,22 +115,26 @@ class RoleList extends Component
             'warning'
         );
 
-        // Optional: clear cache
         CacheService::clearRoleCache($roleId);
-        CacheService::clearAllUserCaches();
         CacheService::clearDashboardCache();
 
-        // HAPUS DATA
         $role->delete();
 
-        // Refresh seperti IPC
         $this->showSuccessToast('Role deleted successfully!');
-        $this->resetPage(); // jika pakai pagination
+        $this->resetPage();
         $this->dispatch('roleSaved');
     }
+
     public function render()
     {
-        // Optimize query with proper select and subqueries for counts
+        if (! in_array($this->sortField, $this->allowedSorts, true)) {
+            $this->sortField = 'name';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'asc';
+        }
+
         $roles = Role::query()
             ->select([
                 'id',
@@ -126,7 +143,7 @@ class RoleList extends Component
                 'description',
                 'is_active',
                 'created_at',
-                'updated_at'
+                'updated_at',
             ])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -135,7 +152,7 @@ class RoleList extends Component
                         ->orWhere('description', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when(!$this->showInactive, function ($query) {
+            ->when(! $this->showInactive, function ($query) {
                 $query->where('is_active', true);
             })
             ->when($this->filterByPermissions, function ($query) {
@@ -143,9 +160,10 @@ class RoleList extends Component
                     $q->where('group', $this->filterByPermissions);
                 });
             })
-            ->withCount(['permissions', 'users']) // Use withCount for better performance
+            ->withCount(['permissions', 'users'])
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->paginate($this->perPage)
+            ->onEachSide(0);
 
         $permissionGroups = ['users', 'roles', 'permissions', 'system'];
 

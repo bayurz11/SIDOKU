@@ -2,50 +2,46 @@
 
 namespace App\Shared\Traits;
 
+use App\Shared\Services\CacheService;
+use Illuminate\Support\Collection;
+
 trait HasPermissions
 {
     public function hasPermission(string $permission): bool
     {
-        return $this->roles()->whereHas('permissions', function ($query) use ($permission) {
-            $query->where('permissions.name', $permission)->where('permissions.is_active', true);
-        })->exists();
+        return $this->getCachedPermissions()->contains('name', $permission);
     }
 
     public function hasAnyPermission(array $permissions): bool
     {
-        return $this->roles()->whereHas('permissions', function ($query) use ($permissions) {
-            $query->whereIn('permissions.name', $permissions)->where('permissions.is_active', true);
-        })->exists();
+        return $this->getCachedPermissions()->pluck('name')->intersect($permissions)->isNotEmpty();
     }
 
     public function hasAllPermissions(array $permissions): bool
     {
-        foreach ($permissions as $permission) {
-            if (!$this->hasPermission($permission)) {
-                return false;
-            }
-        }
-
-        return true;
+        return empty(array_diff($permissions, $this->getCachedPermissions()->pluck('name')->all()));
     }
 
     public function getPermissions(): array
     {
-        return $this->roles()
-            ->with('permissions')
-            ->get()
-            ->pluck('permissions')
-            ->flatten()
-            ->where('is_active', true)
+        return $this->getCachedPermissions()
             ->pluck('name')
-            ->unique()
-            ->values()
             ->toArray();
     }
 
     public function canAccessResource(string $resource, string $action): bool
     {
         $permission = "{$resource}.{$action}";
+
         return $this->hasPermission($permission);
+    }
+
+    protected function getCachedPermissions(): Collection
+    {
+        if (! $this->exists) {
+            return collect();
+        }
+
+        return CacheService::getUserPermissions($this->getKey());
     }
 }

@@ -4,6 +4,7 @@ namespace App\Livewire\Roles;
 
 use App\Domains\Role\Models\Role;
 use App\Domains\Permission\Models\Permission;
+use App\Shared\Services\CacheService;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -160,6 +161,8 @@ class RoleForm extends Component
             ]);
 
             $role->permissions()->sync($this->selectedPermissions);
+            CacheService::clearRoleCache($role->id);
+            CacheService::clearDashboardCache();
 
             $this->showSuccessToast('Role updated successfully!');
         } else {
@@ -172,6 +175,8 @@ class RoleForm extends Component
             ]);
 
             $role->permissions()->sync($this->selectedPermissions);
+            CacheService::clearRoleCache($role->id);
+            CacheService::clearDashboardCache();
 
             $this->showSuccessToast('Role created successfully!');
         }
@@ -181,13 +186,7 @@ class RoleForm extends Component
     }
     public function render()
     {
-        // Get permissions grouped by group for the view
-        $permissions = Permission::where('is_active', true)
-            ->orderBy('group')
-            ->orderBy('name')
-            ->get();
-
-        $permissionsByGroup = $permissions->groupBy('group');
+        $permissionsByGroup = CacheService::getPermissionsByGroup();
 
         return view('livewire.roles.role-form', compact('permissionsByGroup'));
     }

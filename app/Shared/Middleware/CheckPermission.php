@@ -2,6 +2,7 @@
 
 namespace App\Shared\Middleware;
 
+use App\Support\AuthAccess;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,11 +16,11 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
-        if (!auth()->check()) {
+        $user = AuthAccess::user();
+
+        if (! $user) {
             return redirect()->route('login');
         }
-
-        $user = auth()->user();
 
         foreach ($permissions as $permissionGroup) {
 

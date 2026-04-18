@@ -5,6 +5,7 @@ namespace App\Livewire\Users;
 use App\Domains\User\Models\User;
 use App\Domains\Role\Models\Role;
 use App\Domains\Department\Models\Department;
+use App\Shared\Services\CacheService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -141,6 +142,8 @@ class UserForm extends Component
         }
 
         $user->roles()->sync($this->selectedRoles);
+        CacheService::clearUserCache($user->id);
+        CacheService::clearDashboardCache();
 
         session()->flash(
             'message',
@@ -153,7 +156,7 @@ class UserForm extends Component
 
     public function render()
     {
-        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        $roles = CacheService::getActiveRoles();
 
         return view('livewire.users.user-form', [
             'roles'       => $roles,

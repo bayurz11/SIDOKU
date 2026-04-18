@@ -54,12 +54,7 @@
                 </div>
             </div>
         </div>
-
         <!-- Modern Stats Cards -->
-        @php
-            $stats = \App\Shared\Services\CacheService::getDashboardStats();
-        @endphp
-
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
 

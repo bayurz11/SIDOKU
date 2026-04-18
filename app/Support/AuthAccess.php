@@ -14,6 +14,12 @@ class AuthAccess
             return self::$user;
         }
 
+        if (app()->bound('auth.cached_user')) {
+            self::$user = app('auth.cached_user');
+
+            return self::$user;
+        }
+
         self::$user = Auth::check() ? Auth::user() : null;
 
         return self::$user;

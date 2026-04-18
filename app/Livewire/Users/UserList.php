@@ -13,14 +13,17 @@ class UserList extends Component
 {
     use WithPagination, WithAlerts;
 
-    public $search = '';
-    public $showInactive = false;
-    public $perPage = 10;
-    public $sortField = 'name';
-    public $sortDirection = 'asc';
+    public string $search = '';
+    public bool $showInactive = false;
+    public int $perPage = 10;
+    public string $sortField = 'name';
+    public string $sortDirection = 'asc';
+
+    protected array $allowedSorts = ['name', 'email', 'is_active', 'created_at', 'updated_at'];
+    protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
-        'search'       => ['except' => ''],
+        'search' => ['except' => ''],
         'showInactive' => ['except' => false],
     ];
 
@@ -29,8 +32,23 @@ class UserList extends Component
         $this->resetPage();
     }
 
+    public function updatingShowInactive()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage($value)
+    {
+        $this->perPage = in_array((int) $value, $this->allowedPerPage, true) ? (int) $value : 10;
+        $this->resetPage();
+    }
+
     public function sortBy($field)
     {
+        if (! in_array($field, $this->allowedSorts, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -38,6 +56,7 @@ class UserList extends Component
         }
 
         $this->sortField = $field;
+        $this->resetPage();
     }
 
     public function toggleUserStatus($userId)
@@ -45,29 +64,25 @@ class UserList extends Component
         $user = User::findOrFail($userId);
         $oldStatus = $user->is_active;
         $newStatus = ! $user->is_active;
-        $status    = $oldStatus ? 'deactivated' : 'activated';
+        $status = $oldStatus ? 'deactivated' : 'activated';
 
         $user->update(['is_active' => $newStatus]);
 
-        // Log the action
         LoggerService::logUserAction(
             'toggle_status',
             'User',
             $userId,
             [
-                'old_status'        => $oldStatus,
-                'new_status'        => $newStatus,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
                 'target_user_email' => $user->email,
             ]
         );
 
-        // Clear user cache
         CacheService::clearUserCache($userId);
         CacheService::clearDashboardCache();
 
-        // Refresh the component to show updated data
         $this->dispatch('$refresh');
-
         $this->showSuccessToast("User {$status} successfully!");
     }
 
@@ -88,43 +103,46 @@ class UserList extends Component
     public function deleteUser($params)
     {
         $userId = $params['userId'];
-        $user   = User::findOrFail($userId);
+        $user = User::findOrFail($userId);
 
-        // Log the action before deletion
         LoggerService::logUserAction(
             'delete',
             'User',
             $userId,
             [
                 'deleted_user_email' => $user->email,
-                'deleted_user_name'  => $user->name,
-                'had_roles'          => $user->roles->pluck('name')->toArray(),
+                'deleted_user_name' => $user->name,
+                'had_roles' => $user->roles->pluck('name')->toArray(),
             ],
             'warning'
         );
 
-        // Clear user cache before deletion
         CacheService::clearUserCache($userId);
         CacheService::clearDashboardCache();
 
         $user->delete();
 
-        // Refresh the component to show updated data
         $this->dispatch('$refresh');
-
         $this->showSuccessToast('User deleted successfully!');
     }
 
     public function render()
     {
-        // ✅ Tambah department_id di select & eager load relasi department
+        if (! in_array($this->sortField, $this->allowedSorts, true)) {
+            $this->sortField = 'name';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'asc';
+        }
+
         $users = User::query()
             ->select([
                 'id',
                 'name',
                 'email',
                 'is_active',
-                'department_id', // 🔹 penting supaya relasi department bisa jalan saat select terbatas
+                'department_id',
                 'created_at',
                 'updated_at',
             ])
@@ -138,11 +156,12 @@ class UserList extends Component
                 $query->where('is_active', true);
             })
             ->with([
-                'roles:id,name,display_name',   // existing
-                'department:id,name',          // 🔹 eager load department
+                'roles:id,name,display_name',
+                'department:id,name',
             ])
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->paginate($this->perPage)
+            ->onEachSide(0);
 
         return view('livewire.users.user-list', compact('users'));
     }
