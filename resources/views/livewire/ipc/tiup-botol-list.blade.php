@@ -49,6 +49,9 @@
                     Belum ada data tiup botol untuk ditampilkan. Atur filter tanggal terlebih dahulu.
                 </p>
             @else
+                <div id="tiupBotolChartData" class="hidden" data-labels='@json($chartLabels)'
+                    data-values='@json($chartValues)'></div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 py-4 sm:px-6 sm:py-5">
 
                     {{-- ✅ BAR CHART --}}
@@ -243,9 +246,9 @@
                                         class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                                         {{ $row->penyebaran_rata }}
                                     </span>
-                                    @if ($row->gambar_penyebaran_rata_url)
+                                    @if ($row->penyebaran_rata_image_url)
                                         <div class="mt-1">
-                                            <img src="{{ $row->gambar_penyebaran_rata_url }}"
+                                            <img src="{{ $row->penyebaran_rata_image_url }}"
                                                 class="w-10 h-10 rounded-lg object-cover border border-gray-200"
                                                 alt="Penyebaran Rata">
                                         </div>
@@ -262,9 +265,9 @@
                                         class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                                         {{ $row->bottom_tidak_menonjol }}
                                     </span>
-                                    @if ($row->gambar_bottom_tidak_menonjol_url)
+                                    @if ($row->bottom_tidak_menonjol_image_url)
                                         <div class="mt-1">
-                                            <img src="{{ $row->gambar_bottom_tidak_menonjol_url }}"
+                                            <img src="{{ $row->bottom_tidak_menonjol_image_url }}"
                                                 class="w-10 h-10 rounded-lg object-cover border border-gray-200"
                                                 alt="Bottom Tidak Menonjol">
                                         </div>
@@ -281,9 +284,9 @@
                                         class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                                         {{ $row->tidak_ada_material }}
                                     </span>
-                                    @if ($row->gambar_tidak_ada_material_url)
+                                    @if ($row->tidak_ada_material_image_url)
                                         <div class="mt-1">
-                                            <img src="{{ $row->gambar_tidak_ada_material_url }}"
+                                            <img src="{{ $row->tidak_ada_material_image_url }}"
                                                 class="w-10 h-10 rounded-lg object-cover border border-gray-200"
                                                 alt="Tidak Ada Material">
                                         </div>
@@ -308,7 +311,7 @@
                             <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center gap-2">
                                     @permission('ipc_product_checks.view')
-                                        <button wire:click="openTiupBotolDetail({{ $row->id }})"
+                                        <button wire:click="showDetail({{ $row->id }})"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-green-600 bg-green-50 rounded-lg hover:bg-green-100 hover:text-green-700 transition-all duration-200">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24" stroke-width="1.5">
@@ -370,8 +373,7 @@
                                             </button>
                                         @endpermission
                                     @else
-                                        <button
-                                            wire:click="$set('search', ''); $set('filterDateFrom', null); $set('filterDateTo', null); $set('filterDropTest', null)"
+                                        <button wire:click="resetFilters"
                                             class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300">
                                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
@@ -425,9 +427,10 @@
             function renderTiupBotolCharts() {
                 const barCanvas = document.getElementById('tiupBotolBarChart');
                 const donutCanvas = document.getElementById('tiupBotolDonutChart');
+                const payload = document.getElementById('tiupBotolChartData');
 
-                const labels = @json($chartLabels ?? []);
-                const values = @json($chartValues ?? []);
+                const labels = JSON.parse(payload?.dataset.labels || '[]');
+                const values = JSON.parse(payload?.dataset.values || '[]');
                 const total = values.reduce((a, b) => a + b, 0);
 
                 if (!labels.length || !values.length) {

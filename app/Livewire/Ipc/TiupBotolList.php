@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Ipc;
 
+use App\Domains\Ipc\Models\TiupBotolCheck;
+use App\Shared\Traits\WithAlerts;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Shared\Traits\WithAlerts;
-use App\Domains\Ipc\Models\TiupBotolCheck;
 
 class TiupBotolList extends Component
 {
@@ -41,7 +42,6 @@ class TiupBotolList extends Component
 
     protected $listeners = [
         'tiup-botol:saved' => 'refreshList',
-        'openTiupBotolDetail' => 'open',
     ];
 
     public function refreshList(): void
@@ -69,12 +69,9 @@ class TiupBotolList extends Component
         $this->resetPage();
     }
 
-    public function updatingPerPage(): void
+    public function updatingPerPage($value): void
     {
-        if (! in_array($this->perPage, $this->allowedPerPage)) {
-            $this->perPage = 10;
-        }
-
+        $this->perPage = in_array((int) $value, $this->allowedPerPage, true) ? (int) $value : 10;
         $this->resetPage();
     }
 
@@ -90,6 +87,8 @@ class TiupBotolList extends Component
             $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
+
+        $this->resetPage();
     }
 
     public function delete(int $id): void
@@ -103,13 +102,27 @@ class TiupBotolList extends Component
 
     public function showDetail(int $id): void
     {
-        // nanti bisa diarahkan ke modal detail/form edit khusus Tiup Botol
-        $this->dispatch('openTiupBotolForm', id: $id);
+        $this->dispatch('openTiupBotolDetail', id: $id);
     }
 
-    public function render()
+    public function resetFilters(): void
     {
-        $baseQuery = TiupBotolCheck::query()
+        $this->reset([
+            'search',
+            'filterDateFrom',
+            'filterDateTo',
+            'filterDropTest',
+        ]);
+
+        $this->sortField = 'tanggal';
+        $this->sortDirection = 'desc';
+        $this->perPage = 10;
+        $this->resetPage();
+    }
+
+    protected function buildFilteredQuery(): Builder
+    {
+        return TiupBotolCheck::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
                 $q->where(function ($sub) use ($term) {
@@ -117,28 +130,50 @@ class TiupBotolList extends Component
                         ->orWhere('catatan', 'like', $term);
                 });
             })
-            ->when(
-                $this->filterDropTest,
-                fn($q) =>
-                $q->where('drop_test', $this->filterDropTest)
-            )
-            ->when(
-                $this->filterDateFrom,
-                fn($q) =>
-                $q->whereDate('tanggal', '>=', $this->filterDateFrom)
-            )
-            ->when(
-                $this->filterDateTo,
-                fn($q) =>
-                $q->whereDate('tanggal', '<=', $this->filterDateTo)
-            );
+            ->when($this->filterDropTest, fn($q) => $q->where('drop_test', $this->filterDropTest))
+            ->when($this->filterDateFrom, fn($q) => $q->whereDate('tanggal', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn($q) => $q->whereDate('tanggal', '<=', $this->filterDateTo));
+    }
 
-        // data utama tabel
+    protected function sanitizeState(): void
+    {
+        if (! in_array($this->sortField, $this->allowedSorts, true)) {
+            $this->sortField = 'tanggal';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'desc';
+        }
+
+        if (! in_array($this->perPage, $this->allowedPerPage, true)) {
+            $this->perPage = 10;
+        }
+    }
+
+    public function render()
+    {
+        $this->sanitizeState();
+
+        $baseQuery = $this->buildFilteredQuery();
+
         $data = (clone $baseQuery)
+            ->select([
+                'id',
+                'tanggal',
+                'nama_botol',
+                'drop_test',
+                'penyebaran_rata',
+                'bottom_tidak_menonjol',
+                'tidak_ada_material',
+                'penyebaran_rata_image',
+                'bottom_tidak_menonjol_image',
+                'tidak_ada_material_image',
+                'catatan',
+            ])
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->paginate($this->perPage)
+            ->onEachSide(0);
 
-        // RINGKASAN UNTUK CHART: jumlah per drop_test
         $dropSummary = (clone $baseQuery)
             ->selectRaw('drop_test, COUNT(*) as total_samples')
             ->groupBy('drop_test')

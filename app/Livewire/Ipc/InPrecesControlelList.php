@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Ipc;
 
+use App\Domains\Ipc\Models\IpcProduct;
+use App\Shared\Traits\WithAlerts;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Shared\Traits\WithAlerts;
-use App\Domains\Ipc\Models\IpcProduct;
 
 class InPrecesControlelList extends Component
 {
@@ -94,12 +95,9 @@ class InPrecesControlelList extends Component
         $this->resetPage();
     }
 
-    public function updatingPerPage(): void
+    public function updatingPerPage($value): void
     {
-        if (! in_array($this->perPage, $this->allowedPerPage, true)) {
-            $this->perPage = 10;
-        }
-
+        $this->perPage = in_array((int) $value, $this->allowedPerPage, true) ? (int) $value : 10;
         $this->resetPage();
     }
 
@@ -115,6 +113,8 @@ class InPrecesControlelList extends Component
             $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
+
+        $this->resetPage();
     }
 
     public function delete(int $id): void
@@ -128,34 +128,87 @@ class InPrecesControlelList extends Component
 
     public function showDetail(int $id): void
     {
-        $this->dispatch('openIpcProductForm', id: $id);
+        $this->dispatch('openIpcProductDetail', id: $id);
     }
 
-    public function render()
+    public function resetFilters(): void
     {
-        $baseQuery = IpcProduct::query()
+        $this->reset([
+            'search',
+            'filterLineGroup',
+            'filterSubLine',
+            'filterDateFrom',
+            'filterDateTo',
+        ]);
+
+        $this->sortField = 'test_date';
+        $this->sortDirection = 'desc';
+        $this->perPage = 10;
+        $this->resetPage();
+    }
+
+    public function resetToCurrentMonth(): void
+    {
+        $this->filterDateFrom = now()->startOfMonth()->toDateString();
+        $this->filterDateTo = now()->endOfMonth()->toDateString();
+        $this->resetPage();
+    }
+
+    protected function buildFilteredQuery(): Builder
+    {
+        return IpcProduct::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
                 $q->where('product_name', 'like', $term);
             })
             ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
             ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
-            ->when(
-                $this->filterDateFrom,
-                fn($q) =>
-                $q->whereDate('test_date', '>=', $this->filterDateFrom)
-            )
-            ->when(
-                $this->filterDateTo,
-                fn($q) =>
-                $q->whereDate('test_date', '<=', $this->filterDateTo)
-            );
+            ->when($this->filterDateFrom, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+    }
+
+    protected function sanitizeState(): void
+    {
+        if (! in_array($this->sortField, $this->allowedSorts, true)) {
+            $this->sortField = 'test_date';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'desc';
+        }
+
+        if (! in_array($this->perPage, $this->allowedPerPage, true)) {
+            $this->perPage = 10;
+        }
+    }
+
+    public function render()
+    {
+        $this->sanitizeState();
+
+        $baseQuery = $this->buildFilteredQuery();
 
         $data = (clone $baseQuery)
+            ->select([
+                'id',
+                'line_group',
+                'sub_line',
+                'test_date',
+                'product_name',
+                'shift',
+                'avg_weight_g',
+                'avg_ph',
+                'avg_brix',
+                'avg_tds_ppm',
+                'avg_chlorine',
+                'avg_ozone',
+                'avg_turbidity_ntu',
+                'avg_salinity',
+            ])
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->paginate($this->perPage)
+            ->onEachSide(0);
 
-        // Summary untuk chart (mirip moistureSummary)
         $summary = (clone $baseQuery)
             ->selectRaw('
                 line_group,
@@ -173,9 +226,12 @@ class InPrecesControlelList extends Component
             ->groupBy('line_group', 'sub_line')
             ->get();
 
+        $highMoistureItems = collect();
+
         return view('livewire.ipc.in-preces-controlel-list', [
-            'data'    => $data,
-            'summary' => $summary,
+            'data'              => $data,
+            'summary'           => $summary,
+            'highMoistureItems' => $highMoistureItems,
         ]);
     }
 }

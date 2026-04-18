@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Ipc;
 
+use App\Domains\Ipc\Models\IpcProductCheck;
+use App\Shared\Traits\WithAlerts;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Shared\Traits\WithAlerts;
-use App\Domains\Ipc\Models\IpcProductCheck;
 
 class IpcProductCheckList extends Component
 {
@@ -94,12 +95,9 @@ class IpcProductCheckList extends Component
         $this->resetPage();
     }
 
-    public function updatingPerPage(): void
+    public function updatingPerPage($value): void
     {
-        if (! in_array($this->perPage, $this->allowedPerPage)) {
-            $this->perPage = 10;
-        }
-
+        $this->perPage = in_array((int) $value, $this->allowedPerPage, true) ? (int) $value : 10;
         $this->resetPage();
     }
 
@@ -115,6 +113,8 @@ class IpcProductCheckList extends Component
             $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
+
+        $this->resetPage();
     }
 
     public function delete(int $id): void
@@ -128,40 +128,111 @@ class IpcProductCheckList extends Component
 
     public function showDetail(int $id): void
     {
-        $this->dispatch('openIpcProductCheckForm', id: $id);
+        $this->dispatch('openIpcProductDetail', id: $id);
     }
 
-    public function render()
+    public function resetFilters(): void
     {
-        // base query yang sudah pakai semua filter
-        $baseQuery = IpcProductCheck::query()
+        $this->reset([
+            'search',
+            'filterLineGroup',
+            'filterSubLine',
+            'filterDateFrom',
+            'filterDateTo',
+        ]);
+
+        $this->sortField = 'test_date';
+        $this->sortDirection = 'desc';
+        $this->perPage = 10;
+        $this->resetPage();
+    }
+
+    protected function buildFilteredQuery(): Builder
+    {
+        return IpcProductCheck::query()
             ->when($this->search, function ($q) {
                 $term = '%' . $this->search . '%';
-                $q->where(function ($sub) use ($term) {
-                    $sub->where('product_name', 'like', $term);
-                });
+                $q->where('product_name', 'like', $term);
             })
             ->when($this->filterLineGroup, fn($q) => $q->where('line_group', $this->filterLineGroup))
             ->when($this->filterSubLine, fn($q) => $q->where('sub_line', $this->filterSubLine))
             ->when($this->filterDateFrom, fn($q) => $q->whereDate('test_date', '>=', $this->filterDateFrom))
             ->when($this->filterDateTo, fn($q) => $q->whereDate('test_date', '<=', $this->filterDateTo));
+    }
 
-        // data utama untuk tabel (pakai pagination & sorting)
+    protected function sanitizeState(): void
+    {
+        if (! in_array($this->sortField, $this->allowedSorts, true)) {
+            $this->sortField = 'test_date';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'desc';
+        }
+
+        if (! in_array($this->perPage, $this->allowedPerPage, true)) {
+            $this->perPage = 10;
+        }
+    }
+
+    public function render()
+    {
+        $this->sanitizeState();
+
+        $baseQuery = $this->buildFilteredQuery();
+
         $data = (clone $baseQuery)
+            ->select([
+                'id',
+                'line_group',
+                'sub_line',
+                'test_date',
+                'product_name',
+                'shift',
+                'avg_moisture_percent',
+                'avg_weight_g',
+            ])
             ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->paginate($this->perPage)
+            ->onEachSide(0);
 
-        // RINGKASAN UNTUK CHART:
-        // rata-rata moisture per line_group + sub_line di rentang filter
         $moistureSummary = (clone $baseQuery)
             ->whereNotNull('avg_moisture_percent')
             ->selectRaw('line_group, sub_line, AVG(avg_moisture_percent) as avg_moisture, COUNT(*) as total_samples')
             ->groupBy('line_group', 'sub_line')
             ->get();
 
+        $highMoistureItems = (clone $baseQuery)
+            ->where('avg_moisture_percent', '>=', 10)
+            ->select([
+                'id',
+                'line_group',
+                'sub_line',
+                'product_name',
+                'avg_moisture_percent',
+                'test_date',
+            ])
+            ->latest('test_date')
+            ->take(10)
+            ->get();
+
+        $chartLabels = $moistureSummary->map(function ($row) {
+            $lineLabel = $this->lineGroups[$row->line_group] ?? $row->line_group;
+            $subLabel = $row->sub_line ? ($this->subLinesTeh[$row->sub_line] ?? $row->sub_line) : null;
+
+            return $subLabel ?: $lineLabel;
+        })->values();
+
+        $chartValues = $moistureSummary->map(fn($row) => round($row->avg_moisture, 2))->values();
+        $chartCounts = $moistureSummary->map(fn($row) => (int) $row->total_samples)->values();
+
         return view('livewire.ipc.ipc-product-check-list', [
             'data'            => $data,
             'moistureSummary' => $moistureSummary,
+            'chartLabels'     => $chartLabels,
+            'chartValues'     => $chartValues,
+            'chartCounts'     => $chartCounts,
+            'highMoistureItems' => $highMoistureItems,
         ]);
     }
 }

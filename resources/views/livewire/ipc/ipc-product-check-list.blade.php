@@ -3,48 +3,7 @@
 
     $lineGroupLabels = \App\Domains\Ipc\Models\IpcProductCheck::LINE_GROUPS;
     $subLineLabels = \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH ?? [];
-    $allData = \App\Domains\Ipc\Models\IpcProductCheck::query()
-        ->when(request('filter'), function ($q) {})
-        ->get();
-    // Label & value untuk Chart.js dari summary
-    $chartLabels = $moistureSummary
-        ->map(function ($row) use ($lineGroupLabels, $subLineLabels) {
-            $lineLabel = $lineGroupLabels[$row->line_group] ?? $row->line_group;
-            $subLabel = $row->sub_line ? $subLineLabels[$row->sub_line] ?? $row->sub_line : null;
-
-            return $subLabel ? "{$subLabel}" : $lineLabel;
-        })
-        ->values();
-
-    $chartValues = $moistureSummary
-        ->map(function ($row) {
-            return round($row->avg_moisture, 2);
-        })
-        ->values();
-
-    // Hitung jumlah data (record) per line + subline dari data asli (tabel IPC)
-    $rawCollection = $allData;
-
-    $countsByKey = $rawCollection
-        ->groupBy(function ($row) {
-            return $row->line_group . '|' . ($row->sub_line ?? '');
-        })
-        ->map->count();
-
-    // Susun chartCounts sesuai urutan $moistureSummary
-    $chartCounts = $moistureSummary
-        ->map(function ($row) use ($countsByKey) {
-            $key = $row->line_group . '|' . ($row->sub_line ?? '');
-            return $countsByKey[$key] ?? 0;
-        })
-        ->values();
-
-    // ALERT kadar air tinggi (>= 10%) – kalau masih dipakai
-    $highMoistureItems = $rawCollection->filter(fn($ipc) => $ipc->avg_moisture_percent >= 10)->map(function ($ipc) {
-        $ipc->avg_moisture = $ipc->avg_moisture_percent;
-        return $ipc;
-    });
-
+    $highMoistureItems = collect($highMoistureItems ?? []);
     $hasHighMoistureAlert = $highMoistureItems->isNotEmpty();
 @endphp
 
@@ -118,7 +77,7 @@
                                             → <strong>{{ Str::limit($row->product_name, 40) }}</strong>
 
                                             {{-- Kadar air --}}
-                                            → <strong>{{ round($row->avg_moisture, 2) }}%</strong>
+                                            → <strong>{{ round($row->avg_moisture_percent, 2) }}%</strong>
 
                                             {{-- Tanggal --}}
                                             <span class="ml-1 text-red-600">
@@ -475,8 +434,7 @@
                                             </button>
                                         @endpermission
                                     @else
-                                        <button
-                                            wire:click="$set('search', ''); $set('filterLineGroup', null); $set('filterSubLine', null); $set('filterDateFrom', null); $set('filterDateTo', null)"
+                                        <button wire:click="resetFilters"
                                             class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300">
                                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
@@ -530,9 +488,9 @@
                 const barCanvas = document.getElementById('ipcMoistureChart');
                 const donutCanvas = document.getElementById('ipcMoistureDonutChart');
 
-                const labels = @json($chartLabels ?? []);
-                const dataValues = @json($chartValues ?? []);
-                const counts = @json($chartCounts ?? []);
+                const labels = JSON.parse(barCanvas?.dataset.labels || '[]');
+                const dataValues = JSON.parse(barCanvas?.dataset.values || '[]');
+                const counts = JSON.parse(barCanvas?.dataset.counts || '[]');
 
                 // Tidak ada data -> destroy semua chart kalau ada
                 if (!labels.length || !dataValues.length) {
