@@ -3,14 +3,15 @@
 namespace App\Domains\Ipc\Models;
 
 use App\Auditable;
+use App\Domains\Ipc\Support\IpcSubLineCatalog;
 use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class IpcProductCheck extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $table = 'ipc_product_checks';
 
@@ -39,14 +40,14 @@ class IpcProductCheck extends Model
 
     protected $casts = [
         'test_date' => 'date',
-        'shift'     => 'integer',
+        'shift' => 'integer',
         'avg_moisture_percent' => 'float',
-        'avg_weight_g'         => 'float',
-        'cup_weight'           => 'float',
-        'product_weight'       => 'float',
+        'avg_weight_g' => 'float',
+        'cup_weight' => 'float',
+        'product_weight' => 'float',
         'total_cup_plus_product' => 'float',
-        'weighing_1'           => 'float',
-        'weighing_2'           => 'float',
+        'weighing_1' => 'float',
+        'weighing_2' => 'float',
     ];
 
     /**
@@ -54,7 +55,7 @@ class IpcProductCheck extends Model
      * (Line lain belum digunakan → tidak ditampilkan dulu)
      */
     public const LINE_GROUPS = [
-        'LINE_TEH'    => 'Line Teh',
+        'LINE_TEH' => 'Line Teh',
         'LINE_POWDER' => 'Line Powder',
     ];
 
@@ -62,26 +63,14 @@ class IpcProductCheck extends Model
      * Sub line khusus untuk LINE_TEH
      */
     public const SUB_LINES_TEH = [
-        'TEH_ORI'        => 'Teh Ori',
-        'TEH_SACHET'     => 'Teh Sachet',
-        'TEH_SEDUH_50G'  => 'Teh Seduh 50 g',
-        'TEH_SEDUH_100G' => 'Teh Seduh 100 g',
-        'TEH_BUBUK_1KG'  => 'Teh Bubuk 1 kg',
-        'TEH_AMPLOP'     => 'Teh Amplop',
-        'TEH_HIJAU'      => 'Teh Hijau',
-        'TEH_BAE'      => 'Teh Bae',
-        'BLENDING_BUBUK_1KG'      => 'Blending Bubuk 1 kg',
-        'BLENDING_ORI'      => 'Blending Ori',
-        'BLENDING_SACHET'      => 'Blending Sachet',
-        'BLENDING_SEDUH'      => 'Blending Seduh',
-        'BLENDING_SEDUH'      => 'Blending Seduh',
-        'TEH_REWORK'      => 'Teh Rework',
+        ...IpcSubLineCatalog::TEA_SUB_LINES,
     ];
 
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');

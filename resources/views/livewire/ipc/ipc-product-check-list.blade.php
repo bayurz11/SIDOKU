@@ -5,6 +5,10 @@
     $subLineLabels = \App\Domains\Ipc\Models\IpcProductCheck::SUB_LINES_TEH ?? [];
     $highMoistureItems = collect($highMoistureItems ?? []);
     $hasHighMoistureAlert = $highMoistureItems->isNotEmpty();
+    $canViewIpcMoisture = auth()->user()->hasAnyPermission(['ipc_moisture.view', 'ipc_product_checks.view']);
+    $canCreateIpcMoisture = auth()->user()->hasAnyPermission(['ipc_moisture.create', 'ipc_product_checks.create']);
+    $canEditIpcMoisture = auth()->user()->hasAnyPermission(['ipc_moisture.edit', 'ipc_product_checks.edit']);
+    $canDeleteIpcMoisture = auth()->user()->hasAnyPermission(['ipc_moisture.delete', 'ipc_product_checks.delete']);
 @endphp
 
 <div class="space-y-6">
@@ -134,7 +138,7 @@
                 {{-- RIGHT SECTION (BUTTON) --}}
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 w-full md:w-auto">
 
-                    @permission('ipc_product_checks.create')
+                    @if ($canCreateIpcMoisture)
                         <button wire:click="$dispatch('openIpcProductImport')"
                             class="group bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600
                    text-white px-5 py-3 rounded-xl text-sm font-semibold inline-flex items-center
@@ -148,9 +152,9 @@
                             </svg>
                             Import
                         </button>
-                    @endpermission
+                    @endif
 
-                    @permission('ipc_product_checks.create')
+                    @if ($canCreateIpcMoisture)
                         <button wire:click="$dispatch('openIpcProductCheckForm')"
                             class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700
                    text-white px-5 py-3 rounded-xl text-sm font-semibold flex items-center
@@ -163,7 +167,7 @@
                             </svg>
                             Add
                         </button>
-                    @endpermission
+                    @endif
 
                 </div>
 
@@ -354,7 +358,7 @@
                             {{-- Aksi --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center gap-2">
-                                    @permission('ipc_product_checks.view')
+                                    @if ($canViewIpcMoisture)
                                         <button
                                             wire:click="$dispatch('openIpcProductDetail', { id: {{ $ipc->id }} })"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-green-600 bg-green-50 rounded-lg hover:bg-green-100 hover:text-green-700 transition-all duration-200">
@@ -367,9 +371,9 @@
                                             </svg>
                                             Detail
                                         </button>
-                                    @endpermission
+                                    @endif
 
-                                    @permission('ipc_product_checks.edit')
+                                    @if ($canEditIpcMoisture)
                                         <button
                                             wire:click="$dispatch('openIpcProductCheckForm', { id: {{ $ipc->id }} })"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200">
@@ -382,9 +386,9 @@
                                             </svg>
                                             Edit
                                         </button>
-                                    @endpermission
+                                    @endif
 
-                                    @permission('ipc_product_checks.delete')
+                                    @if ($canDeleteIpcMoisture)
                                         <button wire:click="delete({{ $ipc->id }})"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all duration-200">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
@@ -395,7 +399,7 @@
                                             </svg>
                                             Delete
                                         </button>
-                                    @endpermission
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -422,7 +426,7 @@
                                     </p>
 
                                     @if (!$search && !$filterLineGroup && !$filterSubLine && !$filterDateFrom && !$filterDateTo)
-                                        @permission('ipc_product_checks.create')
+                                        @if ($canCreateIpcMoisture)
                                             <button wire:click="$dispatch('openIpcProductCheckForm')"
                                                 class="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                                                 <svg class="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300"
@@ -432,7 +436,7 @@
                                                 </svg>
                                                 Tambah Data
                                             </button>
-                                        @endpermission
+                                        @endif
                                     @else
                                         <button wire:click="resetFilters"
                                             class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300">

@@ -11,16 +11,22 @@ use Livewire\WithPagination;
 
 class RoleList extends Component
 {
-    use WithPagination, WithAlerts;
+    use WithAlerts, WithPagination;
 
     public string $search = '';
+
     public bool $showInactive = false;
+
     public int $perPage = 10;
+
     public string $sortField = 'name';
+
     public string $sortDirection = 'asc';
+
     public string $filterByPermissions = '';
 
     protected array $allowedSorts = ['name', 'display_name', 'description', 'is_active', 'created_at', 'updated_at'];
+
     protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
@@ -147,9 +153,9 @@ class RoleList extends Component
             ])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('display_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('description', 'like', '%' . $this->search . '%');
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('display_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
                 });
             })
             ->when(! $this->showInactive, function ($query) {
@@ -165,7 +171,11 @@ class RoleList extends Component
             ->paginate($this->perPage)
             ->onEachSide(0);
 
-        $permissionGroups = ['users', 'roles', 'permissions', 'system'];
+        $permissionGroups = CacheService::getPermissionsByGroup()
+            ->keys()
+            ->sort()
+            ->values()
+            ->all();
 
         return view('livewire.roles.role-list', compact('roles', 'permissionGroups'));
     }

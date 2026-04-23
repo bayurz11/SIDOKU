@@ -3,16 +3,17 @@
 use App\Domains\Document\Models\Document;
 use App\Livewire\Document\DocumentImportTemplateExport;
 use App\Livewire\Ipc\IpcProductImportTemplateExport;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 use App\Shared\Services\CacheService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 });
 
@@ -22,7 +23,7 @@ Route::get('/dashboard', function () {
     $stats = CacheService::getDashboardStats();
 
     return view('dashboard', [
-        'stats' => $stats
+        'stats' => $stats,
     ]);
 })->middleware(['auth'])->name('dashboard');
 
@@ -47,7 +48,7 @@ Route::middleware(['auth', 'permission:document_prefix_settings.view'])->group(f
     })->name('document_prefix_settings.index');
 });
 
-//  Management Document 
+//  Management Document
 Route::middleware(['auth', 'permission:documents.view'])->group(function () {
     Route::get('/documents', function () {
         return view('documents.index');
@@ -56,7 +57,7 @@ Route::middleware(['auth', 'permission:documents.view'])->group(function () {
 
 Route::get('/documents/import/template', function () {
     return Excel::download(
-        new DocumentImportTemplateExport(),
+        new DocumentImportTemplateExport,
         'template-import-dokumen.xlsx'
     );
 })->name('documents.import-template');
@@ -68,9 +69,8 @@ Route::middleware(['auth', 'permission:documents.review|documents.approve'])
     })
     ->name('documents.approval-queue');
 
-
-//IPC Kadar Air
-Route::middleware(['auth', 'permission:ipc_product_checks.view'])
+// IPC Kadar Air
+Route::middleware(['auth', 'permission:ipc_moisture.view|ipc_product_checks.view'])
     ->name('ipc.product-checks.')
     ->prefix('ipc/product-checks')
     ->group(function () {
@@ -79,15 +79,16 @@ Route::middleware(['auth', 'permission:ipc_product_checks.view'])
         })->name('index');
     });
 
-Route::get('/ipc/product-checks/import/template', function () {
-    return Excel::download(
-        new IpcProductImportTemplateExport(),
-        'template-import-ipc-kadar-air-berat.xlsx'
-    );
-})->name('ipc.product-checks.import-template');
+Route::middleware(['auth', 'permission:ipc_moisture.view|ipc_product_checks.view'])
+    ->get('/ipc/product-checks/import/template', function () {
+        return Excel::download(
+            new IpcProductImportTemplateExport,
+            'template-import-ipc-kadar-air-berat.xlsx'
+        );
+    })->name('ipc.product-checks.import-template');
 
-//IPC Tiup Botol
-Route::middleware(['auth', 'permission:ipc_product_checks.view'])
+// IPC Tiup Botol
+Route::middleware(['auth', 'permission:ipc_tiup_botol.view|ipc_product_checks.view'])
     ->name('ipc.tiup-botol.')
     ->prefix('ipc/tiup-botol')
     ->group(function () {
@@ -96,15 +97,16 @@ Route::middleware(['auth', 'permission:ipc_product_checks.view'])
         })->name('index');
     });
 
-Route::get('/ipc/tiup-botol/import/template', function () {
-    return Excel::download(
-        new IpcProductImportTemplateExport(),
-        'template-import-ipc-kadar-air-berat.xlsx'
-    );
-})->name('ipc.tiup-botol.import-template');
+Route::middleware(['auth', 'permission:ipc_tiup_botol.view|ipc_product_checks.view'])
+    ->get('/ipc/tiup-botol/import/template', function () {
+        return Excel::download(
+            new IpcProductImportTemplateExport,
+            'template-import-ipc-kadar-air-berat.xlsx'
+        );
+    })->name('ipc.tiup-botol.import-template');
 
 // IPC PRODUK
-Route::middleware(['auth', 'permission:ipc_product_checks.view'])
+Route::middleware(['auth', 'permission:ipc_products.view|ipc_product_checks.view'])
     ->name('ipc.product.')
     ->prefix('ipc/product')
     ->group(function () {
@@ -124,23 +126,22 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
         })->name('index');
     });
 
-
 Route::get('/incoming-material/file/{file}', function ($file) {
 
     $fileData = IncomingMaterialFile::where('file_name', $file)->first();
 
-    if (!$fileData) {
+    if (! $fileData) {
         abort(404, 'File tidak ditemukan.');
     }
 
-    $path = storage_path('app/public/' . $fileData->file_path);
+    $path = storage_path('app/public/'.$fileData->file_path);
 
-    if (!file_exists($path)) {
+    if (! file_exists($path)) {
         abort(404, 'File tidak ditemukan di storage.');
     }
 
     return response()->file($path, [
-        'Content-Disposition' => 'inline; filename="' . $fileData->file_name . '"'
+        'Content-Disposition' => 'inline; filename="'.$fileData->file_name.'"',
     ]);
 })->name('incoming-material.file');
 
@@ -151,7 +152,7 @@ Route::middleware(['auth', 'permission:users.view'])->group(function () {
     })->name('users.index');
 });
 
-// Role Management Routes  
+// Role Management Routes
 Route::middleware(['auth', 'permission:roles.view'])->group(function () {
     Route::get('/roles', function () {
         return view('roles.index');

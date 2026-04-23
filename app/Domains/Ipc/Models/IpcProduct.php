@@ -3,6 +3,7 @@
 namespace App\Domains\Ipc\Models;
 
 use App\Auditable;
+use App\Domains\Ipc\Support\IpcSubLineCatalog;
 use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class IpcProduct extends Model
 {
     use Auditable;
+
     protected $table = 'ipc_check_product';
 
     protected $fillable = [
@@ -32,16 +34,16 @@ class IpcProduct extends Model
     ];
 
     protected $casts = [
-        'test_date'         => 'date',
-        'shift'             => 'integer',
-        'avg_weight_g'      => 'decimal:3',
-        'avg_ph'            => 'decimal:2',
-        'avg_brix'          => 'decimal:2',
-        'avg_tds_ppm'       => 'decimal:2',
-        'avg_chlorine'      => 'decimal:3',
-        'avg_ozone'         => 'decimal:3',
+        'test_date' => 'date',
+        'shift' => 'integer',
+        'avg_weight_g' => 'decimal:3',
+        'avg_ph' => 'decimal:2',
+        'avg_brix' => 'decimal:2',
+        'avg_tds_ppm' => 'decimal:2',
+        'avg_chlorine' => 'decimal:3',
+        'avg_ozone' => 'decimal:3',
         'avg_turbidity_ntu' => 'decimal:3',
-        'avg_salinity'      => 'decimal:3',
+        'avg_salinity' => 'decimal:3',
     ];
 
     /*
@@ -49,8 +51,6 @@ class IpcProduct extends Model
     | AUTO AUDIT (created_by & updated_by)
     |--------------------------------------------------------------------------
     */
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -75,21 +75,14 @@ class IpcProduct extends Model
     */
 
     public const LINE_GROUPS = [
-        'LINE_TEH'               => 'Line Teh',
-        'LINE_POWDER'            => 'Line Powder',
+        'LINE_TEH' => 'Line Teh',
+        'LINE_POWDER' => 'Line Powder',
         'LINE_MINUMAN_BERPERISA' => 'Line Minuman Berperisa',
-        'LINE_AMDK'              => 'Line AMDK',
-        'LINE_CONDIMENTS'        => 'Line Condiments',
+        'LINE_AMDK' => 'Line AMDK',
+        'LINE_CONDIMENTS' => 'Line Condiments',
     ];
 
     public const SUB_LINES = [
-        'TEH_ORI'        => 'Teh Ori',
-        'TEH_SACHET'     => 'Teh Sachet',
-        'TEH_SEDUH_50G'  => 'Teh Seduh 50 g',
-        'TEH_SEDUH_100G' => 'Teh Seduh 100 g',
-        'TEH_BUBUK_1KG'  => 'Teh Bubuk 1 kg',
-        'TEH_AMPLOP'     => 'Teh Amplop',
-        'TEH_HIJAU'      => 'Teh Hijau',
-        'TEH_JASMINE'    => 'Teh Jasmine',
+        ...IpcSubLineCatalog::TEA_SUB_LINES,
     ];
 }

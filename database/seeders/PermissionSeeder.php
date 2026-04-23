@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Domains\Permission\Models\Permission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder
@@ -34,7 +33,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'system.settings', 'display_name' => 'System Settings', 'description' => 'Can access system settings', 'group' => 'system'],
             ['name' => 'system.logs', 'display_name' => 'View Logs', 'description' => 'Can view system logs', 'group' => 'system'],
 
-            // Department permissions 
+            // Department permissions
             ['name' => 'departments.view', 'display_name' => 'View Departments', 'description' => 'Can view department list and details', 'group' => 'departments'],
             ['name' => 'departments.create', 'display_name' => 'Create Departments', 'description' => 'Can create new departments', 'group' => 'departments'],
             ['name' => 'departments.edit', 'display_name' => 'Edit Departments', 'description' => 'Can edit existing departments', 'group' => 'departments'],
@@ -125,6 +124,23 @@ class PermissionSeeder extends Seeder
             ['name' => 'ipc_product_checks.edit', 'display_name' => 'Edit IPC Product Checks', 'description' => 'Can edit existing IPC product check records', 'group' => 'ipc_product_checks'],
             ['name' => 'ipc_product_checks.delete', 'display_name' => 'Delete IPC Product Checks', 'description' => 'Can delete IPC product check records', 'group' => 'ipc_product_checks'],
 
+            // IPC Moisture permissions
+            ['name' => 'ipc_moisture.view', 'display_name' => 'View IPC Moisture', 'description' => 'Can view IPC moisture checks list and details', 'group' => 'ipc_moisture'],
+            ['name' => 'ipc_moisture.create', 'display_name' => 'Create IPC Moisture', 'description' => 'Can create new IPC moisture check records', 'group' => 'ipc_moisture'],
+            ['name' => 'ipc_moisture.edit', 'display_name' => 'Edit IPC Moisture', 'description' => 'Can edit IPC moisture check records', 'group' => 'ipc_moisture'],
+            ['name' => 'ipc_moisture.delete', 'display_name' => 'Delete IPC Moisture', 'description' => 'Can delete IPC moisture check records', 'group' => 'ipc_moisture'],
+
+            // IPC Product permissions
+            ['name' => 'ipc_products.view', 'display_name' => 'View IPC Products', 'description' => 'Can view IPC product list and details', 'group' => 'ipc_products'],
+            ['name' => 'ipc_products.create', 'display_name' => 'Create IPC Products', 'description' => 'Can create new IPC product records', 'group' => 'ipc_products'],
+            ['name' => 'ipc_products.edit', 'display_name' => 'Edit IPC Products', 'description' => 'Can edit IPC product records', 'group' => 'ipc_products'],
+            ['name' => 'ipc_products.delete', 'display_name' => 'Delete IPC Products', 'description' => 'Can delete IPC product records', 'group' => 'ipc_products'],
+
+            // IPC Tiup Botol permissions
+            ['name' => 'ipc_tiup_botol.view', 'display_name' => 'View IPC Tiup Botol', 'description' => 'Can view IPC tiup botol list and details', 'group' => 'ipc_tiup_botol'],
+            ['name' => 'ipc_tiup_botol.create', 'display_name' => 'Create IPC Tiup Botol', 'description' => 'Can create new IPC tiup botol records', 'group' => 'ipc_tiup_botol'],
+            ['name' => 'ipc_tiup_botol.edit', 'display_name' => 'Edit IPC Tiup Botol', 'description' => 'Can edit IPC tiup botol records', 'group' => 'ipc_tiup_botol'],
+            ['name' => 'ipc_tiup_botol.delete', 'display_name' => 'Delete IPC Tiup Botol', 'description' => 'Can delete IPC tiup botol records', 'group' => 'ipc_tiup_botol'],
 
             // Document Types permissions
             ['name' => 'document_types.view', 'display_name' => 'View Document Types', 'description' => 'Can view document type list and details', 'group' => 'document_types'],
@@ -133,89 +149,88 @@ class PermissionSeeder extends Seeder
             ['name' => 'document_types.delete', 'display_name' => 'Delete Document Types', 'description' => 'Can delete document types', 'group' => 'document_types'],
 
             // Document Prefix Settings permissions
-            ['name' => 'document_prefix_settings.view', 'display_name' => 'View Document Prefix Settings', 'description' => 'Can view the list and details of document prefix configurations', 'group' => 'document_prefix_settings',],
-            ['name' => 'document_prefix_settings.create', 'display_name' => 'Create Document Prefix Settings', 'description' => 'Can create new document prefix setting entries', 'group' => 'document_prefix_settings',],
-            ['name' => 'document_prefix_settings.edit', 'display_name' => 'Edit Document Prefix Settings', 'description' => 'Can edit or update existing document prefix settings', 'group' => 'document_prefix_settings',],
-            ['name' => 'document_prefix_settings.delete', 'display_name' => 'Delete Document Prefix Settings', 'description' => 'Can delete document prefix settings permanently', 'group' => 'document_prefix_settings',],
-            ['name' => 'document_prefix_settings.toggle', 'display_name' => 'Activate/Deactivate Prefix Setting', 'description' => 'Can enable or disable prefix settings', 'group' => 'document_prefix_settings',],
-            ['name' => 'document_prefix_settings.generate_preview', 'display_name' => 'Generate Number Preview', 'description' => 'Can generate or preview document numbering pattern outputs', 'group' => 'document_prefix_settings',],
+            ['name' => 'document_prefix_settings.view', 'display_name' => 'View Document Prefix Settings', 'description' => 'Can view the list and details of document prefix configurations', 'group' => 'document_prefix_settings'],
+            ['name' => 'document_prefix_settings.create', 'display_name' => 'Create Document Prefix Settings', 'description' => 'Can create new document prefix setting entries', 'group' => 'document_prefix_settings'],
+            ['name' => 'document_prefix_settings.edit', 'display_name' => 'Edit Document Prefix Settings', 'description' => 'Can edit or update existing document prefix settings', 'group' => 'document_prefix_settings'],
+            ['name' => 'document_prefix_settings.delete', 'display_name' => 'Delete Document Prefix Settings', 'description' => 'Can delete document prefix settings permanently', 'group' => 'document_prefix_settings'],
+            ['name' => 'document_prefix_settings.toggle', 'display_name' => 'Activate/Deactivate Prefix Setting', 'description' => 'Can enable or disable prefix settings', 'group' => 'document_prefix_settings'],
+            ['name' => 'document_prefix_settings.generate_preview', 'display_name' => 'Generate Number Preview', 'description' => 'Can generate or preview document numbering pattern outputs', 'group' => 'document_prefix_settings'],
 
             // Incoming Material permissions
             [
                 'name' => 'incoming_material.view',
                 'display_name' => 'View Incoming Material',
                 'description' => 'Can view incoming material list and details',
-                'group' => 'incoming_material'
+                'group' => 'incoming_material',
             ],
             [
                 'name' => 'incoming_material.create',
                 'display_name' => 'Create Incoming Material',
                 'description' => 'Can create new incoming material data',
-                'group' => 'incoming_material'
+                'group' => 'incoming_material',
             ],
             [
                 'name' => 'incoming_material.edit',
                 'display_name' => 'Edit Incoming Material',
                 'description' => 'Can edit existing incoming material data',
-                'group' => 'incoming_material'
+                'group' => 'incoming_material',
             ],
             [
                 'name' => 'incoming_material.delete',
                 'display_name' => 'Delete Incoming Material',
                 'description' => 'Can delete incoming material data',
-                'group' => 'incoming_material'
+                'group' => 'incoming_material',
             ],
             [
                 'name' => 'incoming_material.approve',
                 'display_name' => 'Approve Incoming Material',
                 'description' => 'Can approve incoming material data',
-                'group' => 'incoming_material'
+                'group' => 'incoming_material',
             ],
             [
                 'name' => 'incoming_material.print',
                 'display_name' => 'Print Incoming Material',
                 'description' => 'Can print incoming material report',
-                'group' => 'incoming_material'
+                'group' => 'incoming_material',
             ],
             // Mikrobiologi permissions
             [
                 'name' => 'microbiology.view',
                 'display_name' => 'View Mikrobiologi',
                 'description' => 'Can view microbiology test list and details',
-                'group' => 'microbiology'
+                'group' => 'microbiology',
             ],
             [
                 'name' => 'microbiology.create',
                 'display_name' => 'Create Mikrobiologi',
                 'description' => 'Can create new microbiology test data',
-                'group' => 'microbiology'
+                'group' => 'microbiology',
             ],
             [
                 'name' => 'microbiology.edit',
                 'display_name' => 'Edit Mikrobiologi',
                 'description' => 'Can edit existing microbiology test data',
-                'group' => 'microbiology'
+                'group' => 'microbiology',
             ],
             [
                 'name' => 'microbiology.delete',
                 'display_name' => 'Delete Mikrobiologi',
                 'description' => 'Can delete microbiology test data',
-                'group' => 'microbiology'
+                'group' => 'microbiology',
             ],
             [
                 'name' => 'microbiology.approve',
                 'display_name' => 'Approve Mikrobiologi',
                 'description' => 'Can approve microbiology test results',
-                'group' => 'microbiology'
+                'group' => 'microbiology',
             ],
             [
                 'name' => 'microbiology.print',
                 'display_name' => 'Print Mikrobiologi Report',
                 'description' => 'Can print microbiology test reports',
-                'group' => 'microbiology'
+                'group' => 'microbiology',
             ],
         ];
-
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(

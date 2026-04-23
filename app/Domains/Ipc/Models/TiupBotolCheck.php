@@ -2,14 +2,16 @@
 
 namespace App\Domains\Ipc\Models;
 
+use App\Auditable;
 use App\Domains\User\Models\User;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class TiupBotolCheck extends Model
 {
-    use HasFactory;
+    use Auditable, HasFactory;
 
     protected $table = 'tiup_botol_checks';
 
@@ -30,6 +32,7 @@ class TiupBotolCheck extends Model
 
         'catatan',
         'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -41,11 +44,11 @@ class TiupBotolCheck extends Model
      */
     public const DROP_TEST = [
         'TDK_BCR' => 'Tidak Bocor / Tidak Pecah',
-        'BCR'     => 'Bocor / Pecah',
+        'BCR' => 'Bocor / Pecah',
     ];
 
     public const OK_NOK = [
-        'OK'  => 'OK',
+        'OK' => 'OK',
         'NOK' => 'NOK',
     ];
 
@@ -62,12 +65,12 @@ class TiupBotolCheck extends Model
      */
     protected function imageUrl(?string $filename): ?string
     {
-        if (!$filename) {
+        if (! $filename) {
             return null;
         }
 
         // pastikan sudah bikin disk "public_path" di config/filesystems.php
-        return Storage::disk('public_path')->url(self::imagePath() . '/' . $filename);
+        return Storage::disk('public_path')->url(self::imagePath().'/'.$filename);
     }
 
     public function getDropTestImageUrlAttribute()
@@ -93,8 +96,26 @@ class TiupBotolCheck extends Model
     /**
      * Relasi ke User yang membuat data.
      */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (! $model->created_by) {
+                $model->created_by = auth()->id();
+            }
+        });
+
+        static::updating(function (self $model) {
+            $model->updated_by = auth()->id();
+        });
     }
 }

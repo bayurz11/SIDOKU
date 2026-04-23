@@ -60,9 +60,19 @@
                          'documents.revision',
                      ]);
 
-                 $canSeeIpcMenu = auth()
+                 $canSeeIpcMoistureMenu = auth()
                      ->user()
-                     ->hasAnyPermission(['ipc_product_checks.view']);
+                     ->hasAnyPermission(['ipc_moisture.view', 'ipc_product_checks.view']);
+
+                 $canSeeIpcProductMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['ipc_products.view', 'ipc_product_checks.view']);
+
+                 $canSeeIpcTiupBotolMenu = auth()
+                     ->user()
+                     ->hasAnyPermission(['ipc_tiup_botol.view', 'ipc_product_checks.view']);
+
+                 $canSeeIpcMenu = $canSeeIpcMoistureMenu || $canSeeIpcProductMenu || $canSeeIpcTiupBotolMenu;
 
                  $canSeeIncomingMenu = auth()
                      ->user()
@@ -235,26 +245,26 @@
                          <div id="menu-ipc" x-show="activeMenu === 'ipc'" x-collapse
                              class="mt-1 pl-10 space-y-1 overflow-hidden">
 
-                             @permission('ipc_product_checks.view')
+                             @if ($canSeeIpcMoistureMenu)
                                  <a href="{{ route('ipc.product-checks.index') }}"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.product-checks.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Kadar Air Produk
                                  </a>
-                             @endpermission
+                             @endif
 
-                             @permission('ipc_product_checks.view')
+                             @if ($canSeeIpcProductMenu)
                                  <a href="{{ route('ipc.product.index') }}"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.product.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Produk
                                  </a>
-                             @endpermission
+                             @endif
 
-                             @permission('ipc_product_checks.view')
+                             @if ($canSeeIpcTiupBotolMenu)
                                  <a href="{{ route('ipc.tiup-botol.index') }}"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('ipc.tiup-botol.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Tiup Botol
                                  </a>
-                             @endpermission
+                             @endif
 
                          </div>
                      </div>
