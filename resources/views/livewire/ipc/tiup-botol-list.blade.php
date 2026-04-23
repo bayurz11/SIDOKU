@@ -1,26 +1,16 @@
 @php
     use App\Domains\Ipc\Models\TiupBotolCheck;
+    use Illuminate\Support\Str;
 
     $dropTestLabels = TiupBotolCheck::DROP_TEST;
-
-    // ✅ Summary OK vs NG
-    $dropSummary = collect($dropSummary ?? []);
-
-    $chartLabels = $dropSummary->map(fn($row) => $dropTestLabels[$row->drop_test] ?? $row->drop_test)->values();
-
-    $chartValues = $dropSummary->map(fn($row) => (int) $row->total_samples)->values();
-
-    $totalSamples = $chartValues->sum();
+    $summaryCards = collect($summaryCards ?? []);
     $canViewTiupBotol = auth()->user()->hasAnyPermission(['ipc_tiup_botol.view', 'ipc_product_checks.view']);
     $canCreateTiupBotol = auth()->user()->hasAnyPermission(['ipc_tiup_botol.create', 'ipc_product_checks.create']);
     $canDeleteTiupBotol = auth()->user()->hasAnyPermission(['ipc_tiup_botol.delete', 'ipc_product_checks.delete']);
 @endphp
 
-
 <div class="space-y-6">
-    {{-- CARD CHART / OVERVIEW --}}
     <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
-        {{-- HEADER --}}
         <div
             class="px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-blue-50 via-blue-50 to-indigo-50
                border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -39,45 +29,49 @@
                         Tiup Botol Overview
                     </h2>
                     <p class="text-xs sm:text-sm text-gray-600 mt-1">
-                        Ringkasan jumlah sampel berdasarkan hasil Drop Test.
+                        Ringkasan metrik utama hasil inspeksi sesuai filter aktif.
                     </p>
                 </div>
             </div>
         </div>
 
-        {{-- CHART --}}
         <div class="px-4 py-4 sm:px-6 sm:py-5">
-            @if ($dropSummary->isEmpty())
+            @if ($summaryCards->isEmpty())
                 <p class="text-sm text-gray-500 italic">
                     Belum ada data tiup botol untuk ditampilkan. Atur filter tanggal terlebih dahulu.
                 </p>
             @else
-                <div id="tiupBotolChartData" class="hidden" data-labels='@json($chartLabels)'
-                    data-values='@json($chartValues)'></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    @foreach ($summaryCards as $card)
+                        @php
+                            $toneClasses = match ($card['tone']) {
+                                'emerald' => 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                                'rose' => 'border-rose-200 bg-rose-50 text-rose-700',
+                                'amber' => 'border-amber-200 bg-amber-50 text-amber-700',
+                                default => 'border-slate-200 bg-slate-50 text-slate-700',
+                            };
+                        @endphp
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 py-4 sm:px-6 sm:py-5">
-
-                    {{-- ✅ BAR CHART --}}
-                    <div class="h-64 sm:h-72" wire:ignore>
-                        <canvas id="tiupBotolBarChart"></canvas>
-                    </div>
-
-                    {{-- ✅ DONUT CHART --}}
-                    <div class="h-64 sm:h-72" wire:ignore>
-                        <canvas id="tiupBotolDonutChart"></canvas>
-                    </div>
-
+                        <div class="rounded-2xl border px-5 py-4 {{ $toneClasses }}">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.18em]">
+                                {{ $card['label'] }}
+                            </div>
+                            <div class="mt-3 text-3xl font-bold">
+                                {{ number_format((int) $card['value']) }}
+                            </div>
+                            <div class="mt-2 text-xs opacity-80">
+                                {{ $card['caption'] }}
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             @endif
         </div>
     </div>
 
-    {{-- CARD LIST TIUP BOTOL --}}
     <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
-        {{-- HEADER --}}
         <div class="bg-gradient-to-r from-blue-50 via-green-50 to-lime-50 px-6 py-6 border-b border-gray-200">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                {{-- LEFT SECTION --}}
                 <div class="flex items-center space-x-4">
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -95,7 +89,6 @@
                     </div>
                 </div>
 
-                {{-- RIGHT SECTION (BUTTON) --}}
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 w-full md:w-auto">
                     @if ($canCreateTiupBotol)
                         <button wire:click="$dispatch('openTiupBotolForm')"
@@ -114,10 +107,8 @@
                 </div>
             </div>
 
-            {{-- FILTERS --}}
             <div class="mt-6 space-y-4">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    {{-- Search --}}
                     <div class="flex-1">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -132,7 +123,6 @@
                         </div>
                     </div>
 
-                    {{-- Per page --}}
                     <div>
                         <select wire:model.live="perPage"
                             class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium transition-all duration-200">
@@ -144,7 +134,6 @@
                     </div>
                 </div>
 
-                {{-- Dropdown filter tanggal & drop test --}}
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Dari</label>
@@ -169,13 +158,11 @@
                         </select>
                     </div>
 
-                    {{-- Kosongkan 1 kolom biar rapi di desktop --}}
                     <div class="hidden md:block"></div>
                 </div>
             </div>
         </div>
 
-        {{-- TABLE --}}
         <div class="overflow-x-auto">
             <table class="min-w-full">
                 <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -215,21 +202,18 @@
                     @forelse($data as $row)
                         <tr
                             class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-green-50 transition-all duration-300">
-                            {{-- Tanggal --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 <div class="font-semibold">
                                     {{ optional($row->tanggal)->format('d M Y') }}
                                 </div>
                             </td>
 
-                            {{-- Nama Botol --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 <div class="font-semibold">
-                                    {{ \Illuminate\Support\Str::limit($row->nama_botol, 40) }}
+                                    {{ Str::limit($row->nama_botol, 40) }}
                                 </div>
                             </td>
 
-                            {{-- Drop Test --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 @php
                                     $label = $dropTestLabels[$row->drop_test] ?? $row->drop_test;
@@ -242,7 +226,6 @@
                                 </span>
                             </td>
 
-                            {{-- Penyebaran Rata --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 @if ($row->penyebaran_rata)
                                     <span
@@ -261,7 +244,6 @@
                                 @endif
                             </td>
 
-                            {{-- Bottom Tidak Menonjol --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 @if ($row->bottom_tidak_menonjol)
                                     <span
@@ -280,7 +262,6 @@
                                 @endif
                             </td>
 
-                            {{-- Tidak Ada Material --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 @if ($row->tidak_ada_material)
                                     <span
@@ -299,18 +280,16 @@
                                 @endif
                             </td>
 
-                            {{-- Catatan --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-800">
                                 @if ($row->catatan)
                                     <div class="text-xs text-gray-600">
-                                        {{ \Illuminate\Support\Str::limit($row->catatan, 60) }}
+                                        {{ Str::limit($row->catatan, 60) }}
                                     </div>
                                 @else
                                     <span class="text-xs text-gray-400 italic">-</span>
                                 @endif
                             </td>
 
-                            {{-- Aksi --}}
                             <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center gap-2">
                                     @if ($canViewTiupBotol)
@@ -334,7 +313,7 @@
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                                                                                                                                                                m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
+                                                    m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Delete
                                         </button>
@@ -396,7 +375,6 @@
             </table>
         </div>
 
-        {{-- FOOTER --}}
         <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-200 rounded-b-2xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div class="text-sm text-gray-600">
@@ -415,120 +393,3 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-        (function() {
-            if (window.__tiupBotolChartInitialized) return;
-            window.__tiupBotolChartInitialized = true;
-
-            window.tiupBotolBarChart = null;
-            window.tiupBotolDonutChart = null;
-
-            function renderTiupBotolCharts() {
-                const barCanvas = document.getElementById('tiupBotolBarChart');
-                const donutCanvas = document.getElementById('tiupBotolDonutChart');
-                const payload = document.getElementById('tiupBotolChartData');
-
-                const labels = JSON.parse(payload?.dataset.labels || '[]');
-                const values = JSON.parse(payload?.dataset.values || '[]');
-                const total = values.reduce((a, b) => a + b, 0);
-
-                if (!labels.length || !values.length) {
-                    if (window.tiupBotolBarChart) window.tiupBotolBarChart.destroy();
-                    if (window.tiupBotolDonutChart) window.tiupBotolDonutChart.destroy();
-                    return;
-                }
-
-                // ✅ Destroy old chart
-                if (window.tiupBotolBarChart) window.tiupBotolBarChart.destroy();
-                if (window.tiupBotolDonutChart) window.tiupBotolDonutChart.destroy();
-
-                // ✅ BAR CHART (OK vs NG)
-                window.tiupBotolBarChart = new Chart(barCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Jumlah Sampel',
-                            data: values,
-                            borderWidth: 1,
-                            borderRadius: 8,
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => `${ctx.parsed.x} sampel`
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Jumlah Sampel'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // ✅ DONUT CHART (PERSENTASE)
-                window.tiupBotolDonutChart = new Chart(donutCanvas, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: values,
-                            borderWidth: 2,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => {
-                                        const value = ctx.raw;
-                                        const percent = total ? ((value / total) * 100).toFixed(1) : 0;
-                                        return `${value} sampel (${percent}%)`;
-                                    }
-                                }
-                            },
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-
-            function boot() {
-                renderTiupBotolCharts();
-
-                if (window.Livewire) {
-                    Livewire.hook('message.processed', () => {
-                        renderTiupBotolCharts();
-                    });
-                }
-            }
-
-            document.readyState === 'loading' ?
-                document.addEventListener('DOMContentLoaded', boot) :
-                boot();
-
-        })();
-    </script>
-@endpush

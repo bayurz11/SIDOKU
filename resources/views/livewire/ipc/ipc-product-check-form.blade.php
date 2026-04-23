@@ -1,5 +1,8 @@
 @php
     use Illuminate\Support\Str;
+
+    $isAutoMoistureLine = in_array($line_group, ['LINE_TEH', 'LINE_POWDER'], true);
+    $hasCalculatedMoisture = ! is_null($avg_moisture_percent);
 @endphp
 
 <div>
@@ -148,6 +151,12 @@
                                         </span>.
                                     </p>
                                 </div>
+                                <div class="text-right">
+                                    <span
+                                        class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold {{ $isAutoMoistureLine ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $isAutoMoistureLine ? 'Auto Kalkulasi Aktif' : 'Pilih Line Teh / Powder' }}
+                                    </span>
+                                </div>
                             </div>
 
                             {{-- Baris 1: Berat cawan, produk, total --}}
@@ -157,7 +166,7 @@
                                     <label for="cup_weight" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Berat Cawan (g)
                                     </label>
-                                    <input wire:model.debounce.200ms="cup_weight" type="number" step="0.001"
+                                    <input wire:model.live.debounce.200ms="cup_weight" type="number" step="0.001"
                                         min="0" id="cup_weight"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                                focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -172,7 +181,7 @@
                                     <label for="product_weight" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Berat Produk (g)
                                     </label>
-                                    <input wire:model.debounce.200ms="product_weight" type="number" step="0.001"
+                                    <input wire:model.live.debounce.200ms="product_weight" type="number" step="0.001"
                                         min="0" id="product_weight"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                                focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -205,7 +214,7 @@
                                     <label for="weighing_1" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Penimbangan 1 (g)
                                     </label>
-                                    <input wire:model.debounce.200ms="weighing_1" type="number" step="0.001"
+                                    <input wire:model.live.debounce.200ms="weighing_1" type="number" step="0.001"
                                         min="0" id="weighing_1"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Setelah oven 1">
@@ -219,7 +228,7 @@
                                     <label for="weighing_2" class="block text-xs font-medium text-gray-700 mb-1.5">
                                         Penimbangan 2 (g)
                                     </label>
-                                    <input wire:model.debounce.200ms="weighing_2" type="number" step="0.001"
+                                    <input wire:model.live.debounce.200ms="weighing_2" type="number" step="0.001"
                                         min="0" id="weighing_2"
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Setelah oven 2">
@@ -255,6 +264,44 @@
                                     @endif
                                 </div>
 
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="rounded-xl border border-blue-200 bg-white px-4 py-3">
+                                    <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                        Berat Produk Ringkas
+                                    </div>
+                                    <div class="mt-2 text-2xl font-bold text-gray-900">
+                                        {{ is_null($avg_weight_g) ? '-' : number_format($avg_weight_g, 3) . ' g' }}
+                                    </div>
+                                    <div class="mt-1 text-xs text-gray-500">
+                                        Mengikuti input Berat Produk.
+                                    </div>
+                                </div>
+
+                                <div class="rounded-xl border border-blue-200 bg-white px-4 py-3">
+                                    <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                        Total Cawan + Produk
+                                    </div>
+                                    <div class="mt-2 text-2xl font-bold text-gray-900">
+                                        {{ is_null($total_cup_plus_product) ? '-' : number_format($total_cup_plus_product, 3) . ' g' }}
+                                    </div>
+                                    <div class="mt-1 text-xs text-gray-500">
+                                        Otomatis dari Berat Cawan + Berat Produk.
+                                    </div>
+                                </div>
+
+                                <div class="rounded-xl border px-4 py-3 {{ $hasCalculatedMoisture ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-white' }}">
+                                    <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                        Kadar Air Saat Ini
+                                    </div>
+                                    <div class="mt-2 text-2xl font-bold {{ $hasCalculatedMoisture ? 'text-emerald-700' : 'text-gray-400' }}">
+                                        {{ $hasCalculatedMoisture ? number_format($avg_moisture_percent, 2) . '%' : '-' }}
+                                    </div>
+                                    <div class="mt-1 text-xs text-gray-500">
+                                        Tampil langsung saat angka input berubah.
+                                    </div>
+                                </div>
                             </div>
 
                         </div>

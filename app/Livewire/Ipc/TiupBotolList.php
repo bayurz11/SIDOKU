@@ -10,16 +10,20 @@ use Livewire\WithPagination;
 
 class TiupBotolList extends Component
 {
-    use WithPagination, WithAlerts;
+    use WithAlerts, WithPagination;
 
     public string $search = '';
 
-    public ?string $filterDateFrom  = null;
-    public ?string $filterDateTo    = null;
-    public ?string $filterDropTest  = null; // TDK_BCR / BCR
+    public ?string $filterDateFrom = null;
 
-    public int $perPage        = 10;
-    public string $sortField   = 'tanggal';
+    public ?string $filterDateTo = null;
+
+    public ?string $filterDropTest = null; // TDK_BCR / BCR
+
+    public int $perPage = 10;
+
+    public string $sortField = 'tanggal';
+
     public string $sortDirection = 'desc';
 
     protected array $allowedSorts = [
@@ -31,13 +35,13 @@ class TiupBotolList extends Component
     protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
-        'search'         => ['except' => ''],
+        'search' => ['except' => ''],
         'filterDateFrom' => ['except' => null],
-        'filterDateTo'   => ['except' => null],
+        'filterDateTo' => ['except' => null],
         'filterDropTest' => ['except' => null],
-        'perPage'        => ['except' => 10],
-        'sortField'      => ['except' => 'tanggal'],
-        'sortDirection'  => ['except' => 'desc'],
+        'perPage' => ['except' => 10],
+        'sortField' => ['except' => 'tanggal'],
+        'sortDirection' => ['except' => 'desc'],
     ];
 
     protected $listeners = [
@@ -84,7 +88,7 @@ class TiupBotolList extends Component
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField     = $field;
+            $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
 
@@ -124,15 +128,15 @@ class TiupBotolList extends Component
     {
         return TiupBotolCheck::query()
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($sub) use ($term) {
                     $sub->where('nama_botol', 'like', $term)
                         ->orWhere('catatan', 'like', $term);
                 });
             })
-            ->when($this->filterDropTest, fn($q) => $q->where('drop_test', $this->filterDropTest))
-            ->when($this->filterDateFrom, fn($q) => $q->whereDate('tanggal', '>=', $this->filterDateFrom))
-            ->when($this->filterDateTo, fn($q) => $q->whereDate('tanggal', '<=', $this->filterDateTo));
+            ->when($this->filterDropTest, fn ($q) => $q->where('drop_test', $this->filterDropTest))
+            ->when($this->filterDateFrom, fn ($q) => $q->whereDate('tanggal', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn ($q) => $q->whereDate('tanggal', '<=', $this->filterDateTo));
     }
 
     protected function sanitizeState(): void
@@ -174,14 +178,50 @@ class TiupBotolList extends Component
             ->paginate($this->perPage)
             ->onEachSide(0);
 
-        $dropSummary = (clone $baseQuery)
-            ->selectRaw('drop_test, COUNT(*) as total_samples')
-            ->groupBy('drop_test')
-            ->get();
+        $totalSamples = (clone $baseQuery)->count();
+        $okDropTestCount = (clone $baseQuery)->where('drop_test', 'TDK_BCR')->count();
+        $ngDropTestCount = (clone $baseQuery)->where('drop_test', 'BCR')->count();
+        $visualOkCount = (clone $baseQuery)
+            ->where('penyebaran_rata', 'OK')
+            ->where('bottom_tidak_menonjol', 'OK')
+            ->where('tidak_ada_material', 'OK')
+            ->count();
+        $visualIssueCount = (clone $baseQuery)
+            ->where(function ($query) {
+                $query->where('penyebaran_rata', 'NOK')
+                    ->orWhere('bottom_tidak_menonjol', 'NOK')
+                    ->orWhere('tidak_ada_material', 'NOK');
+            })
+            ->count();
 
         return view('livewire.ipc.tiup-botol-list', [
-            'data'        => $data,
-            'dropSummary' => $dropSummary,
+            'data' => $data,
+            'summaryCards' => [
+                [
+                    'label' => 'Total Sampel',
+                    'value' => $totalSamples,
+                    'caption' => 'Data sesuai filter aktif',
+                    'tone' => 'slate',
+                ],
+                [
+                    'label' => 'Drop Test OK',
+                    'value' => $okDropTestCount,
+                    'caption' => $totalSamples > 0 ? round(($okDropTestCount / $totalSamples) * 100, 1).'% dari total' : 'Belum ada data',
+                    'tone' => 'emerald',
+                ],
+                [
+                    'label' => 'Drop Test NG',
+                    'value' => $ngDropTestCount,
+                    'caption' => $totalSamples > 0 ? round(($ngDropTestCount / $totalSamples) * 100, 1).'% dari total' : 'Belum ada data',
+                    'tone' => 'rose',
+                ],
+                [
+                    'label' => 'Visual NOK',
+                    'value' => $visualIssueCount,
+                    'caption' => $visualOkCount.' sampel lolos semua cek visual',
+                    'tone' => 'amber',
+                ],
+            ],
         ]);
     }
 }
