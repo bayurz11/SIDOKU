@@ -1,5 +1,7 @@
 @php
     use Illuminate\Support\Str;
+
+    $canSubmitDocument = auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve']);
 @endphp
 
 <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
@@ -242,7 +244,7 @@
                         <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center gap-2">
 
-                                @if ($doc->status === 'draft')
+                                @if ($doc->status === 'draft' && $canSubmitDocument)
                                     <button wire:click="requestApproval({{ $doc->id }})"
                                         class="inline-flex items-center px-3 py-2 text-xs font-semibold text-yellow-600 bg-yellow-50 rounded-lg hover:bg-yellow-100 hover:text-yellow-700 transition-all duration-200">
                                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
@@ -266,8 +268,6 @@
                                                 d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                         </svg>
                                         Detail
-                                    </button>
-
                                     </button>
                                 @endpermission
 

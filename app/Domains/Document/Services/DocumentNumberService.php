@@ -2,10 +2,10 @@
 
 namespace App\Domains\Document\Services;
 
+use App\Domains\Department\Models\Department;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentPrefixSetting;
 use App\Domains\Document\Models\DocumentType;
-use App\Domains\Department\Models\Department;
 use Illuminate\Support\Facades\DB;
 
 class DocumentNumberService
@@ -13,9 +13,6 @@ class DocumentNumberService
     /**
      * Generate nomor dokumen baru.
      *
-     * @param  int|null       $documentTypeId
-     * @param  int|null       $departmentId
-     * @param  Document|null  $parentDocument
      * @return array ['code' => 'PRP/SOP/QC/001', 'prefix_setting_id' => 1, 'seq' => 1]
      */
     public static function generate(?int $documentTypeId, ?int $departmentId = null, ?Document $parentDocument = null): array
@@ -31,12 +28,25 @@ class DocumentNumberService
                 ? Department::find($departmentId)
                 : null;
 
-            // Cari prefix setting yang cocok (sederhana: by document_type_id + department_id)
+            // Prioritaskan prefix spesifik departemen, lalu fallback ke prefix global.
             $prefix = DocumentPrefixSetting::query()
                 ->where('is_active', true)
-                ->when($documentTypeId, fn($q) => $q->where('document_type_id', $documentTypeId))
-                ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+                ->when($documentTypeId, function ($query) use ($documentTypeId) {
+                    $query->where(function ($q) use ($documentTypeId) {
+                        $q->where('document_type_id', $documentTypeId)
+                            ->orWhereNull('document_type_id');
+                    });
+                })
+                ->when($departmentId, function ($query) use ($departmentId) {
+                    $query->where(function ($q) use ($departmentId) {
+                        $q->where('department_id', $departmentId)
+                            ->orWhereNull('department_id');
+                    });
+                }, fn ($query) => $query->whereNull('department_id'))
+                ->when($documentTypeId, fn ($query) => $query->orderByRaw('CASE WHEN document_type_id = ? THEN 0 ELSE 1 END', [$documentTypeId]))
+                ->when($departmentId, fn ($query) => $query->orderByRaw('CASE WHEN department_id = ? THEN 0 ELSE 1 END', [$departmentId]))
                 ->orderByDesc('id')
+                ->lockForUpdate()
                 ->firstOrFail();
 
             // TODO: tambahkan logika reset_interval berdasarkan tahun/bulan jika dibutuhkan
@@ -45,14 +55,23 @@ class DocumentNumberService
             $nextSeq = $prefix->last_sequence + 1;
 
             // Siapkan nilai placeholder
-            $placeholders = [
-                '{COMP}'       => $prefix->company_prefix ?? 'PRP',
-                '{MAIN}'       => $type?->code ?? $type?->name ?? '', // sesuaikan: pakai field 'code' kalau ada
-                '{DEPT}'       => $dept?->code ?? $dept?->name ?? '',  // sesuaikan: pakai field 'code' kalau ada
-                '{SEQ}'        => str_pad($nextSeq, 3, '0', STR_PAD_LEFT),
-                '{SUBSEQ}'     => '001', // sementara default, bisa dikembangkan
-                '{PARENT_REF}' => static::buildParentRef($parentDocument),
+            $parentRef = static::buildParentRef($parentDocument);
+            $values = [
+                'COMP' => $prefix->company_prefix ?? 'PRP',
+                'MAIN' => $type?->code ?? $type?->name ?? '',
+                'DEPT' => $dept?->code ?? $dept?->name ?? '',
+                'SEQ' => str_pad($nextSeq, 3, '0', STR_PAD_LEFT),
+                'SUBSEQ' => '001',
+                'PARENT_REF' => $parentRef,
+                'PARENT_SEG' => $parentRef ? '.'.$parentRef : '',
             ];
+
+            $placeholders = [];
+
+            foreach ($values as $key => $value) {
+                $placeholders['{{'.$key.'}}'] = $value;
+                $placeholders['{'.$key.'}'] = $value;
+            }
 
             // Bangun kode akhir dari format
             $format = $prefix->format_nomor; // contoh: {COMP}/{MAIN}/{DEPT}/{SEQ}
@@ -64,9 +83,9 @@ class DocumentNumberService
             ]);
 
             return [
-                'code'               => $documentCode,
-                'prefix_setting_id'  => $prefix->id,
-                'sequence'           => $nextSeq,
+                'code' => $documentCode,
+                'prefix_setting_id' => $prefix->id,
+                'sequence' => $nextSeq,
             ];
         });
     }
@@ -79,7 +98,7 @@ class DocumentNumberService
      */
     protected static function buildParentRef(?Document $parent): ?string
     {
-        if (!$parent) {
+        if (! $parent) {
             return null;
         }
 
@@ -97,8 +116,9 @@ class DocumentNumberService
         // Nomor sequence di bagian terakhir
         if (count($parts) >= 3) {
             $main = $parts[1];                // SOP, WI.SOP001, dll
-            $seq  = end($parts);              // 001
-            return $main . $seq;              // SOP001, WI.SOP001001 (ini bisa kamu refine)
+            $seq = end($parts);              // 001
+
+            return $main.$seq;              // SOP001, WI.SOP001001 (ini bisa kamu refine)
         }
 
         return $code; // fallback

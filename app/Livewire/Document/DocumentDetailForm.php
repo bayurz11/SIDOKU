@@ -2,12 +2,17 @@
 
 namespace App\Livewire\Document;
 
-use Livewire\Component;
 use App\Domains\Document\Models\Document;
+use App\Domains\Document\Services\DocumentApprovalService;
+use App\Shared\Traits\WithAlerts;
+use Livewire\Component;
 
 class DocumentDetailForm extends Component
 {
+    use WithAlerts;
+
     public bool $showModal = false;
+
     public ?Document $document = null;
 
     protected $listeners = [
@@ -27,23 +32,25 @@ class DocumentDetailForm extends Component
 
         $this->showModal = true;
     }
-    public function requestApproval(int $id)
+
+    public function requestApproval(int $id): void
     {
+        if (! auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve'])) {
+            $this->showErrorToast('Tidak punya izin mengajukan dokumen.');
+
+            return;
+        }
+
         $doc = Document::findOrFail($id);
 
-        // Ubah status menjadi 'in_review'
-        $doc->update([
-            'status' => 'in_review'
-        ]);
-
-        // Bisa kirim notifikasi ke Manager QC/QS (opsional)
-        // Notification::send($doc->approvers, new DocumentApprovalRequest($doc));
-
-        // Refresh data
-        $this->document = $doc->fresh();
-
-        // Kirim notifikasi UI
-        $this->dispatch('toast:success', message: 'Dokumen telah diajukan ke Department terkait.');
+        try {
+            app(DocumentApprovalService::class)->submit($doc);
+            $this->open($id);
+            $this->dispatch('document:saved');
+            $this->showSuccessToast('Dokumen berhasil diajukan untuk approval.');
+        } catch (\Throwable $exception) {
+            $this->showErrorToast($exception->getMessage());
+        }
     }
 
     public function closeModal(): void

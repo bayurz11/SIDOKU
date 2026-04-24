@@ -214,7 +214,7 @@
                                             </p>
 
                                             @if ($rev->file_path)
-                                                <a href="{{ asset('public/storage/' . ltrim($rev->file_path, '/')) }}"
+                                                <a href="{{ asset('storage/' . ltrim($rev->file_path, '/')) }}"
                                                     class="inline-flex items-center mt-1 text-[11px] font-semibold text-green-700 hover:text-green-900">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -310,7 +310,7 @@
 
                         {{-- BUTTON BUKA FILE --}}
                         @if ($document->file_path)
-                            <a href="{{ asset('public/storage/' . ltrim($document->file_path, '/')) }}"
+                            <a href="{{ asset('storage/' . ltrim($document->file_path, '/')) }}"
                                 class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-green-500 via-green-500 to-green-500 hover:from-green-600 hover:via-green-600 hover:to-green-600 shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
                                 <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -323,7 +323,7 @@
                         @endif
 
                         {{-- BUTTON AJUKAN APPROVAL — HANYA MUNCUL JIKA STATUS DRAFT --}}
-                        @if ($document->status === 'draft')
+                        @if ($document->status === 'draft' && auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve']))
                             <button wire:click="requestApproval({{ $document->id }})"
                                 class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
                        bg-gradient-to-r from-indigo-500 via-indigo-500 to-indigo-600

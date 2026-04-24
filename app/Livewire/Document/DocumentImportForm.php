@@ -2,21 +2,21 @@
 
 namespace App\Livewire\Document;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
-use App\Shared\Traits\WithAlerts;
+use App\Domains\Department\Models\Department;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentType;
-use App\Domains\Department\Models\Department;
 use App\Domains\Document\Services\DocumentNumberService;
 use App\Shared\Services\LoggerService;
-use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Shared\Traits\WithAlerts;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DocumentImportForm extends Component
 {
-    use WithFileUploads, WithAlerts;
+    use WithAlerts, WithFileUploads;
 
     public bool $showModal = false;
 
@@ -25,7 +25,8 @@ class DocumentImportForm extends Component
 
     // statistik sederhana
     public int $importedCount = 0;
-    public int $skippedCount  = 0;
+
+    public int $skippedCount = 0;
 
     // ⛔ JANGAN pakai nama $errors (tabrakan dengan Laravel)
     public array $importErrors = [];
@@ -49,11 +50,11 @@ class DocumentImportForm extends Component
         $this->resetErrorBag();
         $this->resetValidation();
 
-        $this->showModal      = true;
-        $this->excel_file     = null;
-        $this->importedCount  = 0;
-        $this->skippedCount   = 0;
-        $this->importErrors   = [];
+        $this->showModal = true;
+        $this->excel_file = null;
+        $this->importedCount = 0;
+        $this->skippedCount = 0;
+        $this->importErrors = [];
     }
 
     public function closeModal(): void
@@ -100,23 +101,25 @@ class DocumentImportForm extends Component
         $fullPath = Storage::disk('local')->path($path);
 
         // Safety check kalau file benar-benar ada
-        if (!Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             $this->addError('excel_file', 'File upload tidak ditemukan di server. Coba upload ulang.');
+
             return;
         }
 
         $this->importedCount = 0;
-        $this->skippedCount  = 0;
-        $this->importErrors  = [];
+        $this->skippedCount = 0;
+        $this->importErrors = [];
 
         // baca excel menggunakan maatwebsite/excel
         $sheets = Excel::toArray([], $fullPath);
-        $rows   = $sheets[0] ?? [];
+        $rows = $sheets[0] ?? [];
 
         if (count($rows) <= 1) {
             $this->addError('excel_file', 'File Excel kosong atau tidak memiliki data.');
             // hapus file temp
             Storage::disk('local')->delete($path);
+
             return;
         }
 
@@ -128,23 +131,25 @@ class DocumentImportForm extends Component
         // fungsi bantu ambil index kolom
         $col = function (string $name) use ($headerRow): ?int {
             $idx = array_search(strtolower($name), $headerRow);
+
             return $idx === false ? null : $idx;
         };
 
         $idxDocumentCode = $col('document_code');
-        $idxTitle        = $col('title');
-        $idxDocType      = $col('document_type');
-        $idxDept         = $col('department');
-        $idxLevel        = $col('level');
-        $idxStatus       = $col('status');
-        $idxEffDate      = $col('effective_date');
-        $idxExpDate      = $col('expired_date');
-        $idxSummary      = $col('summary');
+        $idxTitle = $col('title');
+        $idxDocType = $col('document_type');
+        $idxDept = $col('department');
+        $idxLevel = $col('level');
+        $idxStatus = $col('status');
+        $idxEffDate = $col('effective_date');
+        $idxExpDate = $col('expired_date');
+        $idxSummary = $col('summary');
 
         if (is_null($idxTitle) || is_null($idxDocType)) {
             $this->addError('excel_file', 'Kolom minimal "title" dan "document_type" harus ada di header.');
             // hapus file temp
             Storage::disk('local')->delete($path);
+
             return;
         }
 
@@ -155,7 +160,7 @@ class DocumentImportForm extends Component
             }
 
             // skip baris kosong
-            if (!array_filter($row, fn($v) => trim((string) $v) !== '')) {
+            if (! array_filter($row, fn ($v) => trim((string) $v) !== '')) {
                 continue;
             }
 
@@ -164,26 +169,29 @@ class DocumentImportForm extends Component
 
                 if ($title === '') {
                     $this->skippedCount++;
-                    $this->importErrors[] = "Baris " . ($i + 1) . ": title kosong, di-skip.";
+                    $this->importErrors[] = 'Baris '.($i + 1).': title kosong, di-skip.';
+
                     continue;
                 }
 
                 $docTypeName = trim((string) ($row[$idxDocType] ?? ''));
-                $deptName    = $idxDept !== null ? trim((string) ($row[$idxDept] ?? '')) : null;
+                $deptName = $idxDept !== null ? trim((string) ($row[$idxDept] ?? '')) : null;
 
                 $documentType = DocumentType::where('name', $docTypeName)->first();
-                if (!$documentType) {
+                if (! $documentType) {
                     $this->skippedCount++;
-                    $this->importErrors[] = "Baris " . ($i + 1) . ": Document type '{$docTypeName}' tidak ditemukan.";
+                    $this->importErrors[] = 'Baris '.($i + 1).": Document type '{$docTypeName}' tidak ditemukan.";
+
                     continue;
                 }
 
                 $department = null;
                 if ($deptName) {
                     $department = Department::where('name', $deptName)->first();
-                    if (!$department) {
+                    if (! $department) {
                         $this->skippedCount++;
-                        $this->importErrors[] = "Baris " . ($i + 1) . ": Department '{$deptName}' tidak ditemukan.";
+                        $this->importErrors[] = 'Baris '.($i + 1).": Department '{$deptName}' tidak ditemukan.";
+
                         continue;
                     }
                 }
@@ -204,7 +212,7 @@ class DocumentImportForm extends Component
 
                 // tanggal efektif & expired
                 $effectiveDate = null;
-                $expiredDate   = null;
+                $expiredDate = null;
 
                 if ($idxEffDate !== null && isset($row[$idxEffDate]) && trim((string) $row[$idxEffDate]) !== '') {
                     $effectiveDate = $this->parseExcelDate($row[$idxEffDate]);
@@ -226,34 +234,34 @@ class DocumentImportForm extends Component
                         null
                     );
                     $documentCode = $generated['code'];
-                    $prefixId     = $generated['prefix_setting_id'] ?? null;
+                    $prefixId = $generated['prefix_setting_id'] ?? null;
                 } else {
                     $documentCode = $manualCode;
-                    $prefixId     = null;
+                    $prefixId = null;
                 }
 
                 Document::create([
-                    'document_type_id'           => $documentType->id,
-                    'department_id'              => $department?->id,
+                    'document_type_id' => $documentType->id,
+                    'department_id' => $department?->id,
                     'document_prefix_setting_id' => $prefixId,
-                    'parent_document_id'         => null,
-                    'document_code'              => $documentCode,
-                    'title'                      => $title,
-                    'summary'                    => $summary,
-                    'effective_date'             => $effectiveDate,
-                    'expired_date'               => $expiredDate,
-                    'level'                      => $level,
-                    'revision_no'                => 0,
-                    'status'                     => $status,
-                    'file_path'                  => null,
-                    'is_active'                  => $status !== 'obsolete',
-                    'created_by'                 => auth()->id(),
+                    'parent_document_id' => null,
+                    'document_code' => $documentCode,
+                    'title' => $title,
+                    'summary' => $summary,
+                    'effective_date' => $effectiveDate,
+                    'expired_date' => $expiredDate,
+                    'level' => $level,
+                    'revision_no' => 0,
+                    'status' => $status,
+                    'file_path' => null,
+                    'is_active' => $status !== 'obsolete',
+                    'created_by' => auth()->id(),
                 ]);
 
                 $this->importedCount++;
             } catch (\Throwable $e) {
                 $this->skippedCount++;
-                $this->importErrors[] = "Baris " . ($i + 1) . ": " . $e->getMessage();
+                $this->importErrors[] = 'Baris '.($i + 1).': '.$e->getMessage();
             }
         }
 
@@ -262,11 +270,11 @@ class DocumentImportForm extends Component
 
         LoggerService::logUserAction('import', 'Document', null, [
             'imported' => $this->importedCount,
-            'skipped'  => $this->skippedCount,
+            'skipped' => $this->skippedCount,
         ]);
 
         $this->showSuccessToast("Import selesai. Berhasil: {$this->importedCount}, dilewati: {$this->skippedCount}.");
-        $this->dispatch('document:saved'); // supaya DocumentList refresh
+        $this->dispatch('document:imported');
     }
 
     /**

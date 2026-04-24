@@ -2,42 +2,49 @@
 
 namespace App\Livewire\Document;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use App\Shared\Traits\WithAlerts;
-use App\Domains\Document\Models\Document;
 use App\Domains\Department\Models\Department;
+use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentType;
 use App\Domains\Document\Services\DocumentApprovalService;
+use App\Shared\Traits\WithAlerts;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class DocumentList extends Component
 {
-    use WithPagination, WithAlerts;
+    use WithAlerts, WithPagination;
 
     /** 🔒 SIMPAN USER SEKALI */
     public $authUser;
 
     public string $search = '';
+
     public ?int $filterDocumentType = null;
+
     public ?int $filterDepartment = null;
+
     public ?string $filterStatus = null;
 
     public int $perPage = 10;
+
     public string $sortField = 'created_at';
+
     public string $sortDirection = 'desc';
 
     public $documentTypes = [];
-    public $departments   = [];
+
+    public $departments = [];
 
     public array $statuses = [
-        'draft'     => 'Draft',
+        'draft' => 'Draft',
         'in_review' => 'In Review',
-        'approved'  => 'Approved',
-        'obsolete'  => 'Obsolete',
+        'approved' => 'Approved',
+        'obsolete' => 'Obsolete',
     ];
 
     protected array $allowedSorts = [
         'document_code',
+        'level',
         'title',
         'department_id',
         'document_type_id',
@@ -49,17 +56,17 @@ class DocumentList extends Component
     protected array $allowedPerPage = [10, 25, 50, 100];
 
     protected $queryString = [
-        'search'             => ['except' => ''],
+        'search' => ['except' => ''],
         'filterDocumentType' => ['except' => null],
-        'filterDepartment'   => ['except' => null],
-        'filterStatus'       => ['except' => null],
-        'perPage'            => ['except' => 10],
-        'sortField'          => ['except' => 'created_at'],
-        'sortDirection'      => ['except' => 'desc'],
+        'filterDepartment' => ['except' => null],
+        'filterStatus' => ['except' => null],
+        'perPage' => ['except' => 10],
+        'sortField' => ['except' => 'created_at'],
+        'sortDirection' => ['except' => 'desc'],
     ];
 
     protected $listeners = [
-        'document:saved'    => 'refreshList',
+        'document:saved' => 'refreshList',
         'document:imported' => 'refreshList',
     ];
 
@@ -83,7 +90,7 @@ class DocumentList extends Component
     protected function loadLookups(): void
     {
         $this->documentTypes = DocumentType::orderBy('name')->get();
-        $this->departments   = Department::orderBy('name')->get();
+        $this->departments = Department::orderBy('name')->get();
     }
 
     public function refreshList(): void
@@ -95,14 +102,17 @@ class DocumentList extends Component
     {
         $this->resetPage();
     }
+
     public function updatingFilterDocumentType()
     {
         $this->resetPage();
     }
+
     public function updatingFilterDepartment()
     {
         $this->resetPage();
     }
+
     public function updatingFilterStatus()
     {
         $this->resetPage();
@@ -110,38 +120,32 @@ class DocumentList extends Component
 
     public function updatingPerPage()
     {
-        if (!in_array($this->perPage, $this->allowedPerPage)) {
+        if (! in_array((int) $this->perPage, $this->allowedPerPage, true)) {
             $this->perPage = 10;
         }
+
         $this->resetPage();
     }
 
     public function sortBy(string $field): void
     {
-        if (!in_array($field, $this->allowedSorts)) {
+        if (! in_array($field, $this->allowedSorts, true)) {
             return;
         }
 
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField     = $field;
+            $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
-    }
-
-    public function toggleActive(int $id): void
-    {
-        $doc = Document::findOrFail($id);
-        $doc->update(['is_active' => !$doc->is_active]);
-        $this->showSuccessToast('Document status updated!');
     }
 
     public function markObsolete(int $id): void
     {
         $doc = Document::findOrFail($id);
         $doc->update([
-            'status'    => Document::STATUS_OBSOLETE ?? 'obsolete',
+            'status' => Document::STATUS_OBSOLETE ?? 'obsolete',
             'is_active' => false,
         ]);
 
@@ -157,10 +161,21 @@ class DocumentList extends Component
 
     public function requestApproval(int $id): void
     {
+        if (! auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve'])) {
+            $this->showErrorToast('Tidak punya izin mengajukan dokumen.');
+
+            return;
+        }
+
         $doc = Document::findOrFail($id);
-        app(DocumentApprovalService::class)->submit($doc);
-        $this->showSuccessToast('Dokumen berhasil diajukan untuk approval.');
-        $this->dispatch('document:saved');
+
+        try {
+            app(DocumentApprovalService::class)->submit($doc);
+            $this->showSuccessToast('Dokumen berhasil diajukan untuk approval.');
+            $this->dispatch('document:saved');
+        } catch (\Throwable $exception) {
+            $this->showErrorToast($exception->getMessage());
+        }
     }
 
     /** ✅ TANPA QUERY DB */
@@ -174,11 +189,11 @@ class DocumentList extends Component
     {
         $user = $this->authUser;
 
-        if (!$user || !$this->userHasBasicRole($user)) {
+        if (! $user || ! $this->userHasBasicRole($user)) {
             return $query;
         }
 
-        if (!$user->department_id) {
+        if (! $user->department_id) {
             return $query;
         }
 
@@ -192,19 +207,31 @@ class DocumentList extends Component
 
     public function render()
     {
+        if (! in_array($this->sortField, $this->allowedSorts, true)) {
+            $this->sortField = 'created_at';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'desc';
+        }
+
+        if (! in_array((int) $this->perPage, $this->allowedPerPage, true)) {
+            $this->perPage = 10;
+        }
+
         $query = Document::query()
             ->with(['documentType', 'department'])
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($sub) use ($term) {
                     $sub->where('document_code', 'like', $term)
                         ->orWhere('title', 'like', $term)
                         ->orWhere('summary', 'like', $term);
                 });
             })
-            ->when($this->filterDocumentType, fn($q) => $q->where('document_type_id', $this->filterDocumentType))
-            ->when($this->filterDepartment, fn($q) => $q->where('department_id', $this->filterDepartment))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterDocumentType, fn ($q) => $q->where('document_type_id', $this->filterDocumentType))
+            ->when($this->filterDepartment, fn ($q) => $q->where('department_id', $this->filterDepartment))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->orderBy($this->sortField, $this->sortDirection);
 
         $query = $this->applyDepartmentScope($query);
