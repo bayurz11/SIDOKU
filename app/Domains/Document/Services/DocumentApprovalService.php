@@ -23,6 +23,11 @@ class DocumentApprovalService
         2 => 'quality-system-manager',
     ];
 
+    protected const ROLE_PERMISSION_FALLBACKS = [
+        'document-controller' => ['documents.approve'],
+        'quality-system-manager' => ['documents.approve'],
+    ];
+
     /**
      * 🔧 Mode approver:
      * - false = GLOBAL approver (disarankan untuk ISO: DC/QS approve lintas dept)
@@ -217,7 +222,7 @@ class DocumentApprovalService
         $approvers = [];
 
         foreach (self::DEFAULT_FLOW_ROLES as $order => $role) {
-            $user = $this->findUserByRole($role, $doc->department_id);
+            $user = $this->findUserByRole($role, $doc->department_id, $approvers);
 
             if ($user) {
                 $approvers[] = $user->id;
@@ -234,14 +239,52 @@ class DocumentApprovalService
      * Default: GLOBAL approver (tidak filter department).
      * Jika $useDepartmentScopeForApprover = true → akan filter dept.
      */
-    protected function findUserByRole(string $roleName, ?int $departmentId = null): ?User
+    protected function findUserByRole(string $roleName, ?int $departmentId = null, array $exceptUserIds = []): ?User
     {
         $query = User::query()
+            ->where('is_active', true)
+            ->when($exceptUserIds !== [], fn ($q) => $q->whereNotIn('id', $exceptUserIds))
             ->whereHas('roles', function ($q) use ($roleName) {
-                $q->where('roles.name', $roleName);
+                $q->where('roles.name', $roleName)
+                    ->where('roles.is_active', true);
             });
 
         // Optional: per-department approver (kalau kamu aktifkan)
+        if ($this->useDepartmentScopeForApprover && $departmentId && Schema::hasColumn('users', 'department_id')) {
+            $query->where(function ($q) use ($departmentId) {
+                $q->whereNull('department_id')
+                    ->orWhere('department_id', $departmentId);
+            });
+        }
+
+        $user = $query->orderBy('id')->first();
+
+        if ($user) {
+            return $user;
+        }
+
+        return $this->findUserByFallbackPermission($roleName, $departmentId, $exceptUserIds);
+    }
+
+    protected function findUserByFallbackPermission(
+        string $roleName,
+        ?int $departmentId = null,
+        array $exceptUserIds = []
+    ): ?User {
+        $permissions = self::ROLE_PERMISSION_FALLBACKS[$roleName] ?? [];
+
+        if ($permissions === []) {
+            return null;
+        }
+
+        $query = User::query()
+            ->where('is_active', true)
+            ->when($exceptUserIds !== [], fn ($q) => $q->whereNotIn('id', $exceptUserIds))
+            ->whereHas('roles.permissions', function ($q) use ($permissions) {
+                $q->whereIn('permissions.name', $permissions)
+                    ->where('permissions.is_active', true);
+            });
+
         if ($this->useDepartmentScopeForApprover && $departmentId && Schema::hasColumn('users', 'department_id')) {
             $query->where(function ($q) use ($departmentId) {
                 $q->whereNull('department_id')
@@ -258,11 +301,18 @@ class DocumentApprovalService
     protected function getMissingApproversByRole(Document $doc): array
     {
         $missing = [];
+        $resolvedUserIds = [];
 
         foreach (self::DEFAULT_FLOW_ROLES as $step => $role) {
-            if (! $this->findUserByRole($role, $doc->department_id)) {
+            $user = $this->findUserByRole($role, $doc->department_id, $resolvedUserIds);
+
+            if (! $user) {
                 $missing[] = "Step {$step} ({$role})";
+
+                continue;
             }
+
+            $resolvedUserIds[] = $user->id;
         }
 
         return $missing ?: ['(unknown)'];

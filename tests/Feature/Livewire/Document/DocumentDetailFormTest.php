@@ -67,4 +67,51 @@ class DocumentDetailFormTest extends TestCase
         ]);
         $this->assertDatabaseCount('document_approval_steps', 2);
     }
+
+    public function test_request_approval_can_fallback_to_users_with_approve_permission(): void
+    {
+        $actor = $this->createUserWithAccess(['documents.create']);
+        $firstApprover = $this->createUserWithAccess(['documents.approve']);
+        $secondApprover = $this->createUserWithAccess(['documents.approve']);
+
+        $type = DocumentType::query()->create([
+            'name' => 'SOP',
+            'description' => 'Standard Operating Procedure',
+            'is_active' => true,
+        ]);
+
+        $department = Department::query()->create([
+            'name' => 'QC',
+            'description' => 'Quality Control',
+            'is_active' => true,
+        ]);
+
+        $document = Document::query()->create([
+            'document_type_id' => $type->id,
+            'department_id' => $department->id,
+            'document_code' => 'PRP/SOP/QC/002',
+            'title' => 'Prosedur Retain Sample',
+            'level' => 2,
+            'revision_no' => 0,
+            'status' => Document::STATUS_DRAFT,
+            'is_active' => true,
+            'created_by' => $actor->id,
+        ]);
+
+        $this->actingAs($actor);
+
+        Livewire::test(DocumentDetailForm::class)
+            ->call('open', $document->id)
+            ->call('requestApproval', $document->id)
+            ->assertSet('showModal', true);
+
+        $this->assertDatabaseHas('document_approval_steps', [
+            'approver_id' => $firstApprover->id,
+            'step_order' => 1,
+        ]);
+        $this->assertDatabaseHas('document_approval_steps', [
+            'approver_id' => $secondApprover->id,
+            'step_order' => 2,
+        ]);
+    }
 }
