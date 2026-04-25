@@ -10,6 +10,7 @@ use App\Domains\Document\Services\DocumentApprovalService;
 use App\Livewire\Document\ApprovalQueue;
 use App\Livewire\Document\DocumentRevisionList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\Feature\Livewire\Document\Concerns\BuildsDocumentFixtures;
 use Tests\TestCase;
@@ -29,6 +30,11 @@ class DocumentApprovalSyncTest extends TestCase
 
         $this->actingAs($creator);
         app(DocumentApprovalService::class)->submit($document);
+
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $controller->id,
+            'notifiable_type' => $controller->getMorphClass(),
+        ]);
 
         $firstStep = DocumentApprovalStep::query()
             ->where('approval_request_id', $document->refresh()->current_approval_request_id)
@@ -74,6 +80,22 @@ class DocumentApprovalSyncTest extends TestCase
             ->assertSee('PRP/SOP/QC/001')
             ->assertSee('Prosedur Sampling')
             ->assertSee('Final approval QA');
+    }
+
+    public function test_document_download_route_returns_approval_queue_file(): void
+    {
+        Storage::fake('public');
+
+        $approver = $this->createUserWithAccess(['documents.approve']);
+        $document = $this->createDraftDocument($approver->id);
+        $document->update(['file_path' => 'documents/prosedur-sampling.pdf']);
+
+        Storage::disk('public')->put($document->file_path, 'dummy-pdf-content');
+
+        $this->actingAs($approver)
+            ->get(route('documents.download', $document))
+            ->assertOk()
+            ->assertHeader('content-disposition');
     }
 
     private function createDraftDocument(int $creatorId): Document

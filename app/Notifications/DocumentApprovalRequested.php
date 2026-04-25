@@ -2,10 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Domains\Document\Models\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\DatabaseMessage;
-use App\Domains\Document\Models\Document; // sesuaikan namespace
 
 class DocumentApprovalRequested extends Notification
 {
@@ -24,14 +23,15 @@ class DocumentApprovalRequested extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'type'        => 'document_approval_requested',
+            'title' => 'Approval dokumen baru',
+            'type' => 'document_approval_requested',
             'document_id' => $this->document->id,
             'document_code' => $this->document->document_code ?? null,
-            'title'       => $this->document->title,
-            'status'      => $this->document->status,
+            'document_title' => $this->document->title,
+            'status' => $this->document->status,
             'requested_by' => $this->requestedByName,
-            'url'         => route('documents.show', $this->document->id),
-            'message'     => "Dokumen {$this->document->title} membutuhkan approval Anda.",
+            'url' => route('documents.approval-queue'),
+            'message' => "Dokumen {$this->document->title} membutuhkan approval Anda.",
         ];
     }
 }

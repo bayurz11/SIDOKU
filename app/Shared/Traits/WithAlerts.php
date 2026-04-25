@@ -20,6 +20,10 @@ trait WithAlerts
             'type' => $type,
             'title' => $title,
         ]);
+
+        if ($type === 'success') {
+            $this->dispatch('app:data_changed');
+        }
     }
 
     public function showConfirm($title, $text, $method, $params = [], $confirmText = 'Yes, proceed!', $cancelText = 'Cancel')

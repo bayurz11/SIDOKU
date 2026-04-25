@@ -8,6 +8,8 @@ use App\Domains\Document\Models\DocumentApprovalRequest;
 use App\Domains\Document\Models\DocumentApprovalStep;
 use App\Domains\Document\Models\DocumentRevision;
 use App\Domains\User\Models\User;
+use App\Notifications\DocumentApprovalRequested;
+use App\Notifications\DocumentStatusChanged;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -98,6 +100,8 @@ class DocumentApprovalService
                 'is_locked' => true,
             ]);
 
+            $this->notifyActiveApprover($request->fresh(['steps']), $doc->fresh());
+
             return $request;
         });
     }
@@ -140,6 +144,7 @@ class DocumentApprovalService
             if ($nextStep) {
                 // lanjut ke step berikutnya
                 $request->update(['current_step' => $nextStep->step_order]);
+                $this->notifyStepApprover($nextStep, $doc);
 
                 return;
             }
@@ -160,6 +165,7 @@ class DocumentApprovalService
             ]);
 
             $this->recordApprovedRevision($doc->fresh(), $note);
+            $this->notifyDocumentOwner($doc->fresh(), Document::STATUS_IN_REVIEW, Document::STATUS_APPROVED);
         });
     }
 
@@ -207,6 +213,8 @@ class DocumentApprovalService
                 'current_approval_request_id' => null,
                 // 'submitted_at' => null, // opsional
             ]);
+
+            $this->notifyDocumentOwner($doc->fresh(), Document::STATUS_IN_REVIEW, Document::STATUS_DRAFT);
         });
     }
 
@@ -369,5 +377,33 @@ class DocumentApprovalService
                 'changed_at' => now(),
             ]
         );
+    }
+
+    protected function notifyActiveApprover(DocumentApprovalRequest $request, Document $doc): void
+    {
+        $step = $request->steps()
+            ->where('step_order', $request->current_step)
+            ->first();
+
+        if ($step) {
+            $this->notifyStepApprover($step, $doc);
+        }
+    }
+
+    protected function notifyStepApprover(DocumentApprovalStep $step, Document $doc): void
+    {
+        $step->approver?->notify(new DocumentApprovalRequested(
+            document: $doc,
+            requestedByName: auth()->user()?->name
+        ));
+    }
+
+    protected function notifyDocumentOwner(Document $doc, string $oldStatus, string $newStatus): void
+    {
+        $owner = $doc->createdBy ?: User::find($doc->created_by);
+
+        if ($owner && (int) $owner->id !== (int) auth()->id()) {
+            $owner->notify(new DocumentStatusChanged($doc, $oldStatus, $newStatus));
+        }
     }
 }

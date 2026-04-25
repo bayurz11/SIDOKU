@@ -7,6 +7,7 @@ use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
 use App\Shared\Services\CacheService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
@@ -54,6 +55,23 @@ Route::middleware(['auth', 'permission:documents.view'])->group(function () {
         return view('documents.index');
     })->name('documents.index');
 });
+
+Route::middleware(['auth', 'permission:documents.view|documents.download|documents.review|documents.approve'])
+    ->get('/documents/{document}/download', function (Document $document) {
+        if (! $document->file_path || ! Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'File dokumen tidak ditemukan.');
+        }
+
+        $extension = pathinfo($document->file_path, PATHINFO_EXTENSION);
+        $fileName = str($document->document_code ?: $document->title)
+            ->replace(['/', '\\'], '-')
+            ->slug('-')
+            ->append($extension ? ".{$extension}" : '')
+            ->toString();
+
+        return Storage::disk('public')->download($document->file_path, $fileName);
+    })
+    ->name('documents.download');
 
 Route::middleware(['auth', 'permission:documents.revision'])->group(function () {
     Route::get('/document-revisions', function () {

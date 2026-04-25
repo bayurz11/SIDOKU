@@ -185,6 +185,35 @@
                         <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center justify-end gap-2">
                                 @if ($step->status === 'pending')
+                                    @permission('documents.view')
+                                        @if ($doc)
+                                            <button type="button"
+                                                wire:click="$dispatch('openDocumentDetail', { id: {{ $doc->id }} })"
+                                                class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-800 transition-all duration-200">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                </svg>
+                                                View
+                                            </button>
+                                        @endif
+                                    @endpermission
+
+                                    @if ($doc?->file_path)
+                                        <a href="{{ route('documents.download', $doc) }}"
+                                            class="inline-flex items-center px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-all duration-200">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M7.5 12 12 16.5m0 0 4.5-4.5M12 16.5V3" />
+                                            </svg>
+                                            Download
+                                        </a>
+                                    @endif
+
                                     @permission('documents.approve')
                                         <button wire:click="openActionModal({{ $step->id }}, 'approve')"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-green-700 bg-green-50 rounded-lg hover:bg-green-100 hover:text-green-800 transition-all duration-200">
@@ -409,7 +438,7 @@
                             </div>
 
                             @if ($doc?->file_path)
-                                <a href="{{ asset('storage/' . ltrim($doc->file_path, '/')) }}"
+                                <a href="{{ route('documents.download', $doc) }}"
                                     target="_blank"
                                     class="inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-semibold
                                       text-white bg-gradient-to-r from-green-500 via-green-500 to-green-500

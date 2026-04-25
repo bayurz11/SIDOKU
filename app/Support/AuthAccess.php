@@ -10,7 +10,7 @@ class AuthAccess
 
     public static function user()
     {
-        if (self::$user !== null) {
+        if (self::$user !== null && Auth::id() === self::$user->id) {
             return self::$user;
         }
 
