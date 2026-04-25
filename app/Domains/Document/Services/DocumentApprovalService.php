@@ -2,13 +2,14 @@
 
 namespace App\Domains\Document\Services;
 
+use App\Domains\Document\Models\Document;
+use App\Domains\Document\Models\DocumentApprovalLog;
+use App\Domains\Document\Models\DocumentApprovalRequest;
+use App\Domains\Document\Models\DocumentApprovalStep;
+use App\Domains\Document\Models\DocumentRevision;
 use App\Domains\User\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Domains\Document\Models\Document;
-use App\Domains\Document\Models\DocumentApprovalLog;
-use App\Domains\Document\Models\DocumentApprovalStep;
-use App\Domains\Document\Models\DocumentApprovalRequest;
 
 class DocumentApprovalService
 {
@@ -34,7 +35,7 @@ class DocumentApprovalService
      */
     public function submit(Document $doc, ?array $approverUserIds = null, ?string $note = null): DocumentApprovalRequest
     {
-        if (!in_array($doc->status, [Document::STATUS_DRAFT, Document::STATUS_REVISION], true)) {
+        if (! in_array($doc->status, [Document::STATUS_DRAFT, Document::STATUS_REVISION], true)) {
             throw new \RuntimeException('Hanya dokumen status draft/revision yang bisa diajukan.');
         }
 
@@ -57,8 +58,8 @@ class DocumentApprovalService
             $missing = $this->getMissingApproversByRole($doc);
 
             throw new \RuntimeException(
-                'Approver tidak ditemukan untuk: ' . implode(', ', $missing) .
-                    '. Pastikan user sudah di-assign role tersebut (cek tabel user_roles). ' .
+                'Approver tidak ditemukan untuk: '.implode(', ', $missing).
+                    '. Pastikan user sudah di-assign role tersebut (cek tabel user_roles). '.
                     'Jika kamu pakai per-department approver, pastikan department user approver cocok dengan dokumen.'
             );
         }
@@ -67,8 +68,8 @@ class DocumentApprovalService
 
             // buat approval request
             $request = DocumentApprovalRequest::create([
-                'document_id'  => $doc->id,
-                'status'       => DocumentApprovalRequest::STATUS_PENDING,
+                'document_id' => $doc->id,
+                'status' => DocumentApprovalRequest::STATUS_PENDING,
                 'current_step' => 1,
                 'request_note' => $note,
                 'requested_by' => auth()->id(),
@@ -78,9 +79,9 @@ class DocumentApprovalService
             // buat steps berurutan
             foreach (array_values($approvers) as $idx => $userId) {
                 $request->steps()->create([
-                    'step_order'  => $idx + 1,
+                    'step_order' => $idx + 1,
                     'approver_id' => $userId,
-                    'status'      => DocumentApprovalStep::STATUS_PENDING,
+                    'status' => DocumentApprovalStep::STATUS_PENDING,
                 ]);
             }
 
@@ -105,7 +106,7 @@ class DocumentApprovalService
 
             // lock request + document biar aman race condition
             $request = $step->approvalRequest()->lockForUpdate()->firstOrFail();
-            $doc     = $request->document()->lockForUpdate()->firstOrFail();
+            $doc = $request->document()->lockForUpdate()->firstOrFail();
 
             $this->assertCanActOnStep($step, $request);
 
@@ -119,9 +120,9 @@ class DocumentApprovalService
 
             // approve current step
             $step->update([
-                'status'   => DocumentApprovalStep::STATUS_APPROVED,
+                'status' => DocumentApprovalStep::STATUS_APPROVED,
                 'acted_at' => now(),
-                'note'     => $note,
+                'note' => $note,
             ]);
 
             $this->logAction($step, 'approved');
@@ -134,6 +135,7 @@ class DocumentApprovalService
             if ($nextStep) {
                 // lanjut ke step berikutnya
                 $request->update(['current_step' => $nextStep->step_order]);
+
                 return;
             }
 
@@ -151,6 +153,8 @@ class DocumentApprovalService
                 'current_approval_request_id' => null, // ✅ clear active request
                 'effective_date' => $doc->effective_date ?: now()->toDateString(),
             ]);
+
+            $this->recordApprovedRevision($doc->fresh(), $note);
         });
     }
 
@@ -166,7 +170,7 @@ class DocumentApprovalService
         DB::transaction(function () use ($step, $note) {
 
             $request = $step->approvalRequest()->lockForUpdate()->firstOrFail();
-            $doc     = $request->document()->lockForUpdate()->firstOrFail();
+            $doc = $request->document()->lockForUpdate()->firstOrFail();
 
             $this->assertCanActOnStep($step, $request);
 
@@ -179,9 +183,9 @@ class DocumentApprovalService
             }
 
             $step->update([
-                'status'   => DocumentApprovalStep::STATUS_REJECTED,
+                'status' => DocumentApprovalStep::STATUS_REJECTED,
                 'acted_at' => now(),
-                'note'     => $note,
+                'note' => $note,
             ]);
 
             $this->logAction($step, 'rejected');
@@ -256,7 +260,7 @@ class DocumentApprovalService
         $missing = [];
 
         foreach (self::DEFAULT_FLOW_ROLES as $step => $role) {
-            if (!$this->findUserByRole($role, $doc->department_id)) {
+            if (! $this->findUserByRole($role, $doc->department_id)) {
                 $missing[] = "Step {$step} ({$role})";
             }
         }
@@ -271,7 +275,7 @@ class DocumentApprovalService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new \RuntimeException('Unauthorized.');
         }
 
@@ -291,13 +295,29 @@ class DocumentApprovalService
     {
         DocumentApprovalLog::create([
             'approval_request_id' => $step->approval_request_id,
-            'approval_step_id'    => $step->id,
-            'user_id'             => auth()->id(),
-            'action'              => $action,
-            'ip_address'          => request()->ip(),
-            'user_agent'          => substr((string) request()->userAgent(), 0, 255),
-            'device_name'         => null,
-            'signed_at'           => now(),
+            'approval_step_id' => $step->id,
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'ip_address' => request()->ip(),
+            'user_agent' => substr((string) request()->userAgent(), 0, 255),
+            'device_name' => null,
+            'signed_at' => now(),
         ]);
+    }
+
+    protected function recordApprovedRevision(Document $doc, ?string $note = null): void
+    {
+        DocumentRevision::query()->updateOrCreate(
+            [
+                'document_id' => $doc->id,
+                'revision_no' => $doc->revision_no ?? 0,
+            ],
+            [
+                'change_note' => $note ?: 'Dokumen disetujui melalui workflow approval.',
+                'file_path' => $doc->file_path ?: '',
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+            ]
+        );
     }
 }

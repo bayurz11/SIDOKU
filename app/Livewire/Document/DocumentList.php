@@ -68,6 +68,7 @@ class DocumentList extends Component
     protected $listeners = [
         'document:saved' => 'refreshList',
         'document:imported' => 'refreshList',
+        'document:approval_updated' => 'refreshList',
     ];
 
     public function mount(): void

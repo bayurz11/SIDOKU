@@ -192,7 +192,7 @@
                              class="mt-1 pl-10 space-y-1 overflow-hidden">
                              @permission('documents.view')
                                  <a href="{{ route('documents.index') }}"
-                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('documents.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('documents.index') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Document List
                                  </a>
                              @endpermission
@@ -206,7 +206,7 @@
 
 
                              @permission('documents.revision')
-                                 <a href="#"
+                                 <a href="{{ route('document_revisions.index') }}"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_revisions.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Document Revisions
                                  </a>

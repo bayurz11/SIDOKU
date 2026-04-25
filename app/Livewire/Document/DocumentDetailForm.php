@@ -17,6 +17,7 @@ class DocumentDetailForm extends Component
 
     protected $listeners = [
         'openDocumentDetail' => 'open',
+        'document:approval_updated' => 'refreshDocument',
     ];
 
     public function open(int $id): void
@@ -56,6 +57,13 @@ class DocumentDetailForm extends Component
     public function closeModal(): void
     {
         $this->reset(['showModal', 'document']);
+    }
+
+    public function refreshDocument(): void
+    {
+        if ($this->showModal && $this->document) {
+            $this->open($this->document->id);
+        }
     }
 
     public function render()

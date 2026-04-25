@@ -55,6 +55,12 @@ Route::middleware(['auth', 'permission:documents.view'])->group(function () {
     })->name('documents.index');
 });
 
+Route::middleware(['auth', 'permission:documents.revision'])->group(function () {
+    Route::get('/document-revisions', function () {
+        return view('document_revisions.index');
+    })->name('document_revisions.index');
+});
+
 Route::get('/documents/import/template', function () {
     return Excel::download(
         new DocumentImportTemplateExport,

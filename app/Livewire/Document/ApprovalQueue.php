@@ -2,33 +2,38 @@
 
 namespace App\Livewire\Document;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use App\Shared\Traits\WithAlerts;
-use Illuminate\Support\Facades\Auth;
 use App\Domains\Document\Models\DocumentApprovalStep;
 use App\Domains\Document\Services\DocumentApprovalService;
+use App\Shared\Traits\WithAlerts;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class ApprovalQueue extends Component
 {
-    use WithPagination, WithAlerts;
+    use WithAlerts, WithPagination;
 
     public int $perPage = 10;
+
     public string $search = '';
+
     public ?string $status = 'pending'; // pending|approved|rejected|null
 
     // modal action
     public bool $showActionModal = false;
+
     public ?int $selectedStepId = null;
+
     public ?string $actionType = null; // approve|reject
+
     public string $note = '';
 
     // ✅ penting: deklarasikan property ini
     public ?DocumentApprovalStep $selectedStep = null;
 
     protected $queryString = [
-        'search'  => ['except' => ''],
-        'status'  => ['except' => 'pending'],
+        'search' => ['except' => ''],
+        'status' => ['except' => 'pending'],
         'perPage' => ['except' => 10],
     ];
 
@@ -36,10 +41,12 @@ class ApprovalQueue extends Component
     {
         $this->resetPage();
     }
+
     public function updatingStatus()
     {
         $this->resetPage();
     }
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -81,14 +88,16 @@ class ApprovalQueue extends Component
     {
         $service = app(DocumentApprovalService::class);
 
-        if (!$this->selectedStepId || !$this->actionType) {
+        if (! $this->selectedStepId || ! $this->actionType) {
             $this->showErrorToast('Step tidak valid.');
+
             return;
         }
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             $this->showErrorToast('Unauthorized.');
+
             return;
         }
 
@@ -101,14 +110,14 @@ class ApprovalQueue extends Component
 
         try {
             if ($this->actionType === 'approve') {
-                if (!$user->hasAnyPermission(['documents.approve'])) {
+                if (! $user->hasAnyPermission(['documents.approve'])) {
                     throw new \RuntimeException('Tidak punya izin approve.');
                 }
 
                 $service->approveStep($step, $this->note ?: null);
                 $this->showSuccessToast('Step berhasil di-approve.');
             } elseif ($this->actionType === 'reject') {
-                if (!$user->hasAnyPermission(['documents.review'])) {
+                if (! $user->hasAnyPermission(['documents.review'])) {
                     throw new \RuntimeException('Tidak punya izin reject/review.');
                 }
 
@@ -122,6 +131,8 @@ class ApprovalQueue extends Component
                 throw new \RuntimeException('Action tidak dikenali.');
             }
 
+            $this->dispatch('document:approval_updated');
+            $this->dispatch('document:saved');
             $this->closeActionModal();
             $this->resetPage();
         } catch (\Throwable $e) {
@@ -147,10 +158,10 @@ class ApprovalQueue extends Component
             // ✅ hanya step yang aktif (current_step)
             ->whereColumn('document_approval_steps.step_order', 'document_approval_requests.current_step')
             // filter status step (pending/approved/rejected)
-            ->when($this->status, fn($q) => $q->where('document_approval_steps.status', $this->status))
+            ->when($this->status, fn ($q) => $q->where('document_approval_steps.status', $this->status))
             // search by doc code / title
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
 
                 $q->whereHas('approvalRequest.document', function ($docQ) use ($term) {
                     $docQ->where('document_code', 'like', $term)
