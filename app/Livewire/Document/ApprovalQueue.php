@@ -17,18 +17,16 @@ class ApprovalQueue extends Component
 
     public string $search = '';
 
-    public ?string $status = 'pending'; // pending|approved|rejected|null
+    public ?string $status = 'pending';
 
-    // modal action
     public bool $showActionModal = false;
 
     public ?int $selectedStepId = null;
 
-    public ?string $actionType = null; // approve|reject
+    public ?string $actionType = null;
 
     public string $note = '';
 
-    // ✅ penting: deklarasikan property ini
     public ?DocumentApprovalStep $selectedStep = null;
 
     protected $queryString = [
@@ -37,17 +35,19 @@ class ApprovalQueue extends Component
         'perPage' => ['except' => 10],
     ];
 
-    public function updatingSearch()
+    protected array $allowedStatuses = ['pending', 'approved', 'rejected', 'all'];
+
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatingStatus()
+    public function updatingStatus(): void
     {
         $this->resetPage();
     }
 
-    public function updatingPerPage()
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -58,7 +58,6 @@ class ApprovalQueue extends Component
         $this->actionType = $type;
         $this->note = '';
 
-        // ✅ Ambil step + relasi lengkap untuk modal
         $this->selectedStep = DocumentApprovalStep::query()
             ->with([
                 'approvalRequest',
@@ -66,7 +65,7 @@ class ApprovalQueue extends Component
                 'approvalRequest.document.documentType',
             ])
             ->where('id', $stepId)
-            ->where('approver_id', Auth::id()) // ✅ pastikan milik user yg login
+            ->where('approver_id', Auth::id())
             ->firstOrFail();
 
         $this->showActionModal = true;
@@ -74,7 +73,6 @@ class ApprovalQueue extends Component
 
     public function closeActionModal(): void
     {
-        // ✅ reset semua termasuk selectedStep
         $this->reset([
             'showActionModal',
             'selectedStepId',
@@ -101,7 +99,6 @@ class ApprovalQueue extends Component
             return;
         }
 
-        // ✅ Ambil ulang step terkini (biar tidak approve step yang sudah berubah)
         $step = DocumentApprovalStep::query()
             ->with(['approvalRequest.document'])
             ->where('id', $this->selectedStepId)
@@ -142,7 +139,9 @@ class ApprovalQueue extends Component
 
     public function render()
     {
-        $userId = Auth::id();
+        if (! in_array((string) $this->status, $this->allowedStatuses, true)) {
+            $this->status = 'pending';
+        }
 
         $query = DocumentApprovalStep::query()
             ->join('document_approval_requests', 'document_approval_requests.id', '=', 'document_approval_steps.approval_request_id')
@@ -152,14 +151,15 @@ class ApprovalQueue extends Component
                 'approvalRequest.document.department',
                 'approvalRequest.document.documentType',
             ])
-            ->where('document_approval_steps.approver_id', $userId)
-            // ✅ hanya request yang masih pending
-            ->where('document_approval_requests.status', 'pending')
-            // ✅ hanya step yang aktif (current_step)
-            ->whereColumn('document_approval_steps.step_order', 'document_approval_requests.current_step')
-            // filter status step (pending/approved/rejected)
-            ->when($this->status, fn ($q) => $q->where('document_approval_steps.status', $this->status))
-            // search by doc code / title
+            ->where('document_approval_steps.approver_id', Auth::id())
+            ->when($this->status === 'pending', function ($q) {
+                $q->where('document_approval_requests.status', 'pending')
+                    ->where('document_approval_steps.status', 'pending')
+                    ->whereColumn('document_approval_steps.step_order', 'document_approval_requests.current_step');
+            })
+            ->when(in_array($this->status, ['approved', 'rejected'], true), function ($q) {
+                $q->where('document_approval_steps.status', $this->status);
+            })
             ->when($this->search, function ($q) {
                 $term = '%'.$this->search.'%';
 
@@ -168,6 +168,7 @@ class ApprovalQueue extends Component
                         ->orWhere('title', 'like', $term);
                 });
             })
+            ->orderByDesc('document_approval_steps.acted_at')
             ->orderByDesc('document_approval_steps.id');
 
         $data = $query->paginate($this->perPage)->onEachSide(0);

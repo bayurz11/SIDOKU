@@ -5,9 +5,11 @@ namespace Tests\Feature\Livewire\Document;
 use App\Domains\Department\Models\Department;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentApprovalStep;
+use App\Domains\Document\Models\DocumentRevision;
 use App\Domains\Document\Models\DocumentType;
 use App\Domains\Document\Services\DocumentApprovalService;
 use App\Livewire\Document\ApprovalQueue;
+use App\Livewire\Document\DocumentList;
 use App\Livewire\Document\DocumentRevisionList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -96,6 +98,96 @@ class DocumentApprovalSyncTest extends TestCase
             ->get(route('documents.download', $document))
             ->assertOk()
             ->assertHeader('content-disposition');
+    }
+
+    public function test_revision_flow_can_be_started_rejected_and_resubmitted_for_final_approval(): void
+    {
+        $owner = $this->createUserWithAccess(['documents.create', 'documents.revision']);
+        $controller = $this->createUserWithAccess(['documents.approve', 'documents.review'], ['document-controller']);
+        $manager = $this->createUserWithAccess(['documents.approve', 'documents.review'], ['quality-system-manager']);
+
+        $document = $this->createDraftDocument($owner->id);
+        $document->update([
+            'status' => Document::STATUS_APPROVED,
+            'revision_no' => 0,
+            'is_active' => true,
+            'approved_at' => now(),
+        ]);
+
+        DocumentRevision::query()->create([
+            'document_id' => $document->id,
+            'revision_no' => 0,
+            'change_note' => 'Initial approved version.',
+            'file_path' => '',
+            'changed_by' => $owner->id,
+            'changed_at' => now(),
+        ]);
+
+        $this->actingAs($owner);
+
+        Livewire::test(DocumentList::class)
+            ->call('startRevision', $document->id);
+
+        $document->refresh();
+
+        $this->assertSame(Document::STATUS_REVISION, $document->status);
+        $this->assertSame(1, $document->revision_no);
+        $this->assertFalse($document->is_active);
+
+        app(DocumentApprovalService::class)->submit($document);
+        $firstStep = DocumentApprovalStep::query()
+            ->where('approval_request_id', $document->refresh()->current_approval_request_id)
+            ->where('step_order', 1)
+            ->firstOrFail();
+
+        $this->actingAs($controller);
+        Livewire::test(ApprovalQueue::class)
+            ->call('openActionModal', $firstStep->id, 'reject')
+            ->set('note', 'Perlu perbaikan format revisi.')
+            ->call('submitAction');
+
+        $document->refresh();
+        $this->assertSame(Document::STATUS_REVISION, $document->status);
+        $this->assertFalse($document->is_locked);
+
+        $this->actingAs($owner);
+        app(DocumentApprovalService::class)->submit($document);
+
+        $firstStep = DocumentApprovalStep::query()
+            ->where('approval_request_id', $document->refresh()->current_approval_request_id)
+            ->where('step_order', 1)
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->actingAs($controller);
+        Livewire::test(ApprovalQueue::class)
+            ->call('openActionModal', $firstStep->id, 'approve')
+            ->call('submitAction');
+
+        Livewire::test(ApprovalQueue::class)
+            ->set('status', 'approved')
+            ->assertSee('PRP/SOP/QC/001');
+
+        $secondStep = DocumentApprovalStep::query()
+            ->where('approval_request_id', $document->refresh()->current_approval_request_id)
+            ->where('step_order', 2)
+            ->firstOrFail();
+
+        $this->actingAs($manager);
+        Livewire::test(ApprovalQueue::class)
+            ->call('openActionModal', $secondStep->id, 'approve')
+            ->set('note', 'Revisi final disetujui.')
+            ->call('submitAction');
+
+        $document->refresh();
+
+        $this->assertSame(Document::STATUS_APPROVED, $document->status);
+        $this->assertTrue($document->is_active);
+        $this->assertDatabaseHas('document_revisions', [
+            'document_id' => $document->id,
+            'revision_no' => 1,
+            'change_note' => 'Revisi final disetujui.',
+        ]);
     }
 
     private function createDraftDocument(int $creatorId): Document

@@ -2,43 +2,50 @@
 
 namespace App\Livewire\Document;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
-use App\Shared\Traits\WithAlerts;
+use App\Domains\Department\Models\Department;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentType;
-use App\Domains\Department\Models\Department;
 use App\Domains\Document\Services\DocumentNumberService;
 use App\Shared\Services\LoggerService;
+use App\Shared\Traits\WithAlerts;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str; // <- TAMBAHAN
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class DocumentForm extends Component
 {
-    use WithFileUploads, WithAlerts;
+    use WithAlerts, WithFileUploads;
 
     // Primary key
     public ?int $documentId = null;
 
     // Form fields
     public ?int $document_type_id = null;
+
     public ?int $department_id = null;
+
     public ?int $parent_document_id = null;
 
     public string $title = '';
+
     public ?string $summary = null;
 
     public ?string $effective_date = null;
+
     public ?string $expired_date = null;
 
     // 1 = Manual / DOC level 1, 2 = SOP, 3 = WI, 4 = FORM, dll
     public int $level = 1;
+
     public string $status = 'draft';  // draft, in_review, approved, obsolete
+
     public bool $is_active = true;
 
     // File upload
     public $uploaded_file;
+
     public ?string $existing_file_path = null;
 
     // Read-only display
@@ -46,17 +53,21 @@ class DocumentForm extends Component
 
     // UI state
     public bool $showModal = false;
+
     public bool $isEditing = false;
 
     // Dropdown data
     public $documentTypes = [];
-    public $departments   = [];
+
+    public $departments = [];
+
     public $parentDocuments = [];
 
     protected array $statusOptions = [
         'draft',
         'in_review',
         'approved',
+        'revision',
         'obsolete',
     ];
 
@@ -67,17 +78,17 @@ class DocumentForm extends Component
     protected function rules(): array
     {
         return [
-            'document_type_id'   => ['required', 'exists:document_types,id'],
-            'department_id'      => ['nullable', 'exists:departments,id'],
+            'document_type_id' => ['required', 'exists:document_types,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
             'parent_document_id' => ['nullable', 'exists:documents,id'],
-            'title'              => ['required', 'string', 'max:255'],
-            'summary'            => ['nullable', 'string'],
-            'effective_date'     => ['nullable', 'date'],
-            'expired_date'       => ['nullable', 'date', 'after_or_equal:effective_date'],
-            'level'              => ['integer', 'min:1', 'max:10'],
-            'status'             => ['required', Rule::in($this->statusOptions)],
-            'is_active'          => ['boolean'],
-            'uploaded_file'      => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:5120'],
+            'title' => ['required', 'string', 'max:255'],
+            'summary' => ['nullable', 'string'],
+            'effective_date' => ['nullable', 'date'],
+            'expired_date' => ['nullable', 'date', 'after_or_equal:effective_date'],
+            'level' => ['integer', 'min:1', 'max:10'],
+            'status' => ['required', Rule::in($this->statusOptions)],
+            'is_active' => ['boolean'],
+            'uploaded_file' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:5120'],
         ];
     }
 
@@ -121,40 +132,40 @@ class DocumentForm extends Component
         $this->loadLookups();
 
         // default mode: create
-        $this->showModal         = true;
-        $this->isEditing         = false;
-        $this->uploaded_file     = null;
-        $this->document_code     = null;
+        $this->showModal = true;
+        $this->isEditing = false;
+        $this->uploaded_file = null;
+        $this->document_code = null;
         $this->existing_file_path = null;
 
         // default field
-        $this->status    = 'draft';
-        $this->level     = 1;
+        $this->status = 'draft';
+        $this->level = 1;
         $this->is_active = true;
 
         if ($id) {
             // MODE EDIT
             $doc = Document::findOrFail($id);
 
-            $this->documentId          = $doc->id;
-            $this->document_type_id    = $doc->document_type_id;
-            $this->department_id       = $doc->department_id;
-            $this->parent_document_id  = $doc->parent_document_id;
+            $this->documentId = $doc->id;
+            $this->document_type_id = $doc->document_type_id;
+            $this->department_id = $doc->department_id;
+            $this->parent_document_id = $doc->parent_document_id;
 
-            $this->title               = $doc->title;
-            $this->summary             = $doc->summary;
+            $this->title = $doc->title;
+            $this->summary = $doc->summary;
 
-            $this->effective_date      = optional($doc->effective_date)?->format('Y-m-d');
-            $this->expired_date        = optional($doc->expired_date)?->format('Y-m-d');
+            $this->effective_date = optional($doc->effective_date)?->format('Y-m-d');
+            $this->expired_date = optional($doc->expired_date)?->format('Y-m-d');
 
-            $this->level               = (int) $doc->level;
-            $this->status              = $doc->status;
-            $this->is_active           = (bool) $doc->is_active;
+            $this->level = (int) $doc->level;
+            $this->status = $doc->status;
+            $this->is_active = (bool) $doc->is_active;
 
-            $this->document_code       = $doc->document_code;
-            $this->existing_file_path  = $doc->file_path;
+            $this->document_code = $doc->document_code;
+            $this->existing_file_path = $doc->file_path;
 
-            $this->isEditing           = true;
+            $this->isEditing = true;
         } else {
             // MODE CREATE → reset field, biarkan default di atas
             $this->reset([
@@ -173,15 +184,14 @@ class DocumentForm extends Component
         }
     }
 
-
     /**
      * Helper upload file ke disk 'public_path' (public/storage)
      * dan hapus file lama kalau ada.
      */
-    protected function handleFileUpload(?string $oldPath = null): ?string
+    protected function handleFileUpload(?string $oldPath = null, bool $deleteOld = true): ?string
     {
         // kalau tidak ada file baru, kembalikan path lama
-        if (!$this->uploaded_file) {
+        if (! $this->uploaded_file) {
             return $oldPath;
         }
 
@@ -192,13 +202,13 @@ class DocumentForm extends Component
         $ext = strtolower($this->uploaded_file->getClientOriginalExtension() ?: 'pdf');
 
         // nama file random
-        $fileName = Str::random(24) . '.' . $ext;
+        $fileName = Str::random(24).'.'.$ext;
 
         // simpan ke public/storage/documents/xxx.ext → path relatif: "documents/xxx.ext"
         $relativePath = $this->uploaded_file->storeAs('documents', $fileName, 'public_path');
 
         // hapus file lama kalau ada
-        if ($oldPath) {
+        if ($deleteOld && $oldPath) {
             $old = ltrim($oldPath, '/');
             if (Storage::disk('public_path')->exists($old)) {
                 Storage::disk('public_path')->delete($old);
@@ -223,27 +233,42 @@ class DocumentForm extends Component
             // UPDATE existing document
             $document = Document::findOrFail($this->documentId);
 
+            if ($document->is_locked || $document->status === Document::STATUS_IN_REVIEW) {
+                $this->showErrorToast('Dokumen sedang dalam proses approval dan tidak bisa diedit.');
+
+                return;
+            }
+
+            if (! in_array($document->status, [Document::STATUS_DRAFT, Document::STATUS_REVISION], true)) {
+                $this->showErrorToast('Dokumen approved/obsolete tidak boleh diedit langsung. Gunakan flow revisi.');
+
+                return;
+            }
+
             // upload file baru + hapus lama (kalau ada)
-            $filePath = $this->handleFileUpload($document->file_path);
+            $filePath = $this->handleFileUpload(
+                $document->file_path,
+                $document->status !== Document::STATUS_REVISION && ! $document->revisions()->exists()
+            );
 
             $document->update([
-                'document_type_id'   => $this->document_type_id,
-                'department_id'      => $this->department_id,
+                'document_type_id' => $this->document_type_id,
+                'department_id' => $this->department_id,
                 'parent_document_id' => $this->parent_document_id,
-                'title'              => $this->title,
-                'summary'            => $this->summary,
-                'effective_date'     => $this->effective_date,
-                'expired_date'       => $this->expired_date,
-                'level'              => $this->level,
-                'status'             => $this->status,
-                'file_path'          => $filePath,
-                'is_active'          => $this->is_active,
-                'updated_by'         => auth()->id(),
+                'title' => $this->title,
+                'summary' => $this->summary,
+                'effective_date' => $this->effective_date,
+                'expired_date' => $this->expired_date,
+                'level' => $this->level,
+                'status' => $document->status,
+                'file_path' => $filePath,
+                'is_active' => $document->status === Document::STATUS_DRAFT ? $this->is_active : false,
+                'updated_by' => auth()->id(),
             ]);
 
             LoggerService::logUserAction('update', 'Document', $document->id, [
                 'document_code' => $document->document_code,
-                'title'         => $document->title,
+                'title' => $document->title,
             ]);
 
             $this->showSuccessToast('Document updated successfully!');
@@ -259,28 +284,27 @@ class DocumentForm extends Component
             $filePath = $this->handleFileUpload(null);
 
             $document = Document::create([
-                'document_type_id'            => $this->document_type_id,
-                'department_id'               => $this->department_id,
-                'document_prefix_setting_id'  => $generated['prefix_setting_id'] ?? null,
-                'parent_document_id'          => $this->parent_document_id,
-                'document_code'               => $generated['code'],
-                'title'                       => $this->title,
-                'summary'                     => $this->summary,
-                'effective_date'              => $this->effective_date,
-                'expired_date'                => $this->expired_date,
-                'level'                       => $this->level,
-                'revision_no'                 => 0,
-                'status'                      => $this->status ?: 'draft',
-                'file_path'                   => $filePath,
-                'is_active'                   => $this->is_active,
-                'created_by'                  => auth()->id(),
+                'document_type_id' => $this->document_type_id,
+                'department_id' => $this->department_id,
+                'document_prefix_setting_id' => $generated['prefix_setting_id'] ?? null,
+                'parent_document_id' => $this->parent_document_id,
+                'document_code' => $generated['code'],
+                'title' => $this->title,
+                'summary' => $this->summary,
+                'effective_date' => $this->effective_date,
+                'expired_date' => $this->expired_date,
+                'level' => $this->level,
+                'revision_no' => 0,
+                'status' => Document::STATUS_DRAFT,
+                'file_path' => $filePath,
+                'is_active' => $this->is_active,
+                'created_by' => auth()->id(),
             ]);
 
             LoggerService::logUserAction('create', 'Document', $document->id, [
                 'document_code' => $document->document_code,
-                'title'         => $document->title,
+                'title' => $document->title,
             ]);
-
 
             $this->showSuccessToast('Document created successfully!');
         }
@@ -313,8 +337,8 @@ class DocumentForm extends Component
             'isEditing',
         ]);
 
-        $this->status    = 'draft';
-        $this->level     = 1;
+        $this->status = 'draft';
+        $this->level = 1;
         $this->is_active = true;
         $this->showModal = false;
     }
@@ -322,8 +346,8 @@ class DocumentForm extends Component
     public function render()
     {
         return view('livewire.document.document-form', [
-            'documentTypes'   => $this->documentTypes,
-            'departments'     => $this->departments,
+            'documentTypes' => $this->documentTypes,
+            'departments' => $this->departments,
             'parentDocuments' => $this->parentDocuments,
         ]);
     }

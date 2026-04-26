@@ -188,13 +188,18 @@
                                     Status
                                 </label>
                                 <select wire:model.defer="status" id="status"
+                                    disabled
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
                                            focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
                                     <option value="draft">Draft</option>
                                     <option value="in_review">In Review</option>
                                     <option value="approved">Approved</option>
+                                    <option value="revision">Revision</option>
                                     <option value="obsolete">Obsolete</option>
                                 </select>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Status dikontrol oleh workflow approval/revisi.
+                                </p>
                                 @error('status')
                                     <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                                 @enderror

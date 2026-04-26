@@ -207,14 +207,18 @@ class DocumentApprovalService
             ]);
 
             // dokumen balik draft
+            $nextDocumentStatus = $this->isOpenRevision($doc)
+                ? Document::STATUS_REVISION
+                : Document::STATUS_DRAFT;
+
             $doc->update([
-                'status' => Document::STATUS_DRAFT, // atau STATUS_REJECTED jika kamu pakai status itu
+                'status' => $nextDocumentStatus,
                 'is_locked' => false,
                 'current_approval_request_id' => null,
                 // 'submitted_at' => null, // opsional
             ]);
 
-            $this->notifyDocumentOwner($doc->fresh(), Document::STATUS_IN_REVIEW, Document::STATUS_DRAFT);
+            $this->notifyDocumentOwner($doc->fresh(), Document::STATUS_IN_REVIEW, $nextDocumentStatus);
         });
     }
 
@@ -377,6 +381,17 @@ class DocumentApprovalService
                 'changed_at' => now(),
             ]
         );
+    }
+
+    protected function isOpenRevision(Document $doc): bool
+    {
+        if ((int) $doc->revision_no <= 0) {
+            return false;
+        }
+
+        return ! $doc->revisions()
+            ->where('revision_no', $doc->revision_no)
+            ->exists();
     }
 
     protected function notifyActiveApprover(DocumentApprovalRequest $request, Document $doc): void

@@ -6,6 +6,7 @@ use App\Domains\Department\Models\Department;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentType;
 use App\Domains\Document\Services\DocumentApprovalService;
+use App\Domains\Document\Services\DocumentRevisionWorkflowService;
 use App\Shared\Traits\WithAlerts;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -37,6 +38,7 @@ class DocumentList extends Component
 
     public array $statuses = [
         'draft' => 'Draft',
+        'revision' => 'Revision',
         'in_review' => 'In Review',
         'approved' => 'Approved',
         'obsolete' => 'Obsolete',
@@ -173,6 +175,25 @@ class DocumentList extends Component
         try {
             app(DocumentApprovalService::class)->submit($doc);
             $this->showSuccessToast('Dokumen berhasil diajukan untuk approval.');
+            $this->dispatch('document:saved');
+        } catch (\Throwable $exception) {
+            $this->showErrorToast($exception->getMessage());
+        }
+    }
+
+    public function startRevision(int $id): void
+    {
+        if (! auth()->user()?->hasPermission('documents.revision')) {
+            $this->showErrorToast('Tidak punya izin membuat revisi dokumen.');
+
+            return;
+        }
+
+        $doc = Document::findOrFail($id);
+
+        try {
+            app(DocumentRevisionWorkflowService::class)->startRevision($doc);
+            $this->showSuccessToast('Flow revisi dokumen berhasil dimulai.');
             $this->dispatch('document:saved');
         } catch (\Throwable $exception) {
             $this->showErrorToast($exception->getMessage());

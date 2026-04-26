@@ -91,6 +91,7 @@
                                 $statusClass =
                                     [
                                         'draft' => 'bg-gray-50 text-gray-700 border-gray-200',
+                                        'revision' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
                                         'in_review' => 'bg-amber-50 text-amber-700 border-amber-200',
                                         'approved' => 'bg-green-50 text-green-700 border-green-200',
                                         'obsolete' => 'bg-red-50 text-red-700 border-red-200',
@@ -322,8 +323,19 @@
                             </a>
                         @endif
 
-                        {{-- BUTTON AJUKAN APPROVAL — HANYA MUNCUL JIKA STATUS DRAFT --}}
-                        @if ($document->status === 'draft' && auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve']))
+                        @if ($document->status === 'approved' && $document->is_active && auth()->user()?->hasPermission('documents.revision'))
+                            <button wire:click="startRevision({{ $document->id }})"
+                                wire:confirm="Mulai revisi untuk dokumen ini?"
+                                class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
+                       bg-gradient-to-r from-indigo-500 via-indigo-500 to-indigo-600
+                       hover:from-indigo-600 hover:via-indigo-600 hover:to-indigo-700
+                       shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-300">
+                                Mulai Revisi
+                            </button>
+                        @endif
+
+                        {{-- BUTTON AJUKAN APPROVAL — HANYA MUNCUL JIKA STATUS DRAFT/REVISION --}}
+                        @if (in_array($document->status, ['draft', 'revision'], true) && !$document->is_locked && auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve']))
                             <button wire:click="requestApproval({{ $document->id }})"
                                 class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold text-white
                        bg-gradient-to-r from-indigo-500 via-indigo-500 to-indigo-600

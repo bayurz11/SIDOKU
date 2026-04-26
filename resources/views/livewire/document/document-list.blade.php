@@ -2,6 +2,7 @@
     use Illuminate\Support\Str;
 
     $canSubmitDocument = auth()->user()?->hasAnyPermission(['documents.create', 'documents.review', 'documents.approve']);
+    $canCreateRevision = auth()->user()?->hasPermission('documents.revision');
 @endphp
 
 <div class="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
@@ -210,6 +211,7 @@
                                 $status = $doc->status;
                                 $map = [
                                     'draft' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                    'revision' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
                                     'in_review' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
                                     'approved' => 'bg-green-100 text-green-800 border-green-200',
                                     'obsolete' => 'bg-red-100 text-red-800 border-red-200',
@@ -220,7 +222,7 @@
                                 class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold border {{ $cls }}">
                                 <span
                                     class="w-2 h-2 rounded-full mr-2
-                                    {{ $status === 'approved' ? 'bg-green-500' : ($status === 'obsolete' ? 'bg-red-500' : 'bg-yellow-500') }}">
+                                    {{ $status === 'approved' ? 'bg-green-500' : ($status === 'obsolete' ? 'bg-red-500' : ($status === 'revision' ? 'bg-indigo-500' : 'bg-yellow-500')) }}">
                                 </span>
                                 {{ ucfirst(str_replace('_', ' ', $status)) }}
                             </span>
@@ -244,7 +246,7 @@
                         <td class="px-6 py-5 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center gap-2">
 
-                                @if ($doc->status === 'draft' && $canSubmitDocument)
+                                @if (in_array($doc->status, ['draft', 'revision'], true) && !$doc->is_locked && $canSubmitDocument)
                                     <button wire:click="requestApproval({{ $doc->id }})"
                                         class="inline-flex items-center px-3 py-2 text-xs font-semibold text-yellow-600 bg-yellow-50 rounded-lg hover:bg-yellow-100 hover:text-yellow-700 transition-all duration-200">
                                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
@@ -254,6 +256,18 @@
                                                 d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
                                         </svg>
                                         Ajukan Dokumen
+                                    </button>
+                                @endif
+                                @if ($doc->status === 'approved' && $doc->is_active && $canCreateRevision)
+                                    <button wire:click="startRevision({{ $doc->id }})"
+                                        wire:confirm="Mulai revisi untuk dokumen ini?"
+                                        class="inline-flex items-center px-3 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 transition-all duration-200">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16.862 4.487 18.55 2.8a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
+                                        </svg>
+                                        Revisi
                                     </button>
                                 @endif
                                 @permission('documents.view')
@@ -273,22 +287,24 @@
 
                                 @permission('documents.edit')
                                     {{-- Edit --}}
-                                    <button wire:click="$dispatch('openDocumentForm', { id: {{ $doc->id }} })"
-                                        class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
+                                    @if (in_array($doc->status, ['draft', 'revision'], true) && !$doc->is_locked)
+                                        <button wire:click="$dispatch('openDocumentForm', { id: {{ $doc->id }} })"
+                                            class="inline-flex items-center px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                            </path>
-                                        </svg>
-                                        Edit
-                                    </button>
+                                                </path>
+                                            </svg>
+                                            Edit
+                                        </button>
+                                    @endif
                                 @endpermission
 
                                 @permission('documents.edit')
                                     {{-- Mark obsolete --}}
-                                    @if ($doc->status !== 'obsolete')
+                                    @if ($doc->status === 'approved')
                                         <button wire:click="markObsolete({{ $doc->id }})"
                                             class="inline-flex items-center px-3 py-2 text-xs font-semibold text-pink-700 bg-red-50 rounded-lg hover:bg-red-100 hover:text-pink-800 transition-all duration-200">
                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
