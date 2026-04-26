@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Shared hosting fallback:
+    # if the domain document root points to the Laravel project root,
+    # forward every public request to the real web root.
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+</IfModule>
