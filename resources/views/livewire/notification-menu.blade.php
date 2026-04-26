@@ -19,12 +19,9 @@
         class="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-xl border border-gray-200 z-50" x-cloak>
         <div class="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
             <span class="text-sm font-semibold text-gray-800">Notifications</span>
-            @if ($unreadCount > 0)
-                <button type="button" wire:click="markAllAsRead"
-                    class="text-xs text-blue-600 hover:underline">
-                    Tandai dibaca
-                </button>
-            @endif
+            <a href="{{ route('notifications.index') }}" class="text-xs text-blue-600 hover:underline">
+                Lihat semua
+            </a>
         </div>
 
         <div class="max-h-80 overflow-y-auto divide-y divide-gray-100">
@@ -46,5 +43,16 @@
                 </div>
             @endforelse
         </div>
+
+        @if ($unreadCount > 0)
+            <div class="px-4 py-2 border-t border-gray-100 bg-gray-50 rounded-b-xl flex items-center justify-between">
+                <button type="button" wire:click="markAllAsRead" class="text-xs text-gray-600 hover:text-gray-900">
+                    Tandai semua dibaca
+                </button>
+                <a href="{{ route('notifications.index') }}" class="text-xs font-semibold text-blue-600 hover:underline">
+                    Buka halaman
+                </a>
+            </div>
+        @endif
     </div>
 </div>

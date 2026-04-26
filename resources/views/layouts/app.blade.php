@@ -212,6 +212,8 @@
                                                             Roles & Permissions
                                                         @elseif(request()->routeIs('profile.*'))
                                                             Profile Settings
+                                                        @elseif(request()->routeIs('notifications.*'))
+                                                            Notifications
                                                         @elseif(request()->routeIs('department.*'))
                                                             Department Management
                                                         @elseif(request()->routeIs('document_types.*'))

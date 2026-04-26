@@ -28,6 +28,12 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth'])->name('dashboard');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', function () {
+        return view('notifications.index');
+    })->name('notifications.index');
+});
+
 //  Management Department
 Route::middleware(['auth', 'permission:users.view'])->group(function () {
     Route::get('/department', function () {
