@@ -61,6 +61,35 @@ class ApprovalQueue extends Component
         $this->resetPage();
     }
 
+    public function setStatusFilter(string $status): void
+    {
+        $this->status = in_array($status, $this->allowedStatuses, true)
+            ? $status
+            : 'pending';
+
+        $this->resetPage();
+    }
+
+    public function setPerPageFilter(int|string $perPage): void
+    {
+        $perPage = (int) $perPage;
+
+        $this->perPage = in_array($perPage, $this->allowedPerPage, true)
+            ? $perPage
+            : 10;
+
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->search = '';
+        $this->status = 'pending';
+        $this->perPage = 10;
+
+        $this->resetPage();
+    }
+
     public function openActionModal(int $stepId, string $type): void
     {
         $this->selectedStepId = $stepId;

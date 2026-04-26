@@ -59,12 +59,12 @@
 
                 {{-- Per page --}}
                 <div>
-                    <select wire:model.live="perPage"
+                    <select wire:change="setPerPageFilter($event.target.value)"
                         class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium transition-all duration-200">
-                        <option value="10">10 per halaman</option>
-                        <option value="25">25 per halaman</option>
-                        <option value="50">50 per halaman</option>
-                        <option value="100">100 per halaman</option>
+                        <option value="10" @selected((int) $perPage === 10)>10 per halaman</option>
+                        <option value="25" @selected((int) $perPage === 25)>25 per halaman</option>
+                        <option value="50" @selected((int) $perPage === 50)>50 per halaman</option>
+                        <option value="100" @selected((int) $perPage === 100)>100 per halaman</option>
                     </select>
                 </div>
             </div>
@@ -73,10 +73,10 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Status Step</label>
-                    <select wire:model.live="status"
+                    <select wire:change="setStatusFilter($event.target.value)"
                         class="block w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         @foreach ($statusOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
+                            <option value="{{ $value }}" @selected(($status ?? 'pending') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                     <p class="mt-1 text-[11px] text-gray-500">
@@ -86,7 +86,7 @@
 
                 <div class="md:col-span-2 flex items-end justify-end gap-2">
                     {{-- optional: tombol refresh / reset --}}
-                    <button type="button" wire:click="$set('search',''); $set('status','pending');"
+                    <button type="button" wire:click="resetFilters"
                         class="inline-flex items-center px-4 py-2 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -285,7 +285,7 @@
                                     Coba ubah status atau kata kunci pencarian.
                                 </p>
 
-                                <button wire:click="$set('search',''); $set('status','pending');"
+                                <button wire:click="resetFilters"
                                     class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
