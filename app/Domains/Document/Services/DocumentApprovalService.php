@@ -10,6 +10,7 @@ use App\Domains\Document\Models\DocumentRevision;
 use App\Domains\User\Models\User;
 use App\Notifications\DocumentApprovalRequested;
 use App\Notifications\DocumentStatusChanged;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -134,6 +135,7 @@ class DocumentApprovalService
                 'note' => $note,
             ]);
 
+            $this->markApprovalNotificationAsRead($step);
             $this->logAction($step, 'approved');
 
             // apakah ada next step?
@@ -199,6 +201,7 @@ class DocumentApprovalService
                 'note' => $note,
             ]);
 
+            $this->markApprovalNotificationAsRead($step);
             $this->logAction($step, 'rejected');
 
             $request->update([
@@ -409,7 +412,9 @@ class DocumentApprovalService
     {
         $step->approver?->notify(new DocumentApprovalRequested(
             document: $doc,
-            requestedByName: auth()->user()?->name
+            requestedByName: auth()->user()?->name,
+            step: $step,
+            targetRole: self::DEFAULT_FLOW_ROLES[$step->step_order] ?? null
         ));
     }
 
@@ -420,5 +425,15 @@ class DocumentApprovalService
         if ($owner && (int) $owner->id !== (int) auth()->id()) {
             $owner->notify(new DocumentStatusChanged($doc, $oldStatus, $newStatus));
         }
+    }
+
+    protected function markApprovalNotificationAsRead(DocumentApprovalStep $step): void
+    {
+        DatabaseNotification::query()
+            ->where('notifiable_type', (new User)->getMorphClass())
+            ->where('notifiable_id', $step->approver_id)
+            ->whereNull('read_at')
+            ->where('data', 'like', '%"approval_step_id":'.$step->id.'%')
+            ->update(['read_at' => now()]);
     }
 }

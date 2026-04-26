@@ -100,6 +100,56 @@ class DocumentApprovalSyncTest extends TestCase
             ->assertHeader('content-disposition');
     }
 
+    public function test_approval_queue_status_step_only_shows_active_steps_and_searches_related_data(): void
+    {
+        $creator = $this->createUserWithAccess(['documents.create']);
+        $controller = $this->createUserWithAccess(['documents.approve'], ['document-controller']);
+        $manager = $this->createUserWithAccess(['documents.approve'], ['quality-system-manager']);
+
+        $document = $this->createDraftDocument($creator->id);
+
+        $this->actingAs($creator);
+        app(DocumentApprovalService::class)->submit($document, null, 'Review perubahan masa berlaku');
+
+        $this->actingAs($manager);
+        Livewire::test(ApprovalQueue::class)
+            ->set('status', 'pending')
+            ->assertDontSee('PRP/SOP/QC/001')
+            ->set('status', 'all')
+            ->assertDontSee('PRP/SOP/QC/001');
+
+        $this->actingAs($controller);
+        Livewire::test(ApprovalQueue::class)
+            ->set('status', 'pending')
+            ->assertSee('PRP/SOP/QC/001')
+            ->set('search', 'Quality Control')
+            ->assertSee('PRP/SOP/QC/001')
+            ->set('search', 'Review perubahan')
+            ->assertSee('PRP/SOP/QC/001')
+            ->set('search', 'tidak ada dokumen ini')
+            ->assertDontSee('PRP/SOP/QC/001');
+
+        $firstStep = DocumentApprovalStep::query()
+            ->where('approval_request_id', $document->refresh()->current_approval_request_id)
+            ->where('step_order', 1)
+            ->firstOrFail();
+
+        Livewire::test(ApprovalQueue::class)
+            ->call('openActionModal', $firstStep->id, 'approve')
+            ->set('note', 'Catatan DC')
+            ->call('submitAction');
+
+        Livewire::test(ApprovalQueue::class)
+            ->set('status', 'approved')
+            ->set('search', 'Catatan DC')
+            ->assertSee('PRP/SOP/QC/001');
+
+        $this->actingAs($manager);
+        Livewire::test(ApprovalQueue::class)
+            ->set('status', 'pending')
+            ->assertSee('PRP/SOP/QC/001');
+    }
+
     public function test_revision_flow_can_be_started_rejected_and_resubmitted_for_final_approval(): void
     {
         $owner = $this->createUserWithAccess(['documents.create', 'documents.revision']);

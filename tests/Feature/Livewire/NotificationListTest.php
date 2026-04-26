@@ -7,10 +7,12 @@ use App\Livewire\NotificationList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Tests\Feature\Livewire\Document\Concerns\BuildsDocumentFixtures;
 use Tests\TestCase;
 
 class NotificationListTest extends TestCase
 {
+    use BuildsDocumentFixtures;
     use RefreshDatabase;
 
     public function test_notifications_page_requires_authentication(): void
@@ -52,5 +54,28 @@ class NotificationListTest extends TestCase
         ]);
 
         $this->assertNotNull($user->notifications()->first()?->read_at);
+    }
+
+    public function test_notification_list_hides_notifications_not_matching_current_role(): void
+    {
+        $user = $this->createUserWithAccess(['documents.create'], ['user']);
+
+        $user->notifications()->create([
+            'id' => (string) Str::uuid(),
+            'type' => 'database',
+            'data' => [
+                'title' => 'Approval dokumen baru',
+                'type' => 'document_approval_requested',
+                'message' => 'Dokumen membutuhkan approval QSM.',
+                'target_user_id' => $user->id,
+                'target_role' => 'quality-system-manager',
+                'url' => route('documents.approval-queue'),
+            ],
+            'read_at' => null,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(NotificationList::class)
+            ->assertDontSee('Dokumen membutuhkan approval QSM.');
     }
 }

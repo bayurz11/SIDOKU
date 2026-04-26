@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Shared\Services\NotificationAudienceService;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -59,6 +61,8 @@ class NotificationList extends Component
             ->whereKey($notificationId)
             ->firstOrFail();
 
+        abort_unless($this->isVisible($notification), 403);
+
         $notification->markAsRead();
 
         return redirect($notification->data['url'] ?? route('dashboard'));
@@ -71,7 +75,7 @@ class NotificationList extends Component
             ->whereNull('read_at')
             ->first();
 
-        if ($notification) {
+        if ($notification && $this->isVisible($notification)) {
             $notification->markAsRead();
         }
     }
@@ -83,21 +87,27 @@ class NotificationList extends Component
             ->whereNotNull('read_at')
             ->first();
 
-        if ($notification) {
+        if ($notification && $this->isVisible($notification)) {
             $notification->update(['read_at' => null]);
         }
     }
 
     public function markAllAsRead(): void
     {
-        Auth::user()?->unreadNotifications()->update(['read_at' => now()]);
+        $this->visibleNotifications()
+            ->whereNull('read_at')
+            ->each(fn (DatabaseNotification $notification) => $notification->markAsRead());
     }
 
     public function deleteNotification(string $notificationId): void
     {
-        $this->notificationQuery()
+        $notification = $this->notificationQuery()
             ->whereKey($notificationId)
-            ->delete();
+            ->first();
+
+        if ($notification && $this->isVisible($notification)) {
+            $notification->delete();
+        }
 
         $this->resetPage();
     }
@@ -112,7 +122,7 @@ class NotificationList extends Component
             $this->perPage = 10;
         }
 
-        $query = $this->notificationQuery()
+        $notifications = $this->visibleNotifications()
             ->when($this->status === 'unread', fn ($q) => $q->whereNull('read_at'))
             ->when($this->status === 'read', fn ($q) => $q->whereNotNull('read_at'))
             ->when($this->search, function ($q) {
@@ -120,12 +130,34 @@ class NotificationList extends Component
 
                 $q->whereRaw('LOWER(data) LIKE ?', [$term]);
             })
-            ->latest();
+            ->latest()
+            ->get()
+            ->filter(fn (DatabaseNotification $notification) => $this->isVisible($notification))
+            ->values();
 
-        $data = $query->paginate($this->perPage)->onEachSide(0);
-        $unreadCount = Auth::user()?->unreadNotifications()->count() ?? 0;
+        $page = $this->getPage();
+        $data = new LengthAwarePaginator(
+            $notifications->forPage($page, $this->perPage)->values(),
+            $notifications->count(),
+            $this->perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        $data->onEachSide(0);
+
+        $unreadCount = $this->visibleNotifications()
+            ->whereNull('read_at')
+            ->get()
+            ->filter(fn (DatabaseNotification $notification) => $this->isVisible($notification))
+            ->count();
 
         return view('livewire.notification-list', compact('data', 'unreadCount'));
+    }
+
+    private function visibleNotifications()
+    {
+        return $this->notificationQuery();
     }
 
     private function notificationQuery()
@@ -133,5 +165,12 @@ class NotificationList extends Component
         return DatabaseNotification::query()
             ->where('notifiable_type', Auth::user()?->getMorphClass())
             ->where('notifiable_id', Auth::id());
+    }
+
+    private function isVisible(DatabaseNotification $notification): bool
+    {
+        $user = Auth::user();
+
+        return $user && NotificationAudienceService::isVisibleTo($user, $notification);
     }
 }

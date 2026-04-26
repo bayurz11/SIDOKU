@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Shared\Services\NotificationAudienceService;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -30,7 +31,7 @@ class NotificationMenu extends Component
             ->whereKey($notificationId)
             ->first();
 
-        if ($notification) {
+        if ($notification && $this->isVisible($notification)) {
             $notification->markAsRead();
         }
     }
@@ -41,6 +42,8 @@ class NotificationMenu extends Component
             ->whereKey($notificationId)
             ->firstOrFail();
 
+        abort_unless($this->isVisible($notification), 403);
+
         $notification->markAsRead();
 
         return redirect($notification->data['url'] ?? route('dashboard'));
@@ -48,20 +51,34 @@ class NotificationMenu extends Component
 
     public function markAllAsRead(): void
     {
-        Auth::user()?->unreadNotifications()->update(['read_at' => now()]);
+        $this->visibleUnreadNotifications()
+            ->each(fn (DatabaseNotification $notification) => $notification->markAsRead());
     }
 
     public function render()
     {
-        $notifications = Auth::user()
-            ?->unreadNotifications()
-            ->latest()
-            ->take(5)
-            ->get() ?? collect();
+        $visibleUnreadNotifications = $this->visibleUnreadNotifications();
 
-        $unreadCount = Auth::user()?->unreadNotifications()->count() ?? 0;
+        $notifications = $visibleUnreadNotifications->take(5);
+        $unreadCount = $visibleUnreadNotifications->count();
 
         return view('livewire.notification-menu', compact('notifications', 'unreadCount'));
+    }
+
+    private function visibleUnreadNotifications()
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return collect();
+        }
+
+        return $user->unreadNotifications()
+            ->latest()
+            ->take(100)
+            ->get()
+            ->filter(fn (DatabaseNotification $notification) => $this->isVisible($notification))
+            ->values();
     }
 
     private function notificationQuery()
@@ -70,5 +87,12 @@ class NotificationMenu extends Component
             ->where('notifiable_type', Auth::user()?->getMorphClass())
             ->where('notifiable_id', Auth::id())
             ->whereNull('read_at');
+    }
+
+    private function isVisible(DatabaseNotification $notification): bool
+    {
+        $user = Auth::user();
+
+        return $user && NotificationAudienceService::isVisibleTo($user, $notification);
     }
 }

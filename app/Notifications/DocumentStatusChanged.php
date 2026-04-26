@@ -29,6 +29,8 @@ class DocumentStatusChanged extends Notification
             'document_id' => $this->document->id,
             'document_code' => $this->document->document_code ?? null,
             'document_title' => $this->document->title,
+            'target_user_id' => $this->document->created_by,
+            'target_role' => 'document-owner',
             'old_status' => $this->oldStatus,
             'new_status' => $this->newStatus,
             'url' => route('documents.index'),

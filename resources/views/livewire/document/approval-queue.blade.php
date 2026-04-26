@@ -33,7 +33,7 @@
                 </span>
                 <span
                     class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    Status: <span class="ml-1 font-mono">{{ strtoupper($status ?? 'pending') }}</span>
+                    Status: <span class="ml-1 font-mono">{{ $statusOptions[$status ?? 'pending'] ?? 'Pending Aktif' }}</span>
                 </span>
             </div>
         </div>
@@ -51,7 +51,7 @@
                             </svg>
                         </div>
                         <input wire:model.live.debounce.400ms="search" type="text"
-                            placeholder="Cari nomor dokumen atau judul..."
+                            placeholder="Cari nomor, judul, dept, tipe, status, requester, atau catatan..."
                             class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl bg-white placeholder-gray-500
                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
                     </div>
@@ -75,11 +75,13 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Status Step</label>
                     <select wire:model.live="status"
                         class="block w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="all">Semua</option>
+                        @foreach ($statusOptions as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
                     </select>
+                    <p class="mt-1 text-[11px] text-gray-500">
+                        Pending Aktif hanya menampilkan step yang sedang menjadi giliran kamu.
+                    </p>
                 </div>
 
                 <div class="md:col-span-2 flex items-end justify-end gap-2">
@@ -129,6 +131,7 @@
                 @forelse($data as $step)
                     @php
                         $doc = $step->approvalRequest?->document;
+                        $request = $step->approvalRequest;
 
                         $statusMap = [
                             'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -152,6 +155,11 @@
                             <div class="text-xs text-gray-500">
                                 {{ $doc->documentType->name ?? '' }}
                             </div>
+                            @if ($request?->request_note)
+                                <div class="text-[11px] text-gray-500 mt-1">
+                                    Catatan submit: {{ Str::limit($request->request_note, 70) }}
+                                </div>
+                            @endif
                         </td>
 
                         {{-- Dept --}}
@@ -168,6 +176,12 @@
                                 class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-100">
                                 Step {{ $step->step_order }}
                             </span>
+                            <div class="mt-1 text-[11px] text-gray-500">
+                                Request: {{ ucfirst($request->status ?? '-') }}
+                                @if ($request?->current_step)
+                                    / Current Step {{ $request->current_step }}
+                                @endif
+                            </div>
                         </td>
 
                         {{-- Status --}}
@@ -180,6 +194,16 @@
                                 </span>
                                 {{ ucfirst($step->status) }}
                             </span>
+                            @if ($step->acted_at)
+                                <div class="mt-1 text-[11px] text-gray-500">
+                                    {{ $step->acted_at->format('d M Y H:i') }}
+                                </div>
+                            @endif
+                            @if ($step->note)
+                                <div class="mt-1 text-[11px] text-gray-500 max-w-[220px] truncate">
+                                    {{ $step->note }}
+                                </div>
+                            @endif
                         </td>
 
                         {{-- Actions --}}
