@@ -5,7 +5,9 @@ namespace Tests\Feature\Livewire\Document;
 use App\Domains\Department\Models\Department;
 use App\Domains\Document\Models\Document;
 use App\Domains\Document\Models\DocumentApprovalRequest;
+use App\Domains\Document\Models\DocumentApprovalStep;
 use App\Domains\Document\Models\DocumentType;
+use App\Domains\Document\Services\DocumentApprovalService;
 use App\Livewire\Document\DocumentDetailForm;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -113,5 +115,54 @@ class DocumentDetailFormTest extends TestCase
             'approver_id' => $secondApprover->id,
             'step_order' => 2,
         ]);
+    }
+
+    public function test_detail_shows_rejected_review_note_from_approver(): void
+    {
+        $actor = $this->createUserWithAccess(['documents.create']);
+        $approver = $this->createUserWithAccess(['documents.review'], ['document-controller']);
+        $this->createUserWithAccess([], ['quality-system-manager']);
+
+        $type = DocumentType::query()->create([
+            'name' => 'SOP',
+            'description' => 'Standard Operating Procedure',
+            'is_active' => true,
+        ]);
+
+        $department = Department::query()->create([
+            'name' => 'QC',
+            'description' => 'Quality Control',
+            'is_active' => true,
+        ]);
+
+        $document = Document::query()->create([
+            'document_type_id' => $type->id,
+            'department_id' => $department->id,
+            'document_code' => 'PRP/SOP/QC/003',
+            'title' => 'Prosedur Release Produk',
+            'level' => 2,
+            'revision_no' => 0,
+            'status' => Document::STATUS_DRAFT,
+            'is_active' => true,
+            'created_by' => $actor->id,
+        ]);
+
+        $this->actingAs($actor);
+        app(DocumentApprovalService::class)->submit($document);
+
+        $step = DocumentApprovalStep::query()
+            ->where('approval_request_id', $document->refresh()->current_approval_request_id)
+            ->where('step_order', 1)
+            ->firstOrFail();
+
+        $this->actingAs($approver);
+        app(DocumentApprovalService::class)->rejectStep($step, 'Tambahkan batas toleransi dan lampiran form kontrol.');
+
+        Livewire::actingAs($actor)
+            ->test(DocumentDetailForm::class)
+            ->call('open', $document->id)
+            ->assertSee('Catatan Review / Perbaikan')
+            ->assertSee('Perbaikan terakhir')
+            ->assertSee('Tambahkan batas toleransi dan lampiran form kontrol.');
     }
 }

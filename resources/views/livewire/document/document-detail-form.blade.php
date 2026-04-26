@@ -179,6 +179,97 @@
                         </div>
                     </div>
 
+                    {{-- Approval review notes --}}
+                    @php
+                        $approvalRequests = $document->approvalRequests
+                            ->sortByDesc('requested_at')
+                            ->values();
+
+                        $reviewSteps = $approvalRequests
+                            ->flatMap(fn ($request) => $request->steps->map(function ($step) use ($request) {
+                                $step->setRelation('approvalRequest', $request);
+
+                                return $step;
+                            }))
+                            ->filter(fn ($step) => in_array($step->status, ['approved', 'rejected'], true) || filled($step->note))
+                            ->sortByDesc(fn ($step) => $step->acted_at?->timestamp ?? $step->id)
+                            ->values();
+
+                        $lastRejectedStep = $reviewSteps->firstWhere('status', 'rejected');
+                    @endphp
+
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-[11px] font-semibold text-gray-500 uppercase">
+                                Catatan Review / Perbaikan
+                            </h3>
+                            @if ($reviewSteps->isNotEmpty())
+                                <span class="text-[11px] text-gray-500">
+                                    {{ $reviewSteps->count() }} catatan
+                                </span>
+                            @endif
+                        </div>
+
+                        @if ($lastRejectedStep)
+                            <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[11px] text-red-800">
+                                <div class="font-bold text-red-900">
+                                    Perbaikan terakhir dari {{ $lastRejectedStep->approver->name ?? 'Approver' }}
+                                </div>
+                                <div class="mt-1 whitespace-pre-line">
+                                    {{ $lastRejectedStep->note ?: 'Tidak ada detail catatan reject.' }}
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($reviewSteps->isEmpty())
+                            <p class="text-[11px] text-gray-500">
+                                Belum ada catatan review dari approver.
+                            </p>
+                        @else
+                            <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
+                                @foreach ($reviewSteps as $step)
+                                    @php
+                                        $stepStatusClass =
+                                            [
+                                                'approved' => 'bg-green-50 text-green-700 border-green-100',
+                                                'rejected' => 'bg-red-50 text-red-700 border-red-100',
+                                                'pending' => 'bg-amber-50 text-amber-700 border-amber-100',
+                                            ][$step->status] ?? 'bg-gray-50 text-gray-700 border-gray-100';
+                                    @endphp
+
+                                    <div
+                                        class="rounded-xl border {{ $step->status === 'rejected' ? 'border-red-200 bg-red-50/60' : 'border-gray-100 bg-white' }} px-3 py-2 text-[11px]">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $stepStatusClass }}">
+                                                Step {{ $step->step_order }} - {{ ucfirst($step->status) }}
+                                            </span>
+                                            <span class="text-gray-500">
+                                                {{ optional($step->acted_at)->format('d M Y H:i') ?? '-' }}
+                                            </span>
+                                            @if ($step->approvalRequest?->requested_at)
+                                                <span class="text-gray-400">
+                                                    Pengajuan: {{ $step->approvalRequest->requested_at->format('d M Y H:i') }}
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <div class="mt-1 text-gray-600">
+                                            Reviewer:
+                                            <span class="font-semibold text-gray-800">
+                                                {{ $step->approver->name ?? '-' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-1 whitespace-pre-line {{ $step->status === 'rejected' ? 'text-red-800 font-medium' : 'text-gray-700' }}">
+                                            {{ $step->note ?: ($step->status === 'approved' ? 'Approved tanpa catatan.' : 'Tidak ada catatan.') }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
                     {{-- Revisi --}}
                     <div class="space-y-1.5">
                         <div class="flex items-center justify-between">

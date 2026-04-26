@@ -29,6 +29,8 @@ class DocumentDetailForm extends Component
                 'department',
                 'revisions.changedBy',
                 'parent',
+                'approvalRequests.requester',
+                'approvalRequests.steps.approver',
             ])
             ->findOrFail($id);
 
