@@ -4,6 +4,7 @@ namespace App\Livewire\IncomingMaterial;
 
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialFile;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -19,20 +20,33 @@ class IncomingMaterialForm extends Component
     public ?int $incomingId = null;
 
     // ================= BASIC INFO =================
+    public ?int $incoming_material_item_id = null;
+
     public string $name_of_goods = '';
+
     public string $supplier_name = '';
+
     public ?string $receipt_date = null;
+
     public ?string $expired_date = null;
+
     public string $batch_number = '';
+
     public ?int $quantity = null;
+
     public ?string $receipt_time = null;
+
     public ?string $quantity_unit = null;
+
     public ?float $sample_quantity = null;
+
     public ?string $vehicle_number = null;
 
     // ================= TEST PARAMETERS =================
     public bool $test_moisture = false;
+
     public bool $test_microbiology = false;
+
     public bool $test_chemical = false;
 
     // ================= DOCUMENTS =================
@@ -57,21 +71,27 @@ class IncomingMaterialForm extends Component
 
     // ================= PHOTOS =================
     public array $photos = [];
+
     public array $existingPhotos = [];
+
     // ================= DETAIL DOCUMENTS =================
     public array $existingDocuments = [];
 
     // ================= INSPECTION =================
     public array $inspectionItems = [];
+
     public string $inspection_decision = '';
+
     public ?string $inspection_notes = null;
 
     // ================= DETAIL =================
     public $material;
+
     public bool $showDetail = false;
 
     // ================= UI =================
     public bool $showModal = false;
+
     public bool $isEditing = false;
 
     protected $listeners = [
@@ -84,10 +104,12 @@ class IncomingMaterialForm extends Component
         $this->initializeDocuments();
         $this->addInspectionItem();
     }
+
     public function refreshData()
     {
         $this->render();
     }
+
     protected function initializeDocuments(): void
     {
         $this->documents = [];
@@ -111,6 +133,7 @@ class IncomingMaterialForm extends Component
         $this->incomingId = null;
         $this->isEditing = false;
 
+        $this->incoming_material_item_id = null;
         $this->name_of_goods = '';
         $this->supplier_name = '';
         $this->receipt_date = null;
@@ -141,6 +164,7 @@ class IncomingMaterialForm extends Component
             $this->incomingId = $material->id;
             $this->isEditing = true;
 
+            $this->incoming_material_item_id = $material->incoming_material_item_id;
             $this->name_of_goods = $material->material_name;
             $this->supplier_name = $material->supplier;
             $this->receipt_date = optional($material->date)?->format('Y-m-d');
@@ -184,11 +208,12 @@ class IncomingMaterialForm extends Component
                 if ($file->category === 'photo') {
 
                     $this->existingPhotos[] = $file->file_path;
+
                     continue;
                 }
 
                 // pastikan category ada di documents
-                if (!array_key_exists($file->category, $this->documents)) {
+                if (! array_key_exists($file->category, $this->documents)) {
                     continue;
                 }
 
@@ -200,6 +225,26 @@ class IncomingMaterialForm extends Component
         }
 
         $this->showModal = true;
+    }
+
+    public function updatedIncomingMaterialItemId($value): void
+    {
+        $item = IncomingMaterialItem::query()
+            ->where('is_active', true)
+            ->find($value);
+
+        if (! $item) {
+            $this->name_of_goods = '';
+
+            return;
+        }
+
+        $this->name_of_goods = $item->name;
+        $this->quantity_unit = $this->quantity_unit ?: $item->default_unit;
+
+        if ($item->requires_microbiology) {
+            $this->test_microbiology = true;
+        }
     }
 
     // ================= PHOTO MANAGEMENT =================
@@ -217,13 +262,14 @@ class IncomingMaterialForm extends Component
 
         // hapus dari state livewire
         $this->existingPhotos = array_values(
-            array_filter($this->existingPhotos, fn($p) => $p !== $path)
+            array_filter($this->existingPhotos, fn ($p) => $p !== $path)
         );
     }
+
     // ================= DOCUMENT MANAGEMENT =================
     public function removeExistingDocument($key)
     {
-        if (!isset($this->documents[$key]['existing_path'])) {
+        if (! isset($this->documents[$key]['existing_path'])) {
             return;
         }
 
@@ -262,6 +308,7 @@ class IncomingMaterialForm extends Component
             'inspection_result' => '',
         ];
     }
+
     public function removeInspectionItem($index)
     {
         unset($this->inspectionItems[$index]);
@@ -289,7 +336,7 @@ class IncomingMaterialForm extends Component
     protected function evaluateFinalDecision()
     {
         $hasNotOk = collect($this->inspectionItems)
-            ->contains(fn($item) => $item['inspection_result'] === 'NOT OK');
+            ->contains(fn ($item) => $item['inspection_result'] === 'NOT OK');
 
         $this->inspection_decision = $hasNotOk ? 'HOLD' : 'ACCEPTED';
     }
@@ -301,6 +348,7 @@ class IncomingMaterialForm extends Component
         $this->evaluateFinalDecision();
 
         $this->validate([
+            'incoming_material_item_id' => ['required', 'exists:incoming_material_items,id'],
             'name_of_goods' => ['required', 'string', 'max:255'],
             'supplier_name' => ['required', 'string', 'max:255'],
             'receipt_date' => ['required', 'date'],
@@ -315,7 +363,7 @@ class IncomingMaterialForm extends Component
                 'nullable',
                 'file',
                 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-                'max:4096'
+                'max:4096',
             ],
         ]);
 
@@ -329,6 +377,7 @@ class IncomingMaterialForm extends Component
                 'expired_date' => $this->expired_date,
                 'receipt_time' => $this->receipt_time ?? null,
                 'supplier' => $this->supplier_name,
+                'incoming_material_item_id' => $this->incoming_material_item_id,
                 'material_name' => $this->name_of_goods,
                 'batch_number' => $this->batch_number,
                 'quantity' => $this->quantity,
@@ -375,7 +424,6 @@ class IncomingMaterialForm extends Component
                 $material = IncomingMaterial::create($data);
             }
 
-
             /*
         |--------------------------------------------------------------------------
         | SIMPAN INSPECTION ITEMS
@@ -400,7 +448,6 @@ class IncomingMaterialForm extends Component
                     'created_by' => auth()->id(),
                 ]);
             }
-
 
             /*
         |--------------------------------------------------------------------------
@@ -433,10 +480,10 @@ class IncomingMaterialForm extends Component
                             // nama dokumen dari checklist
                             $docName = Str::slug($key);
 
-                            $fileName = $docName . '_' . now()->format('Y-m-d_His') . '.' . $extension;
+                            $fileName = $docName.'_'.now()->format('Y-m-d_His').'.'.$extension;
 
                             $path = $file->storeAs(
-                                'incoming-material/' . date('Y/m'),
+                                'incoming-material/'.date('Y/m'),
                                 $fileName,
                                 'public'
                             );
@@ -452,7 +499,6 @@ class IncomingMaterialForm extends Component
                     }
                 }
             }
-
 
             /*
         |--------------------------------------------------------------------------
@@ -474,10 +520,10 @@ class IncomingMaterialForm extends Component
 
                             $materialName = Str::slug($this->name_of_goods);
 
-                            $fileName = $materialName . '_' . now()->format('Y-m-d_His') . '_' . ($index + 1) . '.' . $extension;
+                            $fileName = $materialName.'_'.now()->format('Y-m-d_His').'_'.($index + 1).'.'.$extension;
 
                             $path = $file->storeAs(
-                                'incoming-material/' . date('Y/m'),
+                                'incoming-material/'.date('Y/m'),
                                 $fileName,
                                 'public'
                             );
@@ -496,8 +542,6 @@ class IncomingMaterialForm extends Component
 
             DB::commit();
 
-            DB::commit();
-
             // cek apakah edit atau create
             $message = $this->incomingId
                 ? 'Data Incoming Material berhasil diperbarui!'
@@ -505,7 +549,7 @@ class IncomingMaterialForm extends Component
 
             $this->dispatch('show-toast', [
                 'type' => 'success',
-                'title' => $message
+                'title' => $message,
             ]);
 
             $this->dispatch('incoming-material:saved');
@@ -517,9 +561,13 @@ class IncomingMaterialForm extends Component
 
             report($e);
 
+            if (app()->environment('testing')) {
+                throw $e;
+            }
+
             $this->dispatch('show-toast', [
                 'type' => 'error',
-                'title' => 'Gagal menyimpan data!'
+                'title' => 'Gagal menyimpan data!',
             ]);
         }
     }
@@ -542,6 +590,10 @@ class IncomingMaterialForm extends Component
     {
         return view('livewire.incoming-material.incoming-material-form', [
             'documentTypes' => $this->documentTypes,
+            'materialItems' => IncomingMaterialItem::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 }

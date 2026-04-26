@@ -29,7 +29,12 @@
 
              @php
                  // ===== ACTIVE ROUTE =====
-                 $masterActive = request()->routeIs('department.*', 'document_types.*', 'document_prefix_settings.*');
+                 $masterActive = request()->routeIs(
+                     'department.*',
+                     'document_types.*',
+                     'document_prefix_settings.*',
+                     'incoming-material-items.*',
+                 );
 
                  $documentActive = request()->routeIs(
                      'documents.*',
@@ -42,14 +47,23 @@
                  $incomingActive = request()->routeIs('incoming-material-tahap1.*', 'incoming-material-tahap2.*');
 
                  // ===== TAMBAHAN MIKROBIOLOGI =====
-                 $microbiologyActive = request()->routeIs('microbiology-tahap1.*', 'microbiology-tahap2.*');
+                 $microbiologyActive = request()->routeIs(
+                     'microbiology-tahap1.*',
+                     'microbiology-tahap2.*',
+                     'microbiology.incoming-material.*',
+                 );
 
                  $accountActive = request()->routeIs('users.*', 'roles.*');
 
                  // ===== VISIBILITY =====
                  $canSeeMasterMenu = auth()
                      ->user()
-                     ->hasAnyPermission(['departments.view', 'document_types.view', 'document_prefix_settings.view']);
+                     ->hasAnyPermission([
+                         'departments.view',
+                         'document_types.view',
+                         'document_prefix_settings.view',
+                         'incoming_material.view',
+                     ]);
 
                  $canSeeDocumentMenu = auth()
                      ->user()
@@ -155,6 +169,13 @@
                                  <a href="{{ route('document_prefix_settings.index') }}"
                                      class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('document_prefix_settings.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Dokumen Prefix
+                                 </a>
+                             @endpermission
+
+                             @permission('incoming_material.view')
+                                 <a href="{{ route('incoming-material-items.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material-items.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Nama Barang
                                  </a>
                              @endpermission
                          </div>
@@ -312,8 +333,8 @@
                                  </a>
                              @endpermission
                              @permission('incoming_material.view')
-                                 <a href="#"
-                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                 <a href="{{ route('incoming-material-tahap2.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('incoming-material-tahap2.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
                                      Tahap 2
                                  </a>
                              @endpermission
@@ -357,9 +378,9 @@
                              class="mt-1 pl-10 space-y-1 overflow-hidden">
 
                              @permission('microbiology.view')
-                                 <a href="#"
-                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
-                                     micro
+                                 <a href="{{ route('microbiology.incoming-material.index') }}"
+                                     class="block rounded-md px-4 py-2 text-sm {{ request()->routeIs('microbiology.incoming-material.*') ? 'bg-white bg-opacity-20 text-white' : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                     Incoming Material
                                  </a>
                              @endpermission
 

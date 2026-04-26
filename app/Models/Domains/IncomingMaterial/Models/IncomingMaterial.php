@@ -6,13 +6,14 @@ use App\Auditable;
 use App\Domains\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class IncomingMaterial extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
 
     protected $table = 'incoming_materials';
 
@@ -23,6 +24,7 @@ class IncomingMaterial extends Model
         'receipt_time',
         'supplier',
         'material_name',
+        'incoming_material_item_id',
         'batch_number',
         'quantity',
         'quantity_unit',
@@ -38,7 +40,7 @@ class IncomingMaterial extends Model
         'notes',
 
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -65,6 +67,30 @@ class IncomingMaterial extends Model
     {
         return $this->hasMany(
             IncomingMaterialInspection::class,
+            'incoming_material_id'
+        );
+    }
+
+    public function item(): BelongsTo
+    {
+        return $this->belongsTo(
+            IncomingMaterialItem::class,
+            'incoming_material_item_id'
+        );
+    }
+
+    public function stage2Check(): HasOne
+    {
+        return $this->hasOne(
+            IncomingMaterialStage2Check::class,
+            'incoming_material_id'
+        );
+    }
+
+    public function microbiologyTest(): HasOne
+    {
+        return $this->hasOne(
+            IncomingMaterialMicrobiologyTest::class,
             'incoming_material_id'
         );
     }
@@ -101,7 +127,8 @@ class IncomingMaterial extends Model
 
     public function needsMicroTest(): bool
     {
-        return $this->test_microbiology === true;
+        return $this->test_microbiology === true
+            || $this->item?->requires_microbiology === true;
     }
 
     public function needsMoistureTest(): bool

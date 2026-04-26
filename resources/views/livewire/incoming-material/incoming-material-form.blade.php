@@ -44,8 +44,27 @@
                                 <label class="text-sm font-medium">
                                     Nama Barang <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text" wire:model.defer="name_of_goods"
-                                    class="w-full mt-1 border rounded-md p-2 text-sm">
+                                <select wire:model.live="incoming_material_item_id"
+                                    class="w-full mt-1 border rounded-md p-2 text-sm bg-white">
+                                    <option value="">-- Pilih dari Master Nama Barang --</option>
+                                    @foreach ($materialItems as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->name }}
+                                            @if ($item->category === 'tea')
+                                                - Bahan Baku Teh
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" wire:model="name_of_goods">
+                                @if ($incoming_material_item_id)
+                                    <p class="mt-1 text-[11px] text-gray-500">
+                                        Nama barang tersinkron dari master data.
+                                    </p>
+                                @endif
+                                @error('incoming_material_item_id')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                                 @error('name_of_goods')
                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                 @enderror

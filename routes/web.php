@@ -55,6 +55,12 @@ Route::middleware(['auth', 'permission:document_prefix_settings.view'])->group(f
     })->name('document_prefix_settings.index');
 });
 
+Route::middleware(['auth', 'permission:incoming_material.view'])->group(function () {
+    Route::get('/incoming-material-items', function () {
+        return view('incoming-material-items.index');
+    })->name('incoming-material-items.index');
+});
+
 //  Management Document
 Route::middleware(['auth', 'permission:documents.view'])->group(function () {
     Route::get('/documents', function () {
@@ -153,6 +159,24 @@ Route::middleware(['auth', 'permission:incoming_material.view'])
 
         Route::get('/', function () {
             return view('incoming-material-tahap1.index');
+        })->name('index');
+    });
+
+Route::middleware(['auth', 'permission:incoming_material.view'])
+    ->prefix('incoming-material-tahap2')
+    ->name('incoming-material-tahap2.')
+    ->group(function () {
+        Route::get('/', function () {
+            return view('incoming-material-tahap2.index');
+        })->name('index');
+    });
+
+Route::middleware(['auth', 'permission:microbiology.view'])
+    ->prefix('microbiology/incoming-material')
+    ->name('microbiology.incoming-material.')
+    ->group(function () {
+        Route::get('/', function () {
+            return view('microbiology-incoming-material.index');
         })->name('index');
     });
 
