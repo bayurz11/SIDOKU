@@ -4,6 +4,7 @@ namespace App\Livewire\IncomingMaterial;
 
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterial;
 use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialMicrobiologyTest;
+use App\Models\Domains\IncomingMaterial\Models\IncomingMaterialStage2Check;
 use App\Shared\Traits\WithAlerts;
 use Livewire\Component;
 
@@ -112,6 +113,8 @@ class IncomingMaterialMicrobiologyForm extends Component
             'updated_by' => auth()->id(),
         ]);
 
+        $this->syncStage2MicrobiologyResult($this->incomingMaterialId);
+
         $this->showSuccessToast('Hasil uji mikrobiologi incoming material berhasil disimpan.');
         $this->dispatch('incoming-material-microbiology:saved');
         $this->closeModal();
@@ -122,6 +125,36 @@ class IncomingMaterialMicrobiologyForm extends Component
         $this->showModal = false;
         $this->material = null;
         $this->incomingMaterialId = null;
+    }
+
+    private function syncStage2MicrobiologyResult(int $incomingMaterialId): void
+    {
+        $stage2 = IncomingMaterialStage2Check::query()
+            ->where('incoming_material_id', $incomingMaterialId)
+            ->first();
+
+        if (! $stage2) {
+            return;
+        }
+
+        $microbiologyResult = match ($this->result) {
+            IncomingMaterialMicrobiologyTest::RESULT_PASS => IncomingMaterialStage2Check::RESULT_OK,
+            IncomingMaterialMicrobiologyTest::RESULT_FAIL => IncomingMaterialStage2Check::RESULT_NOT_OK,
+            default => IncomingMaterialStage2Check::MICRO_WAITING,
+        };
+
+        $finalDecision = match (true) {
+            $stage2->physical_result === IncomingMaterialStage2Check::RESULT_NOT_OK,
+            $microbiologyResult === IncomingMaterialStage2Check::RESULT_NOT_OK => IncomingMaterialStage2Check::DECISION_REJECTED,
+            $stage2->physical_result === IncomingMaterialStage2Check::RESULT_PENDING,
+            $microbiologyResult === IncomingMaterialStage2Check::MICRO_WAITING => IncomingMaterialStage2Check::DECISION_HOLD,
+            default => IncomingMaterialStage2Check::DECISION_ACCEPTED,
+        };
+
+        $stage2->update([
+            'microbiology_result' => $microbiologyResult,
+            'final_decision' => $finalDecision,
+        ]);
     }
 
     public function render()

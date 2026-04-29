@@ -95,6 +95,32 @@ class RoleSeeder extends Seeder
                 'documents.download',
             ]
         );
+
+        $this->createDocumentWorkflowRole(
+            'qc-incoming',
+            'QC Incoming',
+            'Mengelola Incoming Material Tahap 1 dan Tahap 2.',
+            [
+                'incoming_material.view',
+                'incoming_material.create',
+                'incoming_material.edit',
+                'incoming_material.print',
+                'microbiology.view',
+            ]
+        );
+
+        $this->createDocumentWorkflowRole(
+            'microbiology-analyst',
+            'Mikrobiologi Analyst',
+            'Mengisi dan mengelola hasil uji mikrobiologi incoming material.',
+            [
+                'incoming_material.view',
+                'microbiology.view',
+                'microbiology.create',
+                'microbiology.edit',
+                'microbiology.print',
+            ]
+        );
     }
 
     private function createDocumentWorkflowRole(

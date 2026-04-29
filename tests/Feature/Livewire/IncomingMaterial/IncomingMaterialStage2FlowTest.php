@@ -106,10 +106,6 @@ class IncomingMaterialStage2FlowTest extends TestCase
             ->set('result', IncomingMaterialMicrobiologyTest::RESULT_PASS)
             ->call('save');
 
-        Livewire::test(IncomingMaterialStage2Form::class)
-            ->call('openForm', $material->id)
-            ->call('save');
-
         $this->assertDatabaseHas('incoming_material_stage2_checks', [
             'incoming_material_id' => $material->id,
             'microbiology_result' => IncomingMaterialStage2Check::RESULT_OK,
