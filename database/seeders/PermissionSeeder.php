@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domains\Permission\Models\Permission;
+use App\Shared\Services\CacheService;
 use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder
@@ -233,10 +234,15 @@ class PermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(
+            Permission::updateOrCreate(
                 ['name' => $permission['name']],
-                $permission
+                [
+                    ...$permission,
+                    'is_active' => true,
+                ]
             );
         }
+
+        CacheService::clearSystemCache();
     }
 }
